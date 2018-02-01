@@ -1,0 +1,36 @@
+{
+  "name": "Sorts",
+  "api": "Sorts",
+  "dependencies": [
+    "RipenessGroups",
+    "Cultures"
+  ],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Культура",
+      "prop": "Cultures.name",
+      "fkey": "cultureId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Группа спелости",
+      "prop": "RipenessGroups.name",
+      "fkey": "ripenessGroupId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Норма высева от",
+      "prop": "minNorm"
+    },
+    {
+      "label": "Норма высева до",
+      "prop": "maxNorm"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "FinalProducts",
+  "api": "FinalProducts",
+  "dependencies": [],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Короткое наименование",
+      "prop": "shortName"
+    }
+  ]
+}

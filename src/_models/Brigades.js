@@ -1,0 +1,6 @@
+{
+  path: 'brigades',
+  contexts: [
+    'organization'
+  ]
+}

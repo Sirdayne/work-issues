@@ -1,0 +1,42 @@
+{
+  "name": "TechnologyProcess",
+  "api": "cttops",
+  "dependencies": [
+    "Technologies",
+    "CultureTypes",
+    "TechnologyOperations",
+    "WorkTypeParameterPlanWorkTypes"
+  ],
+  "attributes": [
+    {
+      "label": "Технология",
+      "prop": "Technologies.name",
+      "fkey": "technologyId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Типы культур",
+      "prop": "CultureTypes.name",
+      "fkey": "cultureTypesIds",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Технологическая операция",
+      "prop": "TechnologyOperations.name",
+      "fkey": "technologicalOperationId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Основные работы",
+      "prop": "WorkTypeParameterPlanWorkTypes.name",
+      "fkey": "workTypeParameterPlanWorkTypesIds",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "ConditionTypes",
+  "api": null,
+  "dependencies": [],
+  "attributes": [],
+  "response": [
+    {"id":0, "name":""},
+    {"id":1, "name":"Глубина"},
+    {"id":2, "name":"Урожайность"},
+    {"id":3, "name":"Расстояние"}
+  ]
+}

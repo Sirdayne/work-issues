@@ -1,0 +1,37 @@
+{
+  "name": "Warehouses",
+  "api": "Warehouses",
+  "organization": true,
+  "editable": true,
+  "dependencies": [
+    "WarehouseTypes"
+  ],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Тип",
+      "prop": "WarehouseTypes.name",
+      "fkey": "warehouseType",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Широта",
+      "prop": "lat",
+      "form": false
+    },
+    {
+      "label": "Долгота",
+      "prop": "lon",
+      "form": false
+    },
+    {
+      "label": "Радиус",
+      "prop": "radius",
+      "form": false
+    }
+  ]
+}

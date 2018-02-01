@@ -1,0 +1,24 @@
+{
+  "name": "CultureDepths",
+  "api": "CultureDepths",
+  "dependencies": [
+    "Cultures"
+  ],
+  "attributes": [
+    {
+      "label": "Культура",
+      "prop": "Cultures.name",
+      "fkey": "cultureId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Минимальная оптимальная глубина сева",
+      "prop": "minDepth"
+    },
+    {
+      "label": "Максимальная оптимальная глубина сева",
+      "prop": "maxDepth"
+    }
+  ]
+}

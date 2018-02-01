@@ -1,0 +1,359 @@
+# Alphabetic Order
+
+
+########## Aa ##########
+
+AreaAssignments:
+  contexts:
+  - organization
+
+assignments:
+  path: areaassignments
+  contexts:
+  - organization
+
+AssignmentsDailyReportItems:
+  contexts:
+  - organization
+
+assignmentsTrack:
+  contexts:
+  - organization
+
+AssignmentTypes:
+
+########## Bb ##########
+
+brigades:
+  contexts:
+  - organization
+
+budgets:
+
+########## Cc ##########
+
+carCoordinates:
+  contexts:
+  - organization
+
+carmarks:
+
+carmodelgroups:
+
+carmodels:
+
+cars:
+  contexts:
+  - organization
+
+carsAll:
+  path: cars
+
+carstatus:
+  contexts:
+  - organization
+
+carstatusextended:
+  contexts:
+  - organization
+
+cartypes:
+
+compositions:
+
+chemicalpreparations:
+
+chemicalpreparationprices:
+  contexts:
+  - organization
+
+chemicalpreparationtypes:
+
+chemicals:
+  path: chemicalPreparations
+
+chemicalTypes:
+  path: ChemicalPreparationTypes
+
+chemistrylimitfact:
+  contexts:
+  - organization
+
+chemistryLimits:
+  contexts:
+  - organization
+
+cropbalanceusers:
+
+croprotations:
+  contexts:
+  - organization
+
+cttops:
+
+culturedepths:
+
+culturefieldzones:
+
+cultures:
+
+cultureparameters:
+
+culturetypes:
+
+########## Dd ##########
+
+diseases:
+
+downtime:
+  contexts:
+  - organization
+
+########## Ee ##########
+
+employees:
+  contexts:
+  - organization
+
+employeesAll:
+  path: employees
+
+########## Ff ##########
+
+fertilizerLimits:
+  path: chemistryLimits
+  contexts:
+  - organization
+
+FieldAssignments:
+  contexts:
+  - organization
+
+fielddistances:
+  contexts:
+  - organization
+
+fields:
+  contexts:
+  - organization
+
+fieldsall:
+  path: fields
+
+fieldcontours:
+
+FieldLastAssignments:
+  contexts:
+  - organization
+
+fieldweediness:
+  contexts:
+    - organization
+
+fieldworks:
+  contexts:
+    - organization
+    - budget
+    - year
+
+fieldzones:
+
+finalproducts:
+
+fuelnorms:
+
+########## Gg ##########
+
+gpsproviders:
+
+grainregistry:
+  contexts:
+    - organization
+
+growthphases:
+
+########## Ii ##########
+
+incomingtransfers:
+  contexts:
+  - organization
+
+insects:
+
+internaltransfers:
+  contexts:
+  - organization
+
+instrumentsByOrganization:
+  path: organizationInstruments
+  contexts:
+  - organization
+
+instrumentsAll:
+  path: instruments
+
+instruments:
+
+instrumenttypes:
+
+########## Nn ##########
+
+news:
+  path: motd
+  contexts:
+  - organization
+
+notes:
+  contexts:
+  - organization
+
+########## Kk ##########
+
+kml:
+  contexts:
+  - organization
+
+########## Ll ##########
+
+leafletfields:
+  contexts:
+  - organization
+
+leaflettracks:
+
+########## Oo ##########
+
+operations:
+
+organizations:
+
+organizationinstruments:
+  contexts:
+  - organization
+
+overdrive:
+  contexts:
+  - organization
+
+outgoingtransfers:
+  contexts:
+  - organization
+
+########## Pp ##########
+
+processedstatuses:
+
+########## Rr ##########
+
+reports:
+
+ripenessgroups:
+
+reproductions:
+
+########## Ss ##########
+
+seedlimitfact:
+  contexts:
+  - organization
+
+seedlimits:
+  contexts:
+  - organization
+
+seedprices:
+  contexts:
+  - organization
+
+sorts:
+
+soilTypes:
+
+SowingAssignments:
+  contexts:
+  - organization
+
+sowings:
+  contexts:
+  - organization
+  - budget
+  - year
+
+speedmonitoring:
+  contexts:
+  - organization
+
+storages:
+  contexts:
+  - organization
+
+suboperations:
+########## Tt ##########
+
+technologyRecipe:
+  path: technologyReciept
+  contexts:
+  - organization
+  - budget
+  - year
+
+technologyRecipeTypes:
+  path: technologyRecieptTypes
+
+TechnologyRecieptTypes:
+
+technologies:
+
+terrains:
+
+transportation:
+  contexts:
+  - organization
+
+########## Uu ##########
+
+userorganizations:
+
+users:
+  path: "account/users"
+  contexts:
+  - organization
+
+unittypes:
+
+########## Ww ##########
+
+warehousecoordinates:
+  contexts:
+  - organization
+
+warehouses:
+  contexts:
+  - organization
+
+warehousetypes:
+
+warehousesAll:
+  path: warehouses
+
+workdates:
+
+workplan:
+  contexts:
+  - organization
+
+works:
+  path: workTypeParameterPlanWorkTypes
+
+workTypes:
+  path: suboperations
+
+workTypeParameters:
+
+WorkTypeParameterPlanWorkTypes:
+
+weedTypes:
+
+########## YY ##########
+
+yearconstants:

@@ -1,0 +1,29 @@
+{
+  "name": "SeedPrices",
+  "api": "SeedPrices",
+  "organization": true,
+  "editable": true,
+  "year": true,
+  "dependencies": [
+    "Cultures"
+  ],
+  "attributes": [
+    {
+      "label": "Год",
+      "prop": "year",
+      "default": "year",
+      "filter": true
+    },
+    {
+      "label": "Культура",
+      "prop": "Cultures.name",
+      "fkey": "cultureId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Цена",
+      "prop": "price"
+    }
+  ]
+}

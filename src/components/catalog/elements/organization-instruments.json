@@ -1,0 +1,28 @@
+{
+  "name": "OrganizationInstruments",
+  "api": "OrganizationInstruments",
+  "organization": true,
+  "editable": true,
+  "dependencies": [
+    "Instruments"
+  ],
+  "attributes": [
+    {
+      "label": "Орудие",
+      "prop": "Instruments.displayString",
+      "fkey": "instrumentId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Ширина захвата",
+      "prop": "Instruments.width",
+      "fkey": "instrumentId",
+      "form": false
+    },
+    {
+      "label": "Количество",
+      "prop": "count"
+    }
+  ]
+}

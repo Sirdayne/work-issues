@@ -1,0 +1,29 @@
+{
+  "name": "ChemicalPreparationPrices",
+  "api": "ChemicalPreparationPrices",
+  "organization": true,
+  "editable": true,
+  "year": true,
+  "dependencies": [
+    "ChemicalPreparations"
+  ],
+  "attributes": [
+    {
+      "label": "Год",
+      "prop": "year",
+      "default": "year",
+      "filter": true
+    },
+    {
+      "label": "Препарат",
+      "prop": "ChemicalPreparations.name",
+      "fkey": "chemicalPreparationId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Цена",
+      "prop": "price"
+    }
+  ]
+}

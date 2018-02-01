@@ -1,0 +1,11 @@
+{
+  "name": "ChemicalPreparationTypes",
+  "api": "ChemicalPreparationTypes",
+  "dependencies": [],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    }
+  ]
+}

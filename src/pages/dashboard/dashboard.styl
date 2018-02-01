@@ -1,0 +1,314 @@
+.dashboard-sidebar
+  position fixed
+  top 75px
+  left 15px
+  width 200px
+  height auto
+  border-radius 10px
+  border 1px solid #e4e8f1
+  overflow hidden
+  .ds-link
+    float left
+    width 100%
+    text-align center
+    height 60px
+    line-height 60px
+    font-size 15px
+    cursor pointer
+    transition .2s linear
+    color #000
+    background #d3dce6
+    &:hover
+      color #bfcbd9
+      background #324057
+
+.dashboard-page
+  overflow auto
+
+.dashboard-main
+  box-sizing border-box
+  display block
+  width calc(100% - 300px)
+  margin-left 300px
+  padding 0
+
+.dashboard-content
+  box-sizing border-box
+  display block
+  width calc(100% - 200px)
+  margin-left 200px
+  padding 0
+
+  $color-el = #1f2d3d
+
+  .vue-chartist-legends
+    float left
+    width calc(100% - 400px)
+    margin-top 35px
+  .vue-chartist-legend
+    float left
+    width 100%
+    margin-top 3px
+    margin-bottom 2px
+    p
+      float left
+      width auto
+      margin 0 0 0 15px
+      height 40px
+      line-height 40px
+      font-size 15px
+
+  .vue-chartist-legend-color
+    float left
+    width 40px
+    height 10px
+    margin 16px 0 14px
+
+  .dashboard-chart
+    float left
+    width 100%
+    margin 0 0 20px 0
+    .ct-label
+      color rgba(255,255,255,1)
+      font-size 11px
+    .v-chartist-container
+      float left
+      width auto
+
+    .blue
+      fill #3366CC
+    .blue-dark-dim
+      fill #316395
+    .blue-dark
+      fill #3B3EAC
+    .blue-light-dim
+      fill #5574A6
+    .blue-light
+      fill #0099C6
+    .aqua
+      fill #22AA99
+    .green
+      fill #109618
+    .green-light
+      fill #66AA00
+    .green-dark
+      fill #329262
+    .yellow
+      fill #AAAA11
+    .pur
+      fill #6633CC
+    .red
+      fill #8B0707
+
+  .dashboard-section
+    float left
+    width 100%
+    box-sizing border-box
+    padding 60px
+
+    .blue
+      background #3366CC
+    .blue-dark-dim
+      background #316395
+    .blue-dark
+      background #3B3EAC
+    .blue-light-dim
+      background #5574A6
+    .blue-light
+      background #0099C6
+    .aqua
+      background #22AA99
+    .green
+      background #109618
+    .green-light
+      background #66AA00
+    .green-dark
+      background #329262
+    .yellow
+      background #AAAA11
+    .pur
+      background #6633CC
+    .red
+      background #8B0707
+
+  .dashboard-part
+    float left
+    width 100%
+
+  .dashboard-title
+    float left
+    width 100%
+    h1
+      float left
+      width 100%
+      font-size 27px
+
+    h2
+      float left
+      width 100%
+      font-size 20px
+
+    h3
+      float left
+      width 100%
+      text-align center
+      font-size 17px
+      margin 0 0 25px 0
+
+
+  .dashboard-options
+    float left
+    width 100%
+    display flex
+    justify-content space-between
+
+  .dashboard-option
+    float left
+    width auto
+    p
+      float left
+      margin 0 5px 0 0
+    span
+      float left
+
+  .dashboard-container
+    float left
+    width 100%
+    margin-bottom 40px
+
+  .el-slider-first-col
+    float left
+    margin-top 28px
+    width 250px
+
+  .fc-row-others
+    float left
+    width 100%
+    height auto
+
+
+  .fc-row
+    float left
+    width 100%
+    height 60px
+    box-sizing border-box
+    padding 6px 10px
+    border 1px dotted rgba(0,0,0,0.7)
+
+
+    p
+      float left
+      width 100%
+      margin 0
+      line-height 23px
+      font-size 15px
+      white-space nowrap
+      overflow hidden
+    a
+      p
+        color #324057
+        text-decoration underline
+
+  .fc-row-show
+    cursor pointer
+    font-weight bold
+    position relative
+
+  .fc-row-others-icon
+    background url('~assets/fc-icon.png') center center no-repeat
+    background-size contain
+    position absolute
+    top 17px
+    right 20px
+
+    height 24px
+    width 24px
+    transition .3s
+    &.active
+      transform rotate(90deg)
+
+
+  .el-slider-container-comment-for-scroll
+    overflow-x scroll
+    overflow-y hidden
+  .el-slider-container
+    float left
+    width calc(100% - 250px)
+    height auto
+    overflow hidden
+
+    .el-slider
+      float left
+      width 100%
+    .el-slider-comment-for-scroll
+      width 900px
+
+    .el-tooltip__popper
+      background $color-el
+      &.is-dark
+        background $color-el
+    .el-slider__button-wrapper
+      top 0
+      height 16px
+      z-index 9
+    .el-slider__button
+      background $color-el
+      min-height 60px
+      width 5px
+      border-radius 0
+      &.dragging
+        background $color-el
+        transform scale(1)
+      &.hover
+        background $color-el
+        transform scale(1)
+      &:hover
+        background $color-el
+        transform scale(1)
+    .el-slider__runway
+      float left
+      height auto
+      margin 28px 0 0
+      background rgba(0,0,0,0)
+    .el-slider__bar
+      background rgba(0,0,0,0)
+
+    .vue-slider-wrap
+      float left
+      width 100%!important
+    .vue-slider
+      margin 28px 0 15px
+      background-color rgba(0,0,0,0)!important
+    .vue-slider-process
+      background-color rgba(0,0,0,0)!important
+    .vue-slider-dot
+      height 420px!important
+      border-radius 0!important
+
+  .el-slider-inner
+    float left
+    background rgba(55,55,55,0.1)
+    height auto
+    min-height 60px
+    width 100%
+  .el-slider-inner-comment-for-scroll
+    width 900px
+
+  .el-slider-row-others
+    float left
+    width 100%
+    height auto
+
+  .el-slider-row
+    float left
+    width 100%
+    height 8px
+    padding 25px 0px
+    background rgba(0,0,0,0)
+    border 1px dotted rgba(0,0,0,0.7)
+
+  .el-slider-part
+    float left
+    height 100%
+    box-sizing border-box
+    border 1px outset rgba(0,0,0,0.3)

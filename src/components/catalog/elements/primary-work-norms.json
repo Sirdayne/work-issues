@@ -1,0 +1,95 @@
+{
+  "name": "PrimaryWorkNorms",
+  "api": "FuelNorms",
+  "dependencies": [
+    "Works",
+    "CultureTypes",
+    "Cultures",
+    "CarModels",
+    "Instruments"
+  ],
+  "attributes": [
+    {
+      "label": "Работы",
+      "prop": "Works.name",
+      "fkey": "subOperationsIds",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Типы культуры",
+      "prop": "CultureTypes.name",
+      "fkey": "cultureTypesIds",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Культуры",
+      "prop": "Cultures.name",
+      "fkey": "culturesIds",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Модели машин",
+      "prop": "CarModels.name",
+      "fkey": "carModelsIds",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Орудия",
+      "prop": "Instruments.name",
+      "fkey": "instrumentsIds",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Норма выработки",
+      "prop": "rateOfOutput"
+    },
+    {
+      "label": "Расход, ГСМ",
+      "prop": "fuelConsumption"
+    },
+    {
+      "label": "Агроусловия от",
+      "prop": "conditionFrom",
+      "table": false
+    },
+    {
+      "label": "Агроусловия до",
+      "prop": "conditionTo",
+      "table": false
+    },
+    {
+      "label": "Тарифный коэффициент",
+      "prop": "tarifCoeficient",
+      "table": false
+    },
+    {
+      "label": "Минимальная скорость",
+      "prop": "minSpeed",
+      "table": false
+    },
+    {
+      "label": "Максимальная скорость",
+      "prop": "maxSpeed",
+      "table": false
+    },
+    {
+      "label": "isAdditional",
+      "prop": "isAdditional",
+      "table": false,
+      "filter": true,
+      "default": false,
+      "viewable": false,
+      "form": false
+    }
+  ]
+}

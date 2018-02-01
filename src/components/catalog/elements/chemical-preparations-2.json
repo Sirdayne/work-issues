@@ -1,0 +1,69 @@
+{
+  "name": "ChemicalPreparations2",
+  "api": "ChemicalPreparations",
+  "dependencies": [
+    "ChemicalPreparationTypes",
+    "UnitTypes"
+  ],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Тип хим. препарата",
+      "prop": "ChemicalPreparationTypes.id",
+      "fkey": "chemicalPreparationTypeId",
+      "table": false,
+      "filter": true,
+      "iterable": true,
+      "default": 3,
+      "viewable": true
+    },
+    {
+      "label": "Ед. измерения",
+      "prop": "UnitTypes.name",
+      "fkey": "unitsId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Нормы внесения от",
+      "prop": "minNorm"
+    },
+    {
+      "label": "Нормы внесения до",
+      "prop": "maxNorm"
+    },
+    {
+      "label": "Норма средняя",
+      "prop": "averageNorm",
+      "table": false
+    },
+    {
+      "label": "Краткая аннотация",
+      "prop": "annotation",
+      "table": false
+    },
+    {
+      "label": "Азот",
+      "prop": "nitrogen",
+      "table": false
+    },
+    {
+      "label": "Фосфор",
+      "prop": "phosphorus",
+      "table": false
+    },
+    {
+      "label": "Калий",
+      "prop": "potassium",
+      "table": false
+    },
+    {
+      "label": "Всего действующих веществ",
+      "prop": "activeSubstance",
+      "table": false
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "Employees",
+  "api": "Employees",
+  "organization": true,
+  "editable": false,
+  "changeable": false,
+  "dependencies": [
+    "Cars"
+  ],
+  "attributes": [
+    {
+      "label": "Полное имя",
+      "prop": "fullName"
+    },
+    {
+      "label": "ИИН",
+      "prop": "iin"
+    },
+    {
+      "label": "Машина",
+      "prop": "Cars.displayString",
+      "fkey": "carId",
+      "filter": true,
+      "iterable": true
+    }
+  ]
+}

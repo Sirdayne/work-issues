@@ -1,0 +1,11 @@
+{
+  "name": "CultureTypes",
+  "api": "CultureTypes",
+  "dependencies": [],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    }
+  ]
+}

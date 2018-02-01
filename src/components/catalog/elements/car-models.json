@@ -1,0 +1,53 @@
+{
+  "name": "CarModels",
+  "api": "CarModels",
+  "dependencies": [
+    "CarTypes",
+    "FuelTypes",
+    "CarMarks",
+    "CarModelGroups"
+  ],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Тип техники",
+      "prop": "CarTypes.name",
+      "fkey": "carTypeId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Тип топлива",
+      "prop": "FuelTypes.name",
+      "fkey": "fuelType",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Производитель",
+      "prop": "CarMarks.name",
+      "fkey": "carMarkId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Страна производства",
+      "prop": "CarModelGroups.name",
+      "fkey": "carModelGroupId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "isSecurityGuard",
+      "prop": "isSecurityGuard",
+      "table": false,
+      "filter": true,
+      "default": false,
+      "viewable": false,
+      "form": false
+    }
+  ]
+}

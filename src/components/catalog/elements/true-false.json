@@ -1,0 +1,10 @@
+{
+  "name": "TrueFalse",
+  "api": null,
+  "dependencies": [],
+  "attributes": [],
+  "response": [
+    {"id": 1, "name": "Да"},
+    {"id": 0, "name": "Нет"}
+  ]
+}

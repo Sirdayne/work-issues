@@ -1,0 +1,4 @@
+{
+  path: 'motd',
+  contexts: ['organization'],
+}

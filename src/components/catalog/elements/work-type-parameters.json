@@ -1,0 +1,11 @@
+{
+  "name": "WorkTypeParameters",
+  "api": "WorkTypeParameters",
+  "dependencies": [],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    }
+  ]
+}

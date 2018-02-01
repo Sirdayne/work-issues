@@ -1,0 +1,11 @@
+{
+  "name": "Diseases",
+  "api": "Diseases",
+  "dependencies": [],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    }
+  ]
+}

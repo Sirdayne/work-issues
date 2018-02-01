@@ -1,0 +1,21 @@
+{
+  "name": "Technologies",
+  "api": "Technologies",
+  "dependencies": [
+    "TrueFalse"
+  ],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Незавершенное",
+      "prop": "TrueFalse.name",
+      "fkey": "isUnfinished",
+      "table": true,
+      "filter": true,
+      "iterable": true
+    }
+  ]
+}

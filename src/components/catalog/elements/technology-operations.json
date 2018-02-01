@@ -1,0 +1,11 @@
+{
+  "name": "TechnologyOperations",
+  "api": "operations",
+  "dependencies": [],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    }
+  ]
+}

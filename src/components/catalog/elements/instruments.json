@@ -1,0 +1,24 @@
+{
+  "name": "Instruments",
+  "api": "Instruments",
+  "dependencies": [
+    "InstrumentTypes"
+  ],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Тип",
+      "prop": "InstrumentTypes.name",
+      "fkey": "instrumentTypeId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Ширина захвата",
+      "prop": "width"
+    }
+  ]
+}

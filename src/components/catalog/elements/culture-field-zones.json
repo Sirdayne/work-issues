@@ -1,0 +1,32 @@
+{
+  "name": "CultureFieldZones",
+  "api": "CultureFieldZones",
+  "dependencies": [
+    "Cultures",
+    "FieldZones"
+  ],
+  "attributes": [
+    {
+      "label": "Культура",
+      "prop": "Cultures.name",
+      "fkey": "cultureId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Зона",
+      "prop": "FieldZones.name",
+      "fkey": "fieldZoneId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Минимальное число миллионов",
+      "prop": "minNumber"
+    },
+    {
+      "label": "Максимальное число миллионов",
+      "prop": "maxNumber"
+    }
+  ]
+}

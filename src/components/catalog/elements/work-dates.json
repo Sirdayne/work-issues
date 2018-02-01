@@ -1,0 +1,54 @@
+{
+  "name": "WorkDates",
+  "api": "WorkDates",
+  "dependencies": [
+    "Cultures",
+    "WorkTypeParameterPlanWorkTypes",
+    "CultureParameters",
+    "FieldZones"
+  ],
+  "attributes": [
+    {
+      "label": "Культуры",
+      "prop": "Cultures.name",
+      "fkey": "culturesIds",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Работы",
+      "prop": "WorkTypeParameterPlanWorkTypes.name",
+      "fkey": "workTypeParameterPlanWorkTypesIds",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Конечный продукт",
+      "prop": "CultureParameters.name",
+      "fkey": "cultureParametersIds",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Зоны",
+      "prop": "FieldZones.name",
+      "fkey": "fieldZonesIds",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Начало",
+      "prop": "startDate",
+      "type": "date"
+    },
+    {
+      "label": "Конец",
+      "prop": "endDate",
+      "type": "date"
+    }
+  ]
+}
