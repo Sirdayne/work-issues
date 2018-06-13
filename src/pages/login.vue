@@ -11,6 +11,7 @@
 </template>
 
 <script>
+import Auth from 'services/Auth'
 
 export default {
   data() {
@@ -23,21 +24,21 @@ export default {
   methods: {
     login() {
       this.isWaiting = true
-      this.$auth.login(this.username, this.pass)
-      .then(() => {
-        this.isWaiting = false
-        this.$root.context.year = null
-        this.$root.onAuth()
-        this.$router.push('/')
-      })
-      .catch(err => {
-        this.isWaiting = false
-        this.$message({
-          showClose: true,
-          message: err === 'INVALID'? 'Неверный E-mail или пароль' : 'Ошибка соединения с интернетом',
-          type: 'error'
+      Auth.login(this.username, this.pass)
+        .then(() => {
+          this.isWaiting = false
+          this.$root.context.year = null
+          this.$root.onAuth()
+          this.$router.push('/')
         })
-      })
+        .catch(err => {
+          this.isWaiting = false
+          this.$message({
+            showClose: true,
+            message: err === 'INVALID'? 'Неверный E-mail или пароль' : 'Ошибка соединения с интернетом',
+            type: 'error'
+          })
+        })
     }
   }
 }

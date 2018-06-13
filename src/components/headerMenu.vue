@@ -1,7 +1,7 @@
 <template lang="pug">
   el-menu(theme="dark", mode="horizontal", :router="true")
     template(v-for="item in items")
-      el-menu-item(:index="item.index", :id="item.id") {{item.label}}
+      el-menu-item(:index="`/${$root.module}/${item.index}`", :id="item.id") {{item.label}}
 
     el-menu-item(index="", v-if="$root.module === 'agroplan'", @click="startHelp") ?
 
@@ -18,23 +18,24 @@ import Steps from 'components/help/steps';
     data() {
       return {
         list: {
-          "assignments": {index: "/assignments", label: "Задания"},
-          "catalog": {index: "/catalog", label: "Справочники"},
-          "map": {index: "/map", label: "Карта"},
-          "monitoring": {index: "/monitoring", label: "Мониторинг"},
-          "news": {index: "/news", label: "Новости"},
-          "parttime": {index: "/parttime", label: "Подработка"},
-          "recipes": {index: "/recipes", label: "Работы"},
-          "reports": {index: "/reports", label: "Отчеты"},
-          "reportsplan": {index: "/reportsplan", label: "Отчеты"},
-          "reportsbz": {index: "/reportsbz", label: "Отчеты"},
-          "silageboard": {index: "/silageboard", label: "Силосная доска"},
-          "sowings": {index: "/sowings/new", label: "Посев"},
-          "field": {index: "/field", label: "Поле"},
-          "notepad": {index: "/notepad", label: "Агроблокнот"},
-          "agromap": {index: "/notepad", label: "Карта"},
-          "monitoringmap": {index: "/notepad", label: "Мониторинг"},
-          "mapsowing": {index: "/mapsowing", label: "Карта посева"},
+          "assignments": {index: "assignments", label: "Задания"},
+          "catalog": {index: "catalog", label: "Справочники"},
+          "map": {index: "map", label: "Карта"},
+          "monitoring": {index: "monitoring", label: "Мониторинг"},
+          "news": {index: "news", label: "Новости"},
+          "parttime": {index: "parttime", label: "Подработка"},
+          "recipes": {index: "recipes", label: "Работы"},
+          "reports": {index: "reports", label: "Отчеты"},
+          "silageboard": {index: "silageboard", label: "Силосная доска"},
+          "sowings": {index: "sowings/new", label: "Посев"},
+          "field": {index: "field", label: "Поле"},
+          "notepad": {index: "notepad", label: "Агроблокнот"},
+          "agromap": {index: "map", label: "Карта"},
+          "monitoringmap": {index: "monitoring", label: "Мониторинг"},
+          "mapsowing": {index: "mapsowing", label: "Карта посева"},
+          "organization": {index: "organization", label: "Группа Компаний"},
+          "user": {index: "user", label: "Пользователь"},
+          "jobs": {index: "jobs", label: "Работа GPS"},
         }
       }
     },
@@ -59,14 +60,14 @@ import Steps from 'components/help/steps';
             list.sowings,
             list.recipes,
             list.mapsowing,
-            list.reportsplan,
+            list.reports,
             list.news,
           ],
           "balanszerna": [
             list.catalog,
             list.parttime,
             list.silageboard,
-            list.reportsbz,
+            list.reports,
           ],
           "agromap": [
             list.agromap,
@@ -74,6 +75,13 @@ import Steps from 'components/help/steps';
             list.field,
             list.monitoringmap,
           ],
+          "admin": [
+            list.organization,
+            // list.user,
+            list.jobs,
+            list.map,
+          ],
+          "agrostream": [],
         }
         let i = 1
         menu.agroplan.forEach(m => {m.id = 'step-menu-' + i; i++})

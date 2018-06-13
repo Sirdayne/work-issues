@@ -16,7 +16,7 @@
       el-form-item(label="Бюджет:   ")
         .radio-control(v-for="b in budgets"): el-radio(v-model="$root.context.budget", :label="b.id") {{b.name}}
 
-    router-link.link(to="/sowings"): el-button(id="step13") Список посевов
+    router-link.link(to="/agroplan/sowings"): el-button(id="step13") Список посевов
     el-form(label-position="top")
       el-tabs.tabs(active-name="first", type="border-card", id="step8")
         el-tab-pane(label="Культура", name="first")
@@ -182,14 +182,14 @@
               )
           el-form-item
             el-button(@click="startHelpSowings", class="btn-help") ?
-            
-        fields-controller(id="step9", v-model="checkedFields", :fields="filteredFields", :culture="firstCultureId", @fieldClick="showFieldParams")
+
+        fields-controller(id="step9", v-model="checkedFields", :quickFilter="quickFilter", :brigadeId="brigadeId", @fieldClick="showFieldParams")
       .notify(v-else) Загрузка
 
     .panel-bottom(v-if="ready && showPanelBottom")
       el-button(@click="startHelpSowingsBottom", class="button-help") ?
-      sevoborot(:fieldClickedId="fieldClickedId", :fieldClickedName="fieldClickedName", :croprotations="croprotations", id="bot1")
-      lastassignments(:fieldClickedId="fieldClickedId", :fieldlastassignments="fieldlastassignments", :fields="fields", id="bot2")
+      sevoborot(:fieldClickedId="fieldClickedId", :fieldClickedName="fieldClickedName", id="bot1")
+      lastassignments(:fieldClickedId="fieldClickedId", id="bot2")
 
 </template>
 
@@ -235,7 +235,7 @@ export default {
         id: 0
       }],
       query: null,
-      isProcessing: false,
+      isProcessing: true,
       showStructure: false,
       showPanelBottom: false,
 
@@ -251,7 +251,9 @@ export default {
       fieldsAreaInitial: {},
       fieldsArea: {},
       activeFieldId: null,
-      croprotations: [],
+      culturerotation: [],
+      checkedCulture: null,
+      seedlimits: [],
 
       quickFilter: '',
       brigadeId: null,
@@ -272,7 +274,6 @@ export default {
 
       totalArea: 0,
       budgets: null,
-      fieldlastassignments: [],
       fieldClickedId: null,
       fieldClickedName: null,
       perPage: 5,
@@ -281,28 +282,30 @@ export default {
     }
   },
   watch: {
+    firstCultureId(val) {
+      this.checkedCulture = val
+      this.checkCultureRotation(val)
+    },
     secondCultureId(val) {
+      this.checkedCulture = val
+      this.checkCultureRotation(val)
       this.secondSortId = null
       if (val) {
         this.secondNormative = this.cultures[val].sowingNormative
       } else {
         this.setSecondtoDefault()
       }
-    }
+    },
+    fieldClickedId(val) {
+      this.checkCultureRotation(this.checkedCulture)
+    },
   },
   created() {
     EventBus.$on('fieldClicked', (field) => {
       this.fieldClickedId = field;
       this.showPanelBottom = true;
     });
-    this.fetchEntities([
-      'budgets',
-      'fieldlastassignments',
-      'cultureparameters',
-      'reproductions',
-      'brigades',
-      'croprotations'
-    ], this.afterFetch );
+    this.loadData()
 
     if (!/token=/.test(document.cookie) || /token=;/.test(document.cookie) || /token=$/.test(document.cookie)) {
       this.$router.replace('/login')
@@ -318,19 +321,19 @@ export default {
       this.fieldsIndexed = createIndexes(records, 'id')
       this.fields = records
     }, true)
-    this.getSowings()
-  },
-  mounted() {
-
   },
   computed: {
-    tableData: function() {
-      return this.fieldlastassignments.find(x => x.fieldId === this.fieldClickedId)
-    },
-    filteredFields() {
-      return this.fields.filter(field => {
-        return (!this.quickFilter || field.name.toLowerCase().includes(this.quickFilter.toLowerCase())) && (!this.brigadeId || field.brigadeId === this.brigadeId)
-      })
+    previousYearCultures() {
+      let array = []
+      let previousYear = this.$root.context.year-1
+      if (this.fieldClickedId){
+        this.seedlimits.forEach(s => {
+          if (s.year == previousYear && s.fieldId == this.fieldClickedId){
+            array.push(s.cultureId)
+          }
+        })
+      }
+      return array
     },
     info() {
       let cultures = this.cultures
@@ -343,7 +346,7 @@ export default {
         return [
         cultures[group[0].cultureId].name +
         ` (${groupTotal} га.)`,
-        group.map(s => {return `${s.fieldShortName ? s.fieldShortName : s.fieldNewName ? s.fieldNewName : s.field.name ? s.field.name : null} (${s.area})`}),
+        group.map(s => {return `${s.fieldShortName ? s.fieldShortName : s.fieldNewName ? s.fieldNewName : null} (${s.area})`}),
         group.reduce((a, b) => a + b.area, 0)
       ]}) : []
       this.totalArea = total.reduce((a, b) => a + b, 0)
@@ -354,37 +357,58 @@ export default {
     }
   },
   methods: {
+    loadData(){
+      this.fetchEntities([
+        'budgets',
+        'cultureparameters',
+        'reproductions',
+        'brigades',
+        'culturerotation',
+        'seedlimits',
+        'sowings',
+      ], this.afterFetch );
+    },
+    checkCultureRotation(cultureId){
+      let cultureRotation = null
+      cultureRotation = this.culturerotation.find(c => c.cultureId == cultureId)
+      let error = false
+      if (cultureRotation) {
+        this.previousYearCultures.forEach(lyc => {
+          cultureRotation.notRecommendedList.forEach(crn => {
+            if (lyc == crn){
+              error = 'Предупреждение: нарушение ротации'
+            }
+          })
+          cultureRotation.forbiddenList.forEach(crn => {
+            if (lyc == crn){
+              error = 'Предупреждение: нарушение ротации'
+            }
+          })
+        })
+      }
+      if (error) {
+        this.$message({message: `${error}`, type: "error", duration: 5000, showClose: false});
+      }
+    },
     afterFetch(){
       this.budgets = this.fromVuex('budgets');
       this.cultureparameters = this.fromVuex('cultureparameters');
       this.reproductions = this.fromVuex('reproductions');
       this.brigades = this.fromVuex('brigades');
-      this.fieldlastassignments = this.fromVuex('fieldlastassignments')
-      this.croprotations = this.fromVuex('croprotations')
-    },
-    onContextChange(ctx) {
-      if (ctx==='organization') {
-        this.getEntity(fieldsModel, (isFinished, records) => {
-          this.fields = records
-        }, true)
-        this.getSowings()
-      }
-    },
-    getSowings(){
-      this.getEntity(sowingsModel, (isFinished, records) => {
-        this.sowings = records
-        let cultures = this.cultures
-        this.fields.forEach(field => {
-          let sowingsSet = createIndexes(this.sowings.filter(sowing => sowing.year === this.context.year), 'fieldId', true)
-          let area = field.area - (sowingsSet[field.id]? sowingsSet[field.id].reduce((a,b)=>a + b.area,0) : 0)
-          this.fieldsAreaInitial[field.id] = area
-          this.$set(this.fieldsArea, field.id, area)
-        })
-      }, true)
+      this.culturerotation = this.fromVuex('culturerotation')
+      this.seedlimits = this.fromVuex('seedlimits')
+      this.sowings = this.fromVuex('sowings')
+      this.fields.forEach(field => {
+        let sowingsSet = createIndexes(this.sowings.filter(sowing => sowing.year === this.context.year), 'fieldId', true)
+        let area = field.area - (sowingsSet[field.id]? sowingsSet[field.id].reduce((a,b)=>a + b.area,0) : 0)
+        this.fieldsAreaInitial[field.id] = area
+        this.$set(this.fieldsArea, field.id, area)
+      })
+      this.isProcessing = false
     },
     save() {
       this.isProcessing = true
-      const query = this.checkedFields.map(fieldId => {
+      let query = this.checkedFields.map(fieldId => {
         return {
           fieldId:                      fieldId,
           year:                         this.context.year,
@@ -406,7 +430,8 @@ export default {
       http.post('sowings/many/'+this.context.organization+'/'+this.context.budget, query).then(() => {
         this.setSecondtoDefault()
         this.setFirsttoDefault()
-        this.isProcessing = false
+        EventBus.$emit('SowingAdded');
+        this.loadData();
         //location.reload()
       })
     },

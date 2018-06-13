@@ -1,5 +1,5 @@
 <template lang="pug">
-#app(v-loading.fullscreen.lock="isWaiting")
+#app-container(v-loading.fullscreen.lock="isWaiting")
   sidebar-toggle
   el-dialog(
   title="Настройки",
@@ -26,16 +26,20 @@
   v-model="profileDialogVisible",
   size="tiny",
   :close-on-click-modal="true",
-  v-if="!isWaiting && $auth.authenticated"
+  v-if="!isWaiting && isAuthenticated()"
   )
     el-form(label-position="top")
+      el-form-item(label="Аватар")
+        avatar(:user="user")
+
       el-form-item(label="Логин"): b {{user.userName}}
       el-form-item(label="ФИО")
         el-input(type="text", v-model="user.fullName")
       el-form-item(label="Организация")
         el-select(
         v-model="user.organizationId",
-        placeholder="Организация"
+        placeholder="Организация",
+        filterable,
         )
           el-option(
           v-for="organization in organizations",
@@ -65,13 +69,13 @@
       el-button(type="primary", @click="saveProfile(user, context.organization)", :loading="saveProfileLoading") Сохранить
 
 
-  header.top-panel(v-if="!isWaiting && $auth.authenticated && this.$route.path != '/modules-tree'")
+  header.top-panel(v-if="!isWaiting && isAuthenticated() && this.$route.path != '/modules-tree'")
     a.logoLink(@click="navigateToHome()")
       h2.logo(v-html="logo")
-    template(v-if="nodeEnv.prod")
+    template(v-if="ENV.IS_PROD")
       span#logoTag v{{version}}
-    template(v-if="!nodeEnv.prod")
-      el-tooltip(class="item", effect="dark", :content="nodeEnv.apiUrl", placement="bottom-end")
+    template(v-if="!ENV.IS_PROD")
+      el-tooltip(class="item", effect="dark", :content="ENV.SERVER_URL", placement="bottom-end")
         span#logoTag v{{version}}
     header-menu
 
@@ -93,6 +97,7 @@
         v-model="context.organization",
         placeholder="Организация",
         size="small",
+        filterable,
         :style="{width: '220px', marginRight: '10px'}"
       )
         el-option(
@@ -113,15 +118,16 @@
           :value="year",
           :key="year",
         )
+      .avatar-container(v-if="user.imageByte")
+        img(:src="user.imageByte")
       el-button-group
         el-button(@click="settingsDialogVisible = true", size="small", icon="setting") Настройки
-
-        el-button.exit(@click="this.$auth.logout", size="small") .
+        el-button.exit(@click="$router.push('/logout')", size="small") .
   router-view(v-if="!isWaiting")
 </template>
 
 <script>
-import userProfileChecker from 'mixins/userProfileChecker'
+import Auth from 'services/Auth'
 import http from 'lib/httpQueryV2'
 import localforage from 'localforage';
 import {
@@ -130,10 +136,12 @@ import {
 import RecordsLoaderV2 from 'mixins/RecordsLoaderV2';
 import sidebarToggle from 'components/sidebarToggle'
 import headerMenu from 'components/headerMenu'
+import avatar from 'components/avatar'
+import moment from 'moment';
+
+import {modules} from "modules.js"
 
 const CURRENT_YEAR = (new Date).getFullYear();
-const PROD = process.env.PROD;
-const API_URL = process.env.API_URL;
 const NODE_ENV = process.env.NODE_ENV;
 const VERSION = '[AIV]{version}[/AIV]';
 
@@ -141,9 +149,9 @@ export default {
   components: {
     sidebarToggle,
     headerMenu,
+    avatar,
   },
   mixins: [
-    userProfileChecker,
     RecordsLoaderV2
   ],
   data() {
@@ -160,6 +168,7 @@ export default {
       contextNotNull: false,
       context: {
         organization: null,
+        organizationsGroupId: null,
         budget: null,
         year: null,
         culture: null,
@@ -173,7 +182,8 @@ export default {
         agroinfo: '<b>Agro</b>info',
         balanszerna: '<b>Баланс</b> зерна',
         agrostock: '<b>Agro</b>stock',
-        admin: '<b>Ad</b>min'
+        admin: '<b>Ad</b>min',
+        agrostream: '<b>Agro</b>stream',
       },
       state: {},
       passwords: {},
@@ -181,49 +191,47 @@ export default {
       fields: null,
       budgets: [],
       isWaiting: false,
-      nodeEnv: {
-        apiUrl: API_URL,
-        env: NODE_ENV,
-        prod: PROD
+      ENV: {
+        SERVER_URL: SERVER_URL,
+        IS_PROD: IS_PROD
       },
       version: VERSION,
+      module: "agrostream",
+      logo: "",
     }
   },
   computed: {
     user() {
       return this.profile
     },
-    logo() {
-      return this.logos[this.module]
-    },
     sidebarToggleState() {
       return this.$store.getters.getSidebarToggleState;
     },
-    module() {
-      return this.$store.getters.getModule;
-    }
   },
   watch: {
     ['context.budget'](val, oldVal) {
       this.contextNotNull |= oldVal
-      localStorage.setItem('budget/' + this.$crypt.md5(this.profile.username), val)
+      localStorage.setItem('budget', val)
     },
     ['context.culture'](val, oldVal) {
       this.contextNotNull |= oldVal
     },
     ['context.organization'](val, oldVal) {
       this.contextNotNull |= oldVal
-      localStorage.setItem('organization/' + this.$crypt.md5(this.profile.username), val)
+      localStorage.setItem('organization', val)
       this.$store.dispatch('actionSetOrganizationId', val);
       EventBus.$emit('App.Context.OrganizationChanged', val);
     },
+    ['context.organizationsGroupId'](val, oldVal) {
+      localStorage.setItem('organizationsGroupId', val)
+      this.$store.dispatch('actionSetOrganizationsGroupId', val);
+    },
     ['context.field'](val, oldVal) {
-      //this.contextNotNull |= oldVal
-      localStorage.setItem('field/' + this.$crypt.md5(this.profile.username), val)
+      localStorage.setItem('field', val)
     },
     ['context.year'](val, oldVal) {
       this.contextNotNull |= oldVal
-      localStorage.setItem('year/' + this.$crypt.md5(this.profile.username), val)
+      localStorage.setItem('year', val)
       EventBus.$emit('AppYearChanged', this.context.year );
     },
     context: {
@@ -234,10 +242,16 @@ export default {
       deep: true
     },
     ['$route.path'](val) {
+      let module = val.split("/")[1]
+      this.module = Object.keys(modules).find(key => key === module) || "agrostream"
+      this.setLogo()
       if (!this.isWaiting && !this.module) this.$router.push("/")
     },
   },
   created() {
+    this.onAuth()
+    this.setLogo()
+    this.checkAppVersion()
     this.years = [
       CURRENT_YEAR - 4,
       CURRENT_YEAR - 3,
@@ -247,13 +261,24 @@ export default {
       CURRENT_YEAR + 1,
       CURRENT_YEAR + 2
     ]
-    this.onAuth()
   },
   methods: {
-    setModule(val) {
-      this.$store.dispatch('actionSetModule', val);
+    isAuthenticated() {
+      return Auth.isAuthenticated()
+    },
+    setLogo() {
+     this.logo = this.logos[this.module]
+    },
+    checkAppVersion() {
+      localforage.getItem("AppVersion")
+        .then(res => {
+          if (res != this.version) {
+            localforage.setItem("AppVersion", this.version)
+          }
+        })
     },
     clearCacheTotally() {
+      //localStorage.clear()
       localforage.clear().then(() => {
         window.location.reload();
       })
@@ -263,12 +288,12 @@ export default {
     },
     saveProfile(userinfo) {
       this.saveProfileLoading = true
-      this.$auth.saveProfile(userinfo).then(() => {
-        this.$auth.loadProfile().then(profile => {
+      Auth.saveProfile(userinfo).then(() => {
+        Auth.loadProfile().then(profile => {
           this.profile = profile
 
           if (this.changePasswordVisible) {
-            this.$auth.changePassword(userinfo.username, this.passwords).then(() => {
+            Auth.changePassword(userinfo.username, this.passwords).then(() => {
               this.profileDialogVisible = false
               this.changePasswordVisible = false
               this.saveProfileLoading = false
@@ -302,26 +327,28 @@ export default {
       })
     },
     onAuth() {
-      if (this.$auth.authenticated) {
-        const profile = this.$auth.getProfile()
+      if (this.isAuthenticated()) {
+        const profile = Auth.getProfile()
         this.isWaiting = true
         if (profile) {
           this.profile = profile
           this.init()
-        } else this.$auth.loadProfile().then(profile => {
-          this.profile = profile
-          this.init()
-        }).catch(() => {
-          this.$auth.forgetUser()
-          alert('NO_RESPONSE_ON_AUTH')
-          // TODO !!
-        })
+        } else {
+          Auth.loadProfile().then(profile => {
+            this.profile = profile
+            this.init()
+          }).catch(() => {
+            Auth.logout()
+          })
+        }
       }
     },
     loadUserProfile() {
-      this.$auth.loadProfile().then(profile => {
+      Auth.loadProfile().then(profile => {
         if (!this.profileDialogVisible) {
           this.profile = profile
+        } else {
+          this.profile.imageByte = profile.imageByte
         }
         if (!profile.hasRegistered) {
           alert('USER_NOT_REGISTERED')
@@ -345,9 +372,6 @@ export default {
     },
     init() {
       if (this.profile.hasRegistered) {
-        const date = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 7).toUTCString()
-        document.cookie = `authToken=${this.$auth.getToken()}; path=/; expires=${date};` // чтобы не редактировать 54 файла справочников
-        this.$crypt.updateKey(this.profile.username)
         this.loadRecords();
       } else {
         this.$message({
@@ -358,15 +382,17 @@ export default {
       }
     },
     onLoadContexts() {
-      let currentOrganization = parseInt(localStorage.getItem('organization/' + this.$crypt.md5(this.profile.username)))
-      let currentBudget = parseInt(localStorage.getItem('budget/' + this.$crypt.md5(this.profile.username)))
-      let currentYear = parseInt(localStorage.getItem('year/' + this.$crypt.md5(this.profile.username)))
+      let currentOrganization = +localStorage.getItem('organization')
+      let currentOrganizationsGroupId = +localStorage.getItem('organizationsGroupId')
+      let currentBudget = +localStorage.getItem('budget')
+      let currentYear = +localStorage.getItem('year')
 
       this.organizations = this.fromVuex('userorganizations');
       this.budgets = this.fromVuex('budgets');
 
       if (isNaN(currentOrganization) || !this.organizations.find(organization => organization.id === currentOrganization)) {
         currentOrganization = this.organizations[0].id
+        currentOrganizationsGroupId = this.organizations[0].organizationsGroupId
       }
       if (isNaN(currentBudget) || !this.budgets.find(budget => budget.id === currentBudget)) {
         currentBudget = this.budgets[0].id
@@ -375,26 +401,27 @@ export default {
         currentYear = CURRENT_YEAR
       }
       this.context.organization = currentOrganization
+      this.context.organizationsGroupId = currentOrganizationsGroupId
+      this.$store.dispatch('actionSetOrganizationId', this.context.organization);
+      this.$store.dispatch('actionSetOrganizationsGroupId', this.context.organizationsGroupId);
       this.context.budget = currentBudget
       this.context.year = currentYear
 
-//      if(this.module === 'agromap'){
-        this.loadFields()
-//      } else {
-//        this.isWaiting = false
-//      }
+      this.loadFields()
     },
     onLoadFields(){
-      let fieldId = parseInt(localStorage.getItem('field/' + this.$crypt.md5(this.profile.username)))
+      let fieldId = +localStorage.getItem('field')
 
       this.fields = this.fromVuex('fields')
 
       if (isNaN(fieldId) || !this.fields.find(f => f.id === fieldId)) {
         fieldId = (this.fields[0]) ? this.fields[0].id : 0
-        localStorage.setItem('field/' + this.$crypt.md5(this.profile.username), fieldId)
+        localStorage.setItem('field', fieldId)
       }
 
       this.context.field = fieldId
+      // change Map SelectedDate to context.year
+      this.$store.dispatch('actionSetSelectedDate', moment().year(this.context.year).hour(8).minute(0).second(0).subtract(1, 'days').format());
 
       this.isWaiting = false
     },
@@ -421,7 +448,7 @@ body
   -moz-osx-font-smoothing grayscale
   position relative !important
   overflow auto !important
-#app
+#app-container
   display flex
   flex-flow column nowrap
   width inherit
@@ -456,7 +483,7 @@ body
   flex 0 0 auto
   width 330px
   height calc(100vh - 60px)
-  overflow auto
+  overflow-x hidden
   a
     text-decoration none
 .workspace
@@ -575,4 +602,12 @@ body
 .el-table-filter__checkbox-group
   overflow-y auto
   max-height 300px
+.avatar-container
+  display inline-block
+  margin-right 10px
+  img
+    max-width 32px
+    height 29px
+    vertical-align middle
+    border-radius 4px
 </style>

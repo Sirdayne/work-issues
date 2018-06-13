@@ -4,7 +4,7 @@
     .dashboard-sidebar
       .ds-link(  v-scroll-to="'#scroll-structures'" ) Структуры
       .ds-link(  v-scroll-to="'#scroll-works'" ) Работы
-      router-link(:to="`/dashboard/`")
+      router-link(:to="`/agrostream/dashboard/`")
         .ds-link На главную
 
     .dashboard-content
@@ -111,13 +111,11 @@
 <script>
 import httpQueryV2 from 'lib/httpQueryV2'
 import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
-import GlobalMethods from 'components/FormFieldsLibrary/GlobalMethods'
 import VueChartist from 'v-chartist'
 import $ from 'jquery'
 import moment from 'moment'
 import './dashboard.styl'
 
-import localForageLib from 'lib/localForageLib'
 import {EventBus} from 'services/EventBus';
 
 export default {
@@ -139,11 +137,6 @@ export default {
       'operations',
       'workDates'
     ], this.afterFetch );
-
-    EventBus.$on('gotFromLocalForage', (model) => {
-      this.localForageArrays[model.db] = model.value;
-      console.log(model.db, model.value);
-    });
   },
   updated() {
     let elSlider1 = document.querySelector('#el-slider-1 .el-slider__button')
@@ -156,7 +149,7 @@ export default {
   },
   mounted() {
     // для vue-scroll, scrolling - надо поменять высоту на %
-    var elApp = document.querySelector('#app');
+    var elApp = document.querySelector('#app-container');
     elApp.style.height = "100%";
     //scroll в начале
     this.$scrollTo('#dashboard-container');
@@ -194,9 +187,6 @@ export default {
       vuexRecipes: null,
       vuexFields: null,
       vuexAreaAssignments: null,
-      localForageArrays: {
-        worksDatesDBwork: []
-      },
       routeId: this.$route.params.id
     }
   },
@@ -211,8 +201,6 @@ export default {
       this.vuexRecipes = this.fromVuex('technologyRecipe');
       this.vuexFields = this.fromVuex('fields');
       this.vuexAreaAssignments = this.fromVuex('AreaAssignments');
-      //fromIndexedDB
-      localForageLib.getLocalForage('worksDatesDBwork', this.computedWorksDates, this.routeId);
     },
     otherCulturesShow(){
       this.otherCulturesDisplay = !this.otherCulturesDisplay;
@@ -438,10 +426,6 @@ export default {
       return worksPercentagePlan.toFixed(2);
     },
     worksDates() {
-      let worksDates = this.localForageArrays.worksDatesDBwork || [];
-      return worksDates;
-    },
-    computedWorksDates() {
 
       let worksId = this.worksFiltered.map(w => w.id);
 

@@ -125,8 +125,8 @@ L.Marker.MovingMarker = L.Marker.extend({
         this._latlngs = [this.getLatLng(), L.latLng(latlng)];
         this._durations = [duration];
         this._state = L.Marker.MovingMarker.notStartedState;
-        this.start();
         this.options.loop = false;
+        this.start();
     },
 
     addStation: function(pointIndex, duration) {

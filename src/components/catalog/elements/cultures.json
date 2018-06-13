@@ -23,6 +23,10 @@
     {
       "label": "Нормы высева",
       "prop": "sowingNormative"
+    },
+    {
+      "label": "Сезон",
+      "prop": "seasonsCount"
     }
   ]
 }

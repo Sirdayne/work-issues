@@ -31,6 +31,7 @@ export default {
     return {
       api: null,
       organization: null,
+      organizationsGroupId: null,
       form: {},
       formItems: {
         dates: [],
@@ -80,6 +81,7 @@ export default {
       let name = data.elementData.name;
       this.api = data.elementData.api;
       this.organization = data.elementData.organization;
+      this.organizationsGroupId = data.elementData.organizationsGroupId || false;
       if (this.mode == "edit") {
         this.form = store[name].find(s => s.id == this.id);
       }
@@ -165,16 +167,18 @@ export default {
       if (!this.processing) {
         this.processing = true;
         this.loading = true;
-        let path = this.organization
-          ? this.api + "/" + this.$root.context.organization
-          : this.api;
+        let path = this.organization ? this.api + "/" + this.$root.context.organization : this.api;
+          //: this.organizationsGroupId ? this.api + "/" + this.$root.context.organizationsGroupId
+        if (this.organizationsGroupId){
+          this.form.organizationsGroupId = this.$root.context.organizationsGroupId
+        }
         this.convertDates();
         http
           .post(path, this.form)
-          .then(() => {
+          .then((data) => {
             this.processing = false;
             this.loading = false;
-            this.$router.push(this.back);
+            this.$router.push({path: this.back, query: {itemId: data.id}});
           })
           .catch(e => {
             this.processing = false;
@@ -189,6 +193,7 @@ export default {
         this.loading = true;
         let path = this.organization
           ? this.api + "/" + this.$root.context.organization
+          : this.organizationsGroupId ? this.api + "/" + this.$root.context.organizationsGroupId
           : this.api;
         this.convertDates();
         http
@@ -196,7 +201,7 @@ export default {
           .then(() => {
             this.processing = false;
             this.loading = false;
-            this.$router.push(this.back);
+            this.$router.push({path: this.back, query: {itemId: this.id}});
           })
           .catch(e => {
             this.processing = false;

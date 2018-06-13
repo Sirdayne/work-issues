@@ -197,19 +197,18 @@ div
       grainregistry() {
         return this.fromVuex('grainregistry')
       },
-      totalItems: function() {
+      totalItems() {
         return this.tableData.length;
       },
-      tableData: function() {
+      tableData() {
         let isDate = moment(this.item.selectedDate || new Date().getFullYear()).format('L')
         let fieldId = this.item.fieldId
         let cultureId = this.item.cultureId
         let warehouseId = this.item.warehouseId
         if (this.grainregistry.length) this.loading = true
-        let tableData = this.grainregistry.filter(function(record) {
+        let tableData = this.grainregistry.filter((record) => {
           let inDate = moment(record.inDateTime).format('L')
           let dateEqual = (inDate == isDate)
-          //dateEqual = true
           let field = record.sourceFieldId === fieldId || !fieldId
           let culture = record.cultureId === cultureId || !cultureId
           let warehouse = record.warehouseId === warehouseId || !warehouseId

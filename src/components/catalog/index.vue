@@ -1,7 +1,15 @@
 <template lang="pug">
 div
-  div(v-if="catalogStaticShow")
+  div(v-if="FieldDistancesShow")
     field-distances
+  div(v-else-if="CarInformationShow")
+    car-information
+  div(v-else-if="DoplatyShow")
+    doplaty
+  div(v-else-if="GrowthPhasesShow")
+    growth-phases
+  div(v-else-if="SornyakiShow")
+    sornyaki
   div(v-else, v-loading="!data")
     el-dialog(v-if="viewable", :visible.sync="viewVisible", title="Информация", size="tiny")
       template(v-for="th in viewHeaders")
@@ -12,7 +20,7 @@ div
       router-link(tag="el-button", :to="toForm" v-if="changeable") Новая запись
       el-card
         el-input(
-          placeholder="Поиск...",
+          placeholder="С помощью поиска можно фильтровать данные.",
           icon="search",
           v-model="search",
           :minlength="searchMin",
@@ -20,11 +28,12 @@ div
         )
       el-button.filter(
         @click="filterVisible = true",
-        type="default"
+        type="default",
+        v-if="hasFilter"
       ) .
       json2xls(v-if="xls", :model="xls", :props="xlsProps", :name="xlsName")
     template(v-if="data")
-      table-builder(:data="data", :filter="filter", :search="search", @edit="edit", @remove="remove", @view="view", @prepareXls="prepareXls")
+      table-builder(:data="data", :filter="filter", :search="search.trim()", @edit="edit", @remove="remove", @view="view", @prepareXls="prepareXls")
 </template>
 
 <script>
@@ -34,6 +43,10 @@ import FilterBuilder from './builders/filter-builder'
 import json2xls from 'components/json2xls'
 import http from 'lib/httpQueryV2'
 import FieldDistances from 'components/catalog-static/field-distances'
+import CarInformation from 'components/catalog-static/car-information'
+import Doplaty from 'components/catalog-static/doplaty'
+import GrowthPhases from 'components/catalog-static/growth-phases'
+import Sornyaki from 'components/catalog-static/sornyaki'
 
 export default {
   components: {
@@ -41,6 +54,10 @@ export default {
     FilterBuilder,
     json2xls,
     FieldDistances,
+    CarInformation,
+    Doplaty,
+    GrowthPhases,
+    Sornyaki,
   },
   mixins: [
     ElementBuilder
@@ -51,27 +68,27 @@ export default {
       filter: null,
       filterVisible: null,
       processing: false,
-      search: null,
+      search: "",
       searchMin: 1,
-      searchMax: 20,
+      searchMax: 200,
       viewRow: null,
       viewHeaders: null,
       viewVisible: null,
       xls: null,
       xlsProps: null,
       changeable: true,
-      catalogStaticShow: null,
+      hasFilter: null,
+      FieldDistancesShow: false,
+      CarInformationShow: false,
+      DoplatyShow: false,
+      GrowthPhasesShow: false,
+      SornyakiShow: false,
     }
   },
   watch: {
     ['$route.params.type'](val, oldVal) {
       this.reset()
-      this.catalogStaticShow = false
-      if(val == 'field-distances-new'){
-        this.catalogStaticShow = true
-      } else{
-        if (val) this.init(val)
-      }
+      if (!this.checkForSpecialElement(val)) this.init(val)
     },
   },
   computed: {
@@ -87,7 +104,7 @@ export default {
   },
   created() {
     let element = this.$route.params.type
-    if (element) this.init(element)
+    if (!this.checkForSpecialElement(element)) this.init(element)
   },
   methods: {
     init(element) {
@@ -97,9 +114,13 @@ export default {
       }
       this.get(element)
         .then((data) => {
-          this.data = data
-          if(this.data.elementData.changeable == false)
-            this.changeable = this.data.elementData.changeable
+          if (element == this.$route.params.type) {
+            this.data = data
+            this.hasFilter = !this.data.elementData.notFilterable
+            if (this.data.elementData.changeable == false) {
+              this.changeable = this.data.elementData.changeable
+            }
+          }
         })
         .catch((error) => {
           if (error == "FileNotFoundError") {
@@ -107,12 +128,34 @@ export default {
           }
         })
     },
+    checkForSpecialElement(val) {
+      this.FieldDistancesShow = false
+      this.CarInformationShow = false
+      this.DoplatyShow = false
+      this.GrowthPhasesShow = false
+      this.SornyakiShow = false
+      if (val == 'field-distances-new') {
+        this.FieldDistancesShow = true
+      } else if (val == 'car-information') {
+        this.CarInformationShow = true
+      } else if (val == 'doplaty') {
+        this.DoplatyShow = true
+      } else if (val == 'growth-phases') {
+        this.GrowthPhasesShow = true
+      } else if (val == 'sornyaki') {
+        this.SornyakiShow = true
+      } else {
+        return false;
+      }
+      return true
+    },
     reset() {
       this.data = null
+      this.hasFilter = null
       this.filter = null
       this.filterVisible = null
       this.processing = false
-      this.search = null
+      this.search = ""
       this.viewRow = null
       this.viewHeaders = null
       this.viewVisible = null

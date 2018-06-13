@@ -1,6 +1,7 @@
 {
   "name": "InstrumentTypes",
   "api": "InstrumentTypes",
+  "notFilterable": true,
   "dependencies": [],
   "attributes": [
     {

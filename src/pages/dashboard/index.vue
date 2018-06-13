@@ -27,7 +27,7 @@
           .dashboard-container
             .el-slider-first-col
               .fc-row(v-for="culture in firstCultures")
-                router-link(:to="`/dashboard/culture/${culture.id}`")
+                router-link(:to="`/agrostream/dashboard/culture/${culture.id}`")
                   p {{ culture.name }}
                 p площадь {{ culture.area }}
               .fc-row( v-if="otherCultures.length", @click="otherCulturesShow()", class="fc-row-show")
@@ -35,7 +35,7 @@
                 .fc-row-others-icon( :class="{ active: otherCulturesDisplay }" )
               .fc-row-others( v-if="otherCulturesDisplay")
                 .fc-row(v-for="culture in otherCultures")
-                  router-link(:to="`/dashboard/culture/${culture.id}`")
+                  router-link(:to="`/agrostream/dashboard/culture/${culture.id}`")
                     p {{ culture.name }}
                   p площадь {{ culture.area }}
 
@@ -73,14 +73,14 @@
 
             .el-slider-first-col
               .fc-row( v-for="work in firstWorks")
-                router-link(:to="`/dashboard/work/${work.id}`")
+                router-link(:to="`/agrostream/dashboard/work/${work.id}`")
                   p {{ work.name }}
               .fc-row( v-if="otherWorks.length", @click="otherWorksShow()", class="fc-row-show")
                 p Прочее
                 .fc-row-others-icon( :class="{ active: otherWorksDisplay }" )
               .fc-row-others( v-if="otherWorksDisplay")
                 .fc-row( v-for="work in otherWorks")
-                  router-link(:to="`/dashboard/work/${work.id}`")
+                  router-link(:to="`/agrostream/dashboard/work/${work.id}`")
                     p {{ work.name }}
 
             .el-slider-container
@@ -99,16 +99,25 @@
 </template>
 
 <script>
+import Vue from 'vue'
+import VueChartist from 'v-chartist'
+import VueScrollTo from 'vue-scrollto'
+import $ from 'jquery'
+import './dashboard.styl'
+import moment from 'moment'
+import {EventBus} from 'services/EventBus';
 import httpQueryV2 from 'lib/httpQueryV2'
 import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
-import GlobalMethods from 'components/FormFieldsLibrary/GlobalMethods'
-import VueChartist from 'v-chartist'
-import $ from 'jquery'
-import moment from 'moment'
-import './dashboard.styl'
 
-import localForageLib from 'lib/localForageLib'
-import {EventBus} from 'services/EventBus';
+Vue.use(VueScrollTo, {
+  container: ".dashboard-page",
+  duration: 500,
+  easing: "ease",
+  offset: -80,
+  cancelable: true,
+  onDone: false,
+  onCancel: false
+});
 
 export default {
   mixins: [
@@ -131,11 +140,6 @@ export default {
       'workdates',
       'growthphases'
     ], this.afterFetch );
-
-    EventBus.$on('gotFromLocalForage', (model) => {
-        this.localForageArrays[model.db] = model.value;
-        console.log(model.db, model.value);
-    });
   },
   updated() {
     let elSlider1 = document.querySelector('#el-slider-1 .el-slider__button')
@@ -148,7 +152,7 @@ export default {
   },
   mounted() {
     // для vue-scroll, scrolling - надо поменять высоту на %
-    var elApp = document.querySelector('#app');
+    var elApp = document.querySelector('#app-container');
     elApp.style.height = "100%";
     //scroll в начале
     this.$scrollTo('#dashboard-container');
@@ -192,11 +196,6 @@ export default {
       fields: null,
       areaAssignments: null,
       workTypes: null,
-      localForageArrays: {
-        culturesDB: [],
-        cttopsUniqueDB: [],
-        worksDatesDB: [],
-      },
     }
   },
   methods: {
@@ -212,9 +211,6 @@ export default {
       this.vuexFields = this.fromVuex('fields');
       this.vuexAreaAssignments = this.fromVuex('AreaAssignments');
       this.vuexWorkTypes = this.fromVuex('workTypes');
-      //from IndexedDB
-      localForageLib.getLocalForage('cttopsUniqueDB', this.computedCttopsUnique );
-      localForageLib.getLocalForage('worksDatesDB', this.computedWorksDates );
     },
     otherCulturesShow(){
       this.otherCulturesDisplay = !this.otherCulturesDisplay;
@@ -296,11 +292,6 @@ export default {
       return culturesArray;
     },
     //культуры
-    localcultures() {
-      //let cultures = this.culturesUpdated && this.culturesTemp || [];
-      let cultures = this.localForageArrays.culturesDB || [];
-      return cultures;
-    },
     oneStep() {
       let worksDates = this.worksDates;
 
@@ -361,12 +352,7 @@ export default {
     numberFields() {
       return this.vuexFields ? this.vuexFields.length : 0;
     },
-    //работы
-    cttopsUnique() {
-      let cttopsUnique = this.localForageArrays.cttopsUniqueDB || [];
-      return cttopsUnique;
-    },
-    computedCttopsUnique(){
+    cttopsUnique(){
       //достаем только уникальные айди
       let cttopsUnique = this.vuexCttops.map(x => x.technologicalOperationId).filter((item, i, arr) => arr.indexOf(item) === i);
       //делаем массив объектов с нужными айди и свойствами
@@ -498,10 +484,6 @@ export default {
       return this.worksDates.length && this.worksDates[this.value2].area.toFixed(2);
     },
     worksDates() {
-      let worksDates = this.localForageArrays.worksDatesDB || [];
-      return worksDates;
-    },
-    computedWorksDates() {
       let worksDates = [];
       //находим минимальную и макс даты в areaassignments -> datetimerange
 

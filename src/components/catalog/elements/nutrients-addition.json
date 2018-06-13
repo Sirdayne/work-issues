@@ -1,0 +1,36 @@
+{
+  "name": "NutrientsAddition",
+  "api": "NutrientsAddition",
+  "dependencies": [
+    "Cultures",
+    "CultureParameters"
+  ],
+  "attributes": [
+    {
+      "label": "Культура",
+      "prop": "Cultures.name",
+      "fkey": "cultureId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Конечный продукт",
+      "prop": "CultureParameters.name",
+      "fkey": "cultureParameterId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Азот, кг на тонну",
+      "prop": "nAddition"
+    },
+    {
+      "label": "Фосфор, кг на тонну",
+      "prop": "pAddition"
+    },
+    {
+      "label": "Калий, кг на тонну",
+      "prop": "kAddition"
+    }
+  ]
+}

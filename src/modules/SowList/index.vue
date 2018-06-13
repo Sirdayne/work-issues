@@ -14,7 +14,7 @@
   .workspace(v-loading="loading", element-loading-text="Загружается...")
     el-form(:inline="true")
       el-form-item
-        router-link(to="/sowings/new")
+        router-link(to="/agroplan/sowings/new")
          el-button Новый посев
       el-form-item
         el-button.filter(
@@ -81,6 +81,7 @@
             @click="setSortField(field.name)", :key="field.id",
             style="text-align:center;",
           ) {{field.label}}
+          th Предшественник
           th(style="width: 120px;!important")
         tbody
           tr(
@@ -101,6 +102,8 @@
                   template(v-if="field.type === Number") {{display(record, field)}}
                   template(v-if="field.type === String") {{display(record, field)}}
                   template(v-if="field.type === Date")   {{showDate(display(record, field))}}
+            td.cell
+              span(v-for="item in record.previousCultures", style="margin: 0 5px", :key="item.key") {{ item.culture }}
             td.cell(style="width: 120px;!important")
               el-button-group
                 el-button(@click="edit(record)", size="small", icon="edit")
@@ -124,7 +127,7 @@ import sowingsModel from '_models/Sowings'
 import { fromDot } from 'helpers'
 
 import {EventBus} from 'services/EventBus'
-import modifiedByName from 'lib/modifiedByName'
+import modByLib from "lib/modByLib";
 import ListController from 'mixins/ListController'
 import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
 import {json2xls} from 'lib/utils'
@@ -146,6 +149,7 @@ export default {
       'sorts',
       'reproductions',
       'cultureparameters',
+      'croprotations',
     ], this.afterFetch );
   },
   data() {
@@ -165,12 +169,13 @@ export default {
       fields: [],
       sorts: [],
       reproductions: [],
+      croprotations: [],
       cultureparameters: [],
       loading: true
     }
   },
   updated() {
-    modifiedByName.addTooltips( this.paginatedFiltered );
+    modByLib.addTooltips( this.paginatedFiltered );
   },
   computed: {
     paginatedFiltered() {
@@ -197,14 +202,19 @@ export default {
       if (this.filterModel.filterCultureParameter && records){
         records = records.filter(r => r.cultureParameterId === this.filterModel.filterCultureParameter)
       }
-      return records ? records.filter(r => r.year === this.context.year) : null
+      // добавление предшественника
+      if (records) {
+        records.forEach(r => {
+          r.previousCultures = this.getPreviousCultures(this.$root.context.year, r.fieldId)
+        })
+      }
+      return records ? records.filter(r => r.year === this.$root.context.year) : null
     },
     sowingsXLS(){
       let records = this.records;
       let array = [];
       records.forEach(r => {
         array.push({
-          'год': r.year,
           'Название поля': r.fieldName,
           'Культура': r.cultureName,
           'Площадь посева': r.area,
@@ -231,6 +241,7 @@ export default {
       this.cultures = this.fromVuex('cultures')
       this.sorts = this.fromVuex('sorts')
       this.reproductions = this.fromVuex('reproductions')
+      this.croprotations = this.fromVuex('croprotations')
       this.cultureparameters = this.fromVuex('cultureparameters')
       this.loading = false
     },
@@ -333,7 +344,14 @@ export default {
     },
     isHideFields(name) {
       return ['cultureParameterId', 'budgetId'].some(el => el === name)
-    }
+    },
+    getPreviousCultures(year, field){
+      let croprotation = this.croprotations.find(c => c.fieldId === field)
+      if (croprotation) {
+        return croprotation.columns[year-1]
+      } else
+        return 'нет данных'
+    },
   }
 }
 </script>

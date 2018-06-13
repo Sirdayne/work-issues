@@ -1,3 +1,6 @@
+import {deepClone} from 'lib/utils';
+import {EventBus} from 'services/EventBus';
+
 const state = {
   mergedTrackTimes: {},
   trackTimes: [],
@@ -5,10 +8,13 @@ const state = {
 
 const getters = {
   getMergedTrackTimes: (state) => {
-    return state.mergedTrackTimes;
+    return deepClone(state.mergedTrackTimes);
   },
   getTrackTimes: (state) => {
-    return state.trackTimes;
+    return deepClone(state.trackTimes);
+  },
+  getTrackTimesById: (state) => (id) => {
+    return deepClone(state.trackTimes.find(tt => tt.id === id))
   },
 };
 
@@ -19,22 +25,37 @@ const mutations = {
   clearTrackTimes: (state) => {
     state.trackTimes = []
   },
-  updateMergedTrackTimes: (state, payload) => {
+  initMergedTrackTimes: (state, payload) => {
     state.mergedTrackTimes = payload;
   },
-  updateTrackTimes: (state, payload) => {
-    let trackTimesObject = state.trackTimes.find(tt => tt.id == payload.id)
-    if (trackTimesObject) {
-      trackTimesObject = payload
+  updateMergedTrackTimes: (state, payload) => {
+    state.mergedTrackTimes.index = payload;
+  },
+  initTrackTimes: (state, payload) => {
+    let index = state.trackTimes.findIndex(tt => tt.id == payload.id)
+    if (index > -1) {
+      state.trackTimes[index] = payload
     } else {
       state.trackTimes.push(payload)
     }
   },
+  updateTrackTimes: (state, payload) => {
+    let index = state.trackTimes.findIndex(tt => tt.id == payload.id)
+    state.trackTimes[index].index = payload.index
+  },
 };
 
 const actions = {
+  actionInitMergedTrackTimes: (context, payload) => {
+    context.commit('initMergedTrackTimes', payload);
+    EventBus.$emit('TrackTimes.MergedTrackTimesUpdated');
+  },
   actionUpdateMergedTrackTimes: (context, payload) => {
     context.commit('updateMergedTrackTimes', payload);
+    EventBus.$emit('TrackTimes.MergedTrackTimesUpdated');
+  },
+  actionInitTrackTimes: (context, payload) => {
+    context.commit('initTrackTimes', payload);
   },
   actionUpdateTrackTimes: (context, payload) => {
     context.commit('updateTrackTimes', payload);

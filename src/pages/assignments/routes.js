@@ -1,25 +1,15 @@
-import {modules} from "modules.js"
-const NewAssignment = () => import ("components/assignments/new/index")
-const ListAssignment = () => import ("components/assignments/list")
+const Assignments = () => import ("components/assignments/list")
 const Transportation = () => import ("components/assignments/transportation")
-const SeedLimit = () => import ("components/seedlimits/new")
-const ChemistryLimit = () => import ("components/chemistrylimits/new")
-const FertilizerLimit = () => import ("components/fertilizerlimits/new")
+const SeedLimit = () => import ("components/assignments/seedlimits/new")
+const ChemistryLimit = () => import ("components/assignments/chemistrylimits")
+const FertilizerLimit = () => import ("components/assignments/fertilizerlimits")
+const ProtravkaSemyan = () => import ("components/assignments/protravka-semyan/index")
 
 module.exports = [
   {
     path: "list",
-    component: ListAssignment,
+    component: Assignments,
     meta: {
-      module: modules.agrofact,
-      title: "Список заданий",
-    },
-  },
-  {
-    path: "new",
-    component: NewAssignment,
-    meta: {
-      module: modules.agrofact,
       title: "Добавить задание",
     },
   },
@@ -27,7 +17,6 @@ module.exports = [
     path: "transportation",
     component: Transportation,
     meta: {
-      module: modules.agrofact,
       title: "Добавить транспортировку",
     },
   },
@@ -35,7 +24,6 @@ module.exports = [
     path: "seed",
     component: SeedLimit,
     meta: {
-      module: modules.agrofact,
       title: "Расчет семян",
     },
   },
@@ -43,16 +31,21 @@ module.exports = [
     path: "chemistry",
     component: ChemistryLimit,
     meta: {
-      module: modules.agrofact,
-      title: "Расчет химии",
+      title: "Расчет СЗР",
     },
   },
   {
     path: "fertilizer",
     component: FertilizerLimit,
     meta: {
-      module: modules.agrofact,
       title: "Расчет удобрений",
+    },
+  },
+  {
+    path: "protravka-semyan",
+    component: ProtravkaSemyan,
+    meta: {
+      title: "Протравка семян",
     },
   },
 ]

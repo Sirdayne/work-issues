@@ -1,6 +1,7 @@
 {
   "name": "TechnologyOperations",
   "api": "operations",
+  "notFilterable": true,
   "dependencies": [],
   "attributes": [
     {

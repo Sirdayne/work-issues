@@ -3,13 +3,13 @@
     v-loading="!ready",
     element-loading-text="Загружается...",
   )
-  .sidebar
-    map-filter(@apply="applyFilter")
+  .sidebar(v-if="mapFilterData", :class="{'closed-sidebar': !sidebarToggleState}")
+    map-filter(:data="mapFilterData", @apply="applyFilter")
   #contents
-    .map-controller
+    .map-controller(:class="{'map-active': showPanelBottom}")
       map-controller(:polylines="filteredTracks", :filteredAssignments="filteredAssignments",
-      :filteredFieldIds="filteredFieldIds", :byDate="byDate")
-    .tabs(v-if="tabData")
+      :filteredFieldIds="filteredFieldIds", :byDate="byDate", :carData="carData")
+    .tabs(v-if="tabData" :class="{'map-active': showPanelBottom}")
       tab-builder(:data="tabData", :type="tabType")
 </template>
 
@@ -20,8 +20,10 @@ import MapFilter from "components/Map/MapFilter.vue";
 import MapController from "components/Map/MapController";
 import TabBuilder from "components/Map/tab-builder.vue";
 import moment from "moment";
-
-import '../../misc/fx-styles.styl'
+import http from 'lib/httpQueryV2'
+import nprogress from 'lib/NProgress';
+import { Message } from 'element-ui'
+import '../../misc/fx-small.styl';
 
 export default {
   mixins: [RecordsLoaderV2],
@@ -40,22 +42,24 @@ export default {
       filteredFieldIds: null,
       tabData: null,
       tabType: null,
-      fields: [],
-      brigades: [],
-      fieldzones: [],
-      fieldcontours: [],
-      terrains: [],
-      soiltypes: [],
-      compositions: [],
-      croprotations: [],
-      seedlimits: [],
-      sorts: [],
-      sowings: [],
-      reproductions: [],
+      mapFilterData: null,
       byDate: true,
+      carData: null,
+      showPanelBottom: true,
     };
   },
+  computed: {
+    sidebarToggleState() {
+      return this.$store.getters.getSidebarToggleState
+    },
+  },
   created() {
+    EventBus.$on("MapTogglePanelBottom", (state) => {
+      this.showPanelBottom = state;
+    });
+    EventBus.$on("CarDataTracks", tracks => {
+      this.carData = tracks;
+    });
     EventBus.$on("MapController.SelectedAssignmentLoadingFinished", tracks => {
       this.filteredTracks = tracks;
     });
@@ -63,30 +67,41 @@ export default {
       if (this.$route.params.id !== undefined) {
         let id = this.$route.params.id;
         let assignment = this.$store.getters.getEntityById(id, "assignments");
-        let date = moment(assignment.dateTimeRange.start, "YYYY-MM-DDTHH:mm:ss").format();
-        EventBus.$emit('MapController.SelectedDateChangeTriggered', date)
+        if (assignment) {
+          let date = moment(assignment.dateTimeRange.start, "YYYY-MM-DDTHH:mm:ss").format();
+          EventBus.$emit('MapController.SelectedDateChangeTriggered', date)
+          EventBus.$emit("traktorTracksTriggered", assignment.carId)
+        } else {
+          this.$message({
+            message: `Такого задания не существует`,
+            type: "info",
+            duration: 5000,
+            showClose: false,
+          });
+        }
       }
     });
-    this.fetchEntities([
-      "assignments",
-      "instruments",
-      "processedstatuses",
-      'fields',
-      "brigades",
-      "fieldzones",
-      "fieldcontours",
-      "terrains",
-      "soiltypes",
-      "compositions",
-      'croprotations',
-      'seedlimits',
-      'sorts',
-      'sowings',
-      'reproductions',
-    ], this.afterFetch);
+    if(this.$route.query.carId){
+      this.initOutOfAssignmentTracks()
+    }
+    if(this.$route.query.date){
+      this.$store.dispatch('actionSetSelectedDate', this.$route.query.date)
+    }
+    this._fetchMainEntities()
   },
   methods: {
-    afterFetch() {
+    _fetchMainEntities() {
+      this.fetchEntities([
+        "assignments",
+        "instruments",
+        "leafletFields",
+        "processedstatuses",
+        "cars",
+        "cartypes",
+        "employees",
+      ], this.afterFetchMain);
+    },
+    afterFetchMain() {
       let instruments = this.fromVuex("instruments")
       this.processedstatuses = this.fromVuex("processedstatuses")
       this.assignments = this.fromVuex("assignments").map(a => {
@@ -95,20 +110,7 @@ export default {
         a.processedstatus = processedstatus && processedstatus.name || ""
         return a
       })
-
-      this.fields = this.fromVuex('fields')
-      this.brigades = this.fromVuex('brigades')
-      this.sowings = this.fromVuex('sowings').filter(x => x.year === this.$root.context.year)
-      this.croprotations = this.fromVuex('croprotations')
-      this.fieldworks = this.fromVuex('fieldworks')
-      this.fieldzones = this.fromVuex('fieldzones')
-      this.fieldcontours = this.fromVuex('fieldcontours')
-      this.terrains = this.fromVuex('terrains')
-      this.soiltypes = this.fromVuex('soiltypes')
-      this.compositions = this.fromVuex('compositions')
-      this.seedlimits = this.fromVuex('seedlimits').filter(x => x.year === this.$root.context.year)
-      this.sorts = this.fromVuex('sorts')
-      this.reproductions = this.fromVuex('reproductions')
+      this.mapFilterData = true
     },
     applyFilter(f) {
       EventBus.$emit('MapController.FilterChanged');
@@ -118,34 +120,25 @@ export default {
       let cond3 = !!f.carIds.length && !f.employeeIds.length && !f.fieldIds.length
       this.byDate = !(cond1 || cond2 || cond3)
       this.filterAssignments(f, cond1, cond2, cond3)
-      this.prepareTabData(f, !(cond1 || cond2 || cond3), cond2)
+      this.prepareTabData(f, !(cond1 || cond2 || cond3), cond2, cond3)
     },
-    prepareTabData(f, byDate, byField) {
+    prepareTabData(f, byDate, byField, byCar) {
       this.tabData = null
-      let tabType = byField ? "field" : "default"
+      let tabType = byField ? "field" : byCar ? "car" : "default"
       this.tabType = tabType
       let tabData = {
         SelectedAssignments: {
+          type: this.tabType,
           filteredAssignments: this.filteredAssignments,
         },
         CarStatus: !!byDate,
         FieldInfo: {
           id: f.fieldIds && f.fieldIds[0],
-          croprotations: this.croprotations,
-          fields: this.fields,
-          brigades: this.brigades,
-          fieldzones: this.fieldzones,
-          fieldcontours: this.fieldcontours,
-          terrains: this.terrains,
-          soiltypes: this.soiltypes,
-          compositions: this.compositions,
-          croprotations: this.croprotations,
-          seedlimits: this.seedlimits,
-          sorts: this.sorts,
-          sowings: this.sowings,
-          reproductions: this.reproductions,
-          orientation: true,
+          orientation: true
         },
+        CarActions: {
+          ids: f.carIds,
+        }
       }
       this.tabData = tabData
     },
@@ -156,6 +149,10 @@ export default {
         let attrId = ["employeeId", "fieldId", "carId", "instrumentId"]
         assignments = assignments.map(a => {
           a.formattedDateTime = moment(a.dateTimeRangeStart, "YYYY-MM-DDTHH:mm:ss").format("DD.MM.YYYY");
+          a.formatWorkStart = moment(a.workStart, "YYYY-MM-DDTHH:mm:ss").format("DD.MM.YYYY - HH:mm");
+          a.formatWorkEnd = moment(a.workEnd, "YYYY-MM-DDTHH:mm:ss").format("DD.MM.YYYY - HH:mm");
+          a.formatStart = moment(a.dateTimeRange.start, "YYYY-MM-DDTHH:mm:ss").format("DD.MM.YYYY - HH:mm")
+          a.formatEnd = moment(a.dateTimeRange.end, "YYYY-MM-DDTHH:mm:ss").format("DD.MM.YYYY - HH:mm")
           a.area = Math.round(+a.area);
           return a;
         }).filter(a => {
@@ -173,9 +170,35 @@ export default {
           } else if (cond4) {
             return true;
           }
+
         });
       }
       this.filteredAssignments = assignments
+    },
+    initOutOfAssignmentTracks() {
+      let endpoint = `OutOfAssignmentTracks/`;
+      let data = {
+        CarId: this.$route.query.carId,
+        Date: this.$route.query.date,
+        OrganizationId: this.$root.context.organization
+      };
+      nprogress.start()
+      http.post(endpoint, data)
+        .then(data => {
+          if (data) {
+            this.carData = [data]
+          }
+          nprogress.done()
+        })
+        .catch((error) => {
+          nprogress.done()
+          this.$message({
+            message: `Ошибка ${error}`,
+            type: "info",
+            duration: 5000,
+            showClose: false,
+          });
+        })
     },
   }
 };
@@ -191,19 +214,34 @@ export default {
   flex-direction column
   overflow hidden
   border-right 1px solid #e4e8f1
+  @media print
+    visibility: hidden;
+    display: none;
 
 .map-controller
-  height calc(100% - 250px)
+  height 100%
   width 100%
   box-sizing border-box
+  &.map-active
+    height calc(100% - 250px)
 
 .tabs
+  display none
   height 250px
   width 100%
   box-sizing border-box
+  &.map-active
+    display block
 
 #contents
+  flex 1 0 auto
+  flex-flow column nowrap
+  display flex
   height 100%
   width calc(100% - 330px)
+  @media print
+    width 100%
 
+.closed-sidebar
+  display none
 </style>

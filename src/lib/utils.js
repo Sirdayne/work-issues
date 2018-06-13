@@ -138,11 +138,10 @@ export function createIndex(arr, key = 'id', isArray = false) {
 }
 
 export function getCookie(name) {
-  var matches = document.cookie.match(new RegExp(
-    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-  ));
-  var result = matches && decodeURIComponent(matches[1]) || undefined
-  return result;
+  var value = "; " + document.cookie;
+  var parts = value.split("; " + name + "=");
+  if (parts.length == 2) return parts.pop().split(";").shift();
+  return undefined
 }
 
 export function json2xls(data, name, colNum) {
@@ -181,4 +180,29 @@ export function json2xls(data, name, colNum) {
   /* the saveAs call downloads a file on the local machine */
   var blob = new Blob([s2ab(wbout)],{type:"application/octet-stream"})
   FileSaver.saveAs(blob, name + ".xlsx");
+}
+
+export function deepClone(item) {
+  if (Array.isArray(item)) {
+    return item.map(i => deepClone(i))
+  } else if (item && typeof item == "object") {
+    if (Object.prototype.toString.call(item) == '[object Date]') {
+      return new Date(item)
+    } else {
+      let obj = {}
+      Object.keys(item).forEach(key => {
+        obj[key] = deepClone(item[key])
+      })
+      return obj
+    }
+  }
+  return item
+}
+
+export function escapeStringRegexp(str) {
+  let matchOperatorsRe = /[|\\{}()[\]^$+*?.]/g;
+  if (typeof str !== 'string') {
+    throw new TypeError('Expected a string');
+  }
+  return str.replace(matchOperatorsRe, '\\$&');
 }

@@ -1,6 +1,7 @@
 {
   "name": "FinalProducts",
   "api": "FinalProducts",
+  "notFilterable": true,
   "dependencies": [],
   "attributes": [
     {

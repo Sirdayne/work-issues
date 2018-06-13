@@ -1,316 +1,186 @@
 <template lang="pug">
 div
-  el-form(
-    :model="item",
-    :inline="true",
-    :rules="rules",
-    ref="form",
-    :label-position="'top'"
-  )
+  el-form(:model="item", :inline="true", :rules="rules", ref="form", label-position="top")
     el-form-item(label="Дата от")
       el-date-picker(v-model="item.selectedDate.from", format="dd.MM.yyyy", placeholder="Выберите дату")
     el-form-item(label="Дата до")
       el-date-picker(v-model="item.selectedDate.till", format="dd.MM.yyyy", placeholder="Выберите дату")
     el-form-item(label="ТОК", prop="warehouseId")
       el-select(v-model="item.warehouseId" clearable placeholder="Выбрать", @change="warehouseChange(item.warehouseId)")
-        el-option(
-          v-for="w in warehouses",
-          :key="w.id",
-          :label="w.name",
-          :value="w.id"
-          )
+        el-option(v-for="w in warehouses", :key="w.id", :label="w.name", :value="w.id")
     el-form-item(label="Культура", prop="cultureId")
       el-select(v-model="item.cultureId" clearable placeholder="Выбрать" filterable)
-        el-option(
-          v-for="c in cultures",
-          :key="c.id",
-          :label="c.name",
-          :value="c.id"
-          )
-    el-form-item(label="." :class="{invisibleColor: true}")
-      el-button.excel(type='default', @click="exportTable('form')") .
-
-  h2(class="tableHeading") Журнал весовщика - перемещение
-
-  el-table(
-    v-if="tableData.length || loading",
-    :data="paginate(tableData)",
-    border,
-    resizable,
+        el-option(v-for="c in cultures", :key="c.id", :label="c.name", :value="c.id")
+  h2 Журнал весовщика - перемещение
+    span(:style="{marginRight: '30px'}")
+    el-button.excel(type='default', @click="exportTable('form')") .
+  .el-table-cont
+    el-table(
+      :data="paginate(tableData)",
+      border,
+      resizable,
+      v-loading="loading",
+      max-height="500",
+    ).content
+      el-table-column(prop="rowNumber", label="Номер записи", header-align="center", width="110")
+      el-table-column(prop="date", label="Дата", header-align="center", width="180")
+      el-table-column(prop="loadingPlace", label="Место погрузки", header-align="center", width="110")
+      el-table-column(prop="unloadingPlace", label="Место разгрузки", header-align="center", width="170")
+      el-table-column(prop="culture", label="Культура", header-align="center", width="120")
+      el-table-column(label="Водитель", header-align="center", width="120")
+        template(slot-scope="scope")
+          span(:class="scope.row.isManuallyEnteredDriver ? 'black' : 'red'") {{scope.row.driver}}
+      el-table-column(label="Автомашина", header-align="center")
+        el-table-column(label="марка", header-align="center", width="120")
+          template(slot-scope="scope")
+            span(:class="scope.row.isManuallyEnteredCar ? 'black' : 'red'") {{scope.row.carModel}}
+        el-table-column(label="гос номер", header-align="center", width="120")
+          template(slot-scope="scope")
+            span(:class="scope.row.isManuallyEnteredCar ? 'black' : 'red'") {{scope.row.stateNumber}}
+        el-table-column(label="хоз номер", header-align="center", width="120")
+          template(slot-scope="scope")
+            span(:class="scope.row.isManuallyEnteredCar ? 'black' : 'red'") {{scope.row.organizationNumber}}
+      el-table-column(label="вес, кг", header-align="center")
+        el-table-column(label="брутто", header-align="center", width="120")
+          template(slot-scope="scope")
+            span(:class="scope.row.isManuallyEnteredWeightBrutto1 ? 'black' : 'red'") {{scope.row.weightBrutto}}
+        el-table-column(label="тара", header-align="center", width="120")
+          template(slot-scope="scope")
+            span(:class="scope.row.isManuallyEnteredWeightTare1 ? 'black' : 'red'") {{scope.row.weightOfTare}}
+        el-table-column(label="нетто", header-align="center", width="120")
+          template(slot-scope="scope")
+            span(:class="!scope.row.isManuallyEnteredWeightBrutto1 || !scope.row.isManuallyEnteredWeightTare1 ? 'red': 'black'") {{scope.row.weightNetto}}
+      el-table-column(label="определяется при взвешивании", header-align="center")
+        el-table-column(prop="arrivalTime", label="Время прибытия", header-align="center", width="120")
+        el-table-column(prop="departureTime", label="Время убытия", header-align="center", width="120")
+      el-table-column(prop="loadingTime", label="время погрузки/разгрузки", header-align="center", width="120")
+      el-table-column(prop="isFingerSignature", label="подпись водителя", header-align="center", width="120")
+    el-pagination(
+      layout="total, prev, pager, next",
+      :total="tableData.length",
+      :page-size="perPage",
+      :current-page="currentPage",
+      @current-change="onCurrentPageChange",
+      @size-change="onPerPageChange",
     )
-    el-table-column(
-      prop="rowNumber",
-      label="Номер записи",
-      header-align="center",
-      width="110"
-    )
-    el-table-column(
-      prop="date",
-      label="Дата",
-      header-align="center",
-      width="180"
-    )
-    el-table-column(
-      prop="loadingPlace",
-      label="Место погрузки",
-      header-align="center",
-      width="110"
-    )
-    el-table-column(
-      prop="unloadingPlace",
-      label="Место разгрузки",
-      header-align="center",
-      width="170"
-    )
-    el-table-column(
-      prop="culture",
-      label="Культура",
-      header-align="center",
-      width="120"
-    )
-    el-table-column(
-      prop="driver",
-      label="Водитель",
-      header-align="center",
-      width="120"
-    )
-    el-table-column(
-      label="Автомашина",
-      header-align="center",
-    )
-      el-table-column(
-        prop="carModel",
-        label="марка",
-        header-align="center",
-        width="120"
-      )
-      el-table-column(
-        prop="stateNumber",
-        label="гос номер",
-        header-align="center",
-        width="120"
-      )
-      el-table-column(
-        prop="organizationNumber",
-        label="хоз номер",
-        header-align="center",
-        width="120"
-      )
-    el-table-column(
-      label="вес, кг",
-      header-align="center",
-    )
-      el-table-column(
-        prop="weightBrutto",
-        label="брутто",
-        header-align="center",
-        width="120"
-      )
-      el-table-column(
-        prop="weightOfTare",
-        label="тара",
-        header-align="center",
-        width="120"
-      )
-      el-table-column(
-        prop="weightNetto",
-        label="нетто",
-        header-align="center",
-        width="120"
-      )
-    el-table-column(
-      label="определяется при взвешивании",
-      header-align="center",
-    )
-      el-table-column(
-        prop="arrivalTime",
-        label="Время прибытия",
-        header-align="center",
-        width="120"
-      )
-      el-table-column(
-        prop="departureTime",
-        label="Время убытия",
-        header-align="center",
-        width="120"
-      )
-    el-table-column(
-      prop="loadingTime",
-      label="время погрузки/разгрузки",
-      header-align="center",
-      width="120"
-    )
-    el-table-column(
-      prop="isFingerSignature",
-      label="подпись водителя",
-      header-align="center",
-      width="120"
-    )
-  .no-results(v-else) Нет результатов
-  el-row(type="flex")
-    el-col(:span="0")
-      el-pagination(
-        layout="total, prev, pager, next",
-        :total="totalItems",
-        :page-size="perPage",
-        :current-page="currentPage",
-        @current-change="onCurrentPageChange",
-        @size-change="onPerPageChange",
-      )
 </template>
-
 <script>
-  import http from 'lib/httpQueryV2'
-  import { EventBus } from 'services/EventBus';
-  import RecordsLoaderV2 from 'mixins/RecordsLoaderV2';
-  import moment from 'moment'
-  import ListController from 'mixins/ListController'
+import http from 'lib/httpQueryV2'
+import { EventBus } from 'services/EventBus'
+import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
+import moment from 'moment'
+import paginate from 'mixins/paginate'
 
-  export default {
-    mixins: [
-      RecordsLoaderV2,
-      ListController
-    ],
-    data() {
-      return {
-        item: {
-          warehouseId: null,
-          cultureId: null,
-          culture: "",
-          selectedDate: {
-            from: new Date(new Date("05/01/" + (new Date()).getFullYear()).setFullYear(this.$root.context.year)),
-            till: new Date(new Date().setFullYear(this.$root.context.year))
-          }
-        },
-        rules: {
-          warehouseId: [
-              { required: true, type: 'integer', message: 'Поле обязательно', trigger: 'change' }
-          ]
-        },
-        perPage: 5,
-        currentPage: 1,
-        loading: true,
+export default {
+  mixins: [
+    RecordsLoaderV2,
+    paginate
+  ],
+  data() {
+    return {
+      cultures: [],
+      internaltransfers: [],
+      warehouses: [],
+      item: {
+        warehouseId: null,
+        cultureId: null,
+        culture: "",
+        selectedDate: {
+          from: new Date(this.$root.context.year + '-05-01'),
+          till: new Date()
+        }
+      },
+      rules: {
+        warehouseId: [
+          {required: true, type: 'integer', message: 'Поле обязательно', trigger: 'change'}
+        ]
+      },
+      perPage: 5,
+      currentPage: 1,
+      loading: false,
+    }
+  },
+  computed: {
+    tableData() {
+      let fromDate = this.item.selectedDate.from
+      let tillDate = this.item.selectedDate.till
+      let warehouseId = this.item.warehouseId
+      let cultureId = this.item.cultureId
+      let tableData = this.internaltransfers.filter((record) => {
+        let ourDate = new Date(moment(record.date, 'DD/MM/YYYY').format('YYYY-MM-DD'))
+        let dateBigger = (ourDate >= fromDate) || !fromDate
+        let dateLess = (ourDate <= tillDate) || !tillDate
+        let warehouse = record.warehouseId === warehouseId || !warehouseId
+        let culture = record.cultureId === cultureId || !cultureId
+        return dateBigger && dateLess && warehouse && culture
+      })
+      return tableData
+    },
+  },
+  created() {
+    EventBus.$on('AppYearChanged', (year) => {
+      this.item.selectedDate.from = moment(this.item.selectedDate.from).set({'year': year});
+      this.item.selectedDate.till = moment(this.item.selectedDate.till).set({'year': year});
+    });
+    EventBus.$on('App.Context.OrganizationChanged', (orgId) => {
+      localStorage.removeItem('warehouseId');
+    });
+    this.loading = true
+    this.fetchEntities([
+      'cultures',
+      'internaltransfers',
+      'warehouses',
+    ], this.afterFetch);
+  },
+  methods: {
+    afterFetch() {
+      this.cultures = this.fromVuex('cultures')
+      this.internaltransfers = this.fromVuex('internaltransfers')
+      this.warehouses = this.fromVuex('warehouses').filter(w => w.warehouseType == 2)
+      this.setWarehouseId()
+      this.loading = false
+    },
+    setWarehouseId() {
+      if (this.warehouses.length) {
+        this.item.warehouseId = this.warehouses[0].id
+        let localWarehouseId = localStorage.getItem('warehouseId');
+        if (localWarehouseId) {
+          this.item.warehouseId = +localWarehouseId;
+        } else {
+          localStorage.setItem('warehouseId', this.item.warehouseId);
+        }
       }
     },
-    computed: {
-      warehouses() {
-        let warehouses = this.fromVuex('warehouses')
-        //id баланса зерна равно 2, фильтруем по нему
-        warehouses = warehouses.filter( x => x.warehouseType == 2)
-
-        if (warehouses && warehouses.length) {
-          this.item.warehouseId = warehouses[0].id
-
-          let localWarehouseId = localStorage.getItem('warehouseId');
-
-          if (localWarehouseId){
-            this.item.warehouseId = parseInt(localWarehouseId);
-          } else {
-            localStorage.setItem('warehouseId', this.item.warehouseId);
-          }
-
+    warehouseChange(value) {
+      localStorage.setItem('warehouseId', value);
+    },
+    exportTable(name) {
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          let endpoint        = "InternalTransferReport";
+          let filename        = "Журнал весовщика(внутреннее перемещение зерна)";
+          let body = {
+            CultureId: this.item.cultureId,
+            WarehouseId: this.item.warehouseId,
+            Date: {
+              start: moment(this.item.selectedDate.from).format("YYYY-MM-DDTHH:mm:ss"),
+              end: moment(this.item.selectedDate.till).format("YYYY-MM-DDTHH:mm:ss"),
+            },
+            OrganizationId: this.$root.context.organization,
+          };
+          http.downloadXLS(endpoint, body, filename);
+        } else {
+          return false;
         }
-        return warehouses;
-      },
-      cultures() {
-        return this.fromVuex('cultures')
-      },
-      internaltransfers() {
-        return this.fromVuex('internaltransfers')
-      },
-      totalItems: function() {
-        return this.tableData.length;
-      },
-      tableData: function() {
-        let from = this.item.selectedDate.from || new Date("05/01/" + (new Date()).getFullYear())
-        let till = this.item.selectedDate.till || Date.now()
-        let warehouseId = this.item.warehouseId
-        let cultureId = this.item.cultureId
-        if (this.internaltransfers.length) this.loading = true
-        let tableData = this.internaltransfers.filter(function(record) {
-          let ourDate = new Date(record.date)
-          let dateRange = (ourDate >= from) && (ourDate <= till)
-          let warehouse = record.warehouseId === warehouseId || !warehouseId
-          let culture = record.cultureId === cultureId || !cultureId
-          return dateRange && warehouse && culture
-        })
-        if (this.internaltransfers.length) this.loading = false
-        return tableData
-      },
-    },
-    created() {
-//      EventBus.$on('SeedLimitFact.UpdateComponent.PutObjectCompleted', () => {
-//        this.refresh()
-//      });
-      EventBus.$on('AppYearChanged', (year) => {
-        this.item.selectedDate.from = new Date(new Date(this.item.selectedDate.from).setFullYear(year));
-        this.item.selectedDate.till = new Date(new Date(this.item.selectedDate.till).setFullYear(year));
       });
-      EventBus.$on('App.Context.OrganizationChanged', (orgId) => {
-        localStorage.removeItem('warehouseId');
-      });
-      this.fetchEntities([
-        'internaltransfers',
-        'warehouses',
-        'cultures',
-      ]);
     },
-    methods: {
-//      update(id) {
-//        EventBus.$emit('SeedLimitFact.InitUpdate', id);
-//      },
-      warehouseChange(value) {
-        localStorage.setItem('warehouseId', value);
-      },
-      load() {
-        this.fetchEntities([
-          'internaltransfers',
-        ]);
-      },
-      refresh() {
-        this.loading = true
-        this.load();
-      },
-      exportTable(name) {
-        this.$refs[name].validate((valid) => {
-          if (valid) {
-            let endpoint        = "InternalTransferReport";
-            let filename        = "Журнал весовщика(перемещение)";
-
-            let body = {
-              CultureId: this.item.cultureId,
-              WarehouseId: this.item.warehouseId,
-              Date: {
-                start: moment(this.item.selectedDate.from).format("YYYY-MM-DDTHH:mm:ss"),
-                end: moment(this.item.selectedDate.till).format("YYYY-MM-DDTHH:mm:ss"),
-              },
-              OrganizationId: this.$root.context.organization,
-            };
-
-            http.downloadXLS(endpoint, body, filename);
-          } else {
-            return false;
-          }
-        });
-      },
-    }
   }
-
+}
 </script>
 
-<style>
-  .tableHeading {
-    display: inline-block;
-    margin-right: 20px;
-  }
-
-  .downloadLzkStyle {
-    display: block;
-    margin-top: 20px;
-  }
-
-  .downloadFieldSelect {
-    width: 250px;
-  }
-
+<style lang="stylus" scoped>
+.black
+  color inherit
+.red
+  color red
 </style>

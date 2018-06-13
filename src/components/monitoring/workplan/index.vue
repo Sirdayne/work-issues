@@ -45,8 +45,14 @@ div
       :key="col",
     )
       template(slot-scope="scope")
-        router-link(:to="`/map/${scope.row.columns[col].assignmentId}`")
+        router-link(v-if="scope.row.columns[col].stopType == 1", :to="`/agrofact/map/${scope.row.columns[col].assignmentId}`")
           .inn {{scope.row.columns[col].data}}
+
+        .inn(v-else-if="scope.row.columns[col].stopType == 3", style="text-align: center;")
+          p {{scope.row.columns[col].data}}
+          router-link(:to="`/agrofact/map?carIdTabOpen=${scope.row.carId}&carGpsDate=${scope.row.columns[col].formatDate}`", old="`/agrofact/map?carId=${scope.row.carId}&date=${scope.row.columns[col].date}`", target="_blank")
+            el-button(type="primary", size="small") показать трек
+        .inn(v-else)
 
     el-table-column(
       label="Навигация/операции",
@@ -73,7 +79,6 @@ import http from 'lib/httpQueryV2'
 import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
 import ListController from 'mixins/ListController'
 import moment from 'moment'
-import {EventBus} from 'services/EventBus'
 
 export default {
   mixins: [
@@ -85,11 +90,8 @@ export default {
       item: {
         carTypeId: null,
         selectedDate: {
-          from: new Date(new Date(new Date()
-              .getTime() - (5 * 24 * 60 * 60 * 1000))
-            .setFullYear(this.$root.context.year)),
-          till: new Date(new Date()
-            .setFullYear(this.$root.context.year)),
+          from: moment().set({'year': this.$root.context.year, 'hour': 0, 'minute': 0, 'second': 0, 'millisecond': 0}).subtract(5, "days"),
+          till: moment().set({'year': this.$root.context.year, 'hour': 23, 'minute': 59, 'second': 59, 'millisecond': 999}),
         }
       },
       cols: [0, 1, 2, 3, 4],
@@ -101,12 +103,6 @@ export default {
     }
   },
   created() {
-    EventBus.$on('AppYearChanged', (year) => {
-      this.item.selectedDate.from = new Date(new Date(this.item.selectedDate.from)
-        .setFullYear(year));
-      this.item.selectedDate.till = new Date(new Date(this.item.selectedDate.till)
-        .setFullYear(year));
-    });
     this.fetchEntities([
       'workplan',
       'cartypes',
@@ -117,7 +113,7 @@ export default {
       return this.fromVuex('workplan').map(wp => {
         if (wp.columns.length > 0) {
           wp.columns.map(c => {
-            c.fieldName = c.data.substring( c.data.indexOf("\r\n") + 2, c.data.indexOf("-") )
+            c.fieldName = c.data.substring( c.data.indexOf("\r\n") + 2, c.data.indexOf("га") + 2 )
             c.assignmentId = this.assignments.find(f => f.fieldNewName === c.fieldName)
             c.assignmentId = c.assignmentId ? c.assignmentId.id : null
             return c
@@ -173,9 +169,13 @@ export default {
         return {
           "name": row.name,
           "carTypeId": row.carTypeId,
+          "carId": row.carId,
           "columns": this.columns.map(col => {
             let res = ""
             let ass = ""
+            let resDate = ""
+            let formatResDate = ""
+            let stopType = 0
             for (let i = 0, n = row.columns.length; i < n; i++) {
               let colDate = col.slice(3, 6) + col.slice(0, 3) + col.slice(6)
               let d = new Date(row.columns[i].date)
@@ -184,12 +184,18 @@ export default {
               if (d1 === d2) {
                 res = row.columns[i].data
                 ass = row.columns[i].assignmentId
+                resDate = row.columns[i].date
+                formatResDate = moment(row.columns[i].date).format('DD/MM/YYYY')
+                stopType = row.columns[i].stopType
                 break
               }
             }
             return {
               "data": res,
-              "assignmentId": ass
+              "assignmentId": ass,
+              "stopType": stopType,
+              "date": resDate,
+              "formatDate": formatResDate
             }
           })
         }
@@ -210,7 +216,8 @@ export default {
       return this.cartypes.filter(c => this.item.carTypeId === c.id)[0].name
     },
     handleClickNext() {
-      this.currentCol = this.currentCol + 1;
+      let max = moment(this.item.selectedDate.till).diff(moment(this.item.selectedDate.from), "days")
+      this.currentCol = Math.min(this.currentCol + 1, Math.floor(max / 5));
     },
     handleClickPrev() {
       this.currentCol = Math.max(this.currentCol - 1, 0);
@@ -219,7 +226,7 @@ export default {
       this.$refs[name].validate((valid) => {
         if (valid) {
           let endpoint = "WorkPlanForm";
-          let filename = "Нарушения скоростного режима";
+          let filename = "Календарь работ";
 
           let body = {
             OrganizationId: this.$root.context.organization,
@@ -249,7 +256,12 @@ export default {
   padding: 0;
 }
 .inn {
-  padding: 0 18px;
+  padding: 5px 18px;
+  font-size: 12px;
+}
+.inn p{
+  margin: 0 0 5px;
+  width: 100%;
 }
 .cell a{
   color: #1f2d3d;

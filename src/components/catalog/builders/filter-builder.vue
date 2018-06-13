@@ -51,7 +51,7 @@ export default {
           if (a.fkey) {
             let element = a.prop.split(".")[0]
             let prop = a.prop.split(".")[1]
-            obj.model = element + prop[0].toUpperCase() + prop.slice(1)
+            obj.model = element + prop[0].toUpperCase() + prop.slice(1) + a.fkey
             obj.default = a.default
           } else {
             obj.model = a.prop

@@ -32,10 +32,6 @@ budgets:
 
 ########## Cc ##########
 
-carCoordinates:
-  contexts:
-  - organization
-
 carmarks:
 
 carmodelgroups:
@@ -59,6 +55,10 @@ carstatusextended:
 
 cartypes:
 
+carinformation:
+  contexts:
+    - organization
+
 compositions:
 
 chemicalpreparations:
@@ -78,6 +78,7 @@ chemicalTypes:
 chemistrylimitfact:
   contexts:
   - organization
+  - year
 
 chemistryLimits:
   contexts:
@@ -99,6 +100,8 @@ cultures:
 
 cultureparameters:
 
+culturerotation:
+
 culturetypes:
 
 ########## Dd ##########
@@ -109,6 +112,10 @@ downtime:
   contexts:
   - organization
 
+direction:
+
+dlinagona:
+
 ########## Ee ##########
 
 employees:
@@ -116,7 +123,12 @@ employees:
   - organization
 
 employeesAll:
-  path: employees
+  path: employees/organizationsGroup
+
+
+eventlogs:
+  contexts:
+  - organization
 
 ########## Ff ##########
 
@@ -140,11 +152,18 @@ fields:
 fieldsall:
   path: fields
 
+fieldsuboperationprogresstype:
+
+fieldSurveys:
+  contexts:
+  - organization
+
 fieldcontours:
 
 FieldLastAssignments:
   contexts:
   - organization
+  - year
 
 fieldweediness:
   contexts:
@@ -161,6 +180,8 @@ fieldzones:
 finalproducts:
 
 fuelnorms:
+#  contexts:
+#  - organizationsGroupId
 
 ########## Gg ##########
 
@@ -171,6 +192,8 @@ grainregistry:
     - organization
 
 growthphases:
+
+growingphases:
 
 ########## Ii ##########
 
@@ -196,6 +219,10 @@ instruments:
 
 instrumenttypes:
 
+inventory:
+  contexts:
+  - organization
+
 ########## Nn ##########
 
 news:
@@ -206,6 +233,10 @@ news:
 notes:
   contexts:
   - organization
+
+nozzleColor:
+
+nutrientsaddition:
 
 ########## Kk ##########
 
@@ -225,7 +256,11 @@ leaflettracks:
 
 operations:
 
+operativeinformationtype:
+
 organizations:
+
+organizationsshortname:
 
 organizationinstruments:
   contexts:
@@ -243,6 +278,10 @@ outgoingtransfers:
 
 processedstatuses:
 
+paymentsadditionals:
+#  contexts:
+#  - organizationsGroupId
+
 ########## Rr ##########
 
 reports:
@@ -258,6 +297,16 @@ seedlimitfact:
   - organization
 
 seedlimits:
+  contexts:
+  - organization
+  - year
+
+seedlimitcoordinates:
+  contexts:
+  - organization
+  - year
+
+seedmordant:
   contexts:
   - organization
 
@@ -287,6 +336,12 @@ storages:
   contexts:
   - organization
 
+stopjournals:
+  contexts:
+  - organization
+
+stoptypes:
+
 suboperations:
 ########## Tt ##########
 
@@ -297,8 +352,16 @@ technologyRecipe:
   - budget
   - year
 
+technologyReciept:
+  contexts:
+  - organization
+  - budget
+  - year
+
 technologyRecipeTypes:
   path: technologyRecieptTypes
+
+technologyRecieptTypes:
 
 TechnologyRecieptTypes:
 
@@ -310,6 +373,8 @@ transportation:
   contexts:
   - organization
 
+threatLevel:
+
 ########## Uu ##########
 
 userorganizations:
@@ -320,6 +385,8 @@ users:
   - organization
 
 unittypes:
+
+usedPackagingAbsence:
 
 ########## Ww ##########
 
@@ -345,6 +412,8 @@ workplan:
 works:
   path: workTypeParameterPlanWorkTypes
 
+worktypecars:
+
 workTypes:
   path: suboperations
 
@@ -354,6 +423,36 @@ WorkTypeParameterPlanWorkTypes:
 
 weedTypes:
 
+weed:
+
+weedsGrowingPhases:
+
+windDirection:
+
 ########## YY ##########
 
+###### CheckLists ######
+
+chemicalCheckList:
+  contexts:
+  - organization
+
+fertilizerCheckList:
+  contexts:
+  - organization
+
+harrowingCheckList:
+  contexts:
+  - organization
+
+harvestCheckList:
+  contexts:
+  - organization
+
+sowingCheckList:
+  contexts:
+  - organization
+
 yearconstants:
+#  contexts:
+#  - organizationsGroupId

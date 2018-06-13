@@ -3,12 +3,13 @@ const webpack = require('webpack')
 const DirectoryNamedWebpackPlugin = require("directory-named-webpack-plugin")
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const WebpackAutoInject = require('webpack-auto-inject-version');
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 module.exports = {
   entry: './src/main.js',
   output: {
     path: path.resolve(__dirname, './dist'),
-    filename: "static/js/[name].[hash].js",
+    filename: "static/js/[name].js?[hash]",
     pathinfo: true,
   },
   module: {
@@ -16,15 +17,25 @@ module.exports = {
         test: /\.js$/,
         loader: 'babel-loader',
         include: [path.resolve(__dirname, "./src")],
-        exclude: [path.resolve(__dirname, "./node_modules")],
+        exclude: file => (
+          /node_modules/.test(file) && !/\.vue\.js/.test(file)
+        ),
+      },
+      {
+        test: /\.pug$/,
+        loader: 'pug-plain-loader'
       },
       {
         test: /\.ya?ml$/,
         loader: 'yml-loader'
       },
       {
-        test: /\.styl$/,
-        use: [{
+        test: /\.styl(us)?$/,
+        use: [
+          {
+            loader: 'vue-style-loader',
+          },
+          {
             loader: 'style-loader',
           },
           {
@@ -40,6 +51,29 @@ module.exports = {
             loader: 'stylus-loader',
           },
         ],
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          {
+            loader: 'vue-style-loader',
+          },
+          {
+            loader: "style-loader" // creates style nodes from JS strings
+          },
+          {
+            loader: "css-loader" // translates CSS into CommonJS
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              sourceMap: true,
+            }
+          },
+          {
+            loader: "sass-loader" // compiles Sass to CSS
+          },
+        ]
       },
       {
         test: /_models\/*/,
@@ -72,16 +106,6 @@ module.exports = {
       favicon: 'favicon.ico',
       chunksSortMode: 'dependency',
     }),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: "vendor",
-      minChunks: function (module) {
-        return module.context && module.context.indexOf("node_modules") !== -1;
-      }
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: "manifest",
-      minChunks: Infinity
-    }),
     new WebpackAutoInject({
       SILENT: true,
       components: {
@@ -89,10 +113,12 @@ module.exports = {
         InjectAsComment: false,
         InjectByTag: true
       },
-    })
+    }),
+    new VueLoaderPlugin(),
   ],
-  node: {
-    fs: "empty",
-    net: "empty",
-  }
+  optimization: {
+    runtimeChunk: {
+      name: entrypoint => `runtimechunk~${entrypoint.name}`
+    },
+  },
 }

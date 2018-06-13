@@ -1,8 +1,8 @@
 import entities from 'entities.yaml';
 import localforage from 'localforage';
-import nprogress from 'lib/NProgress';
 import http from 'lib/httpQueryV2';
 import pluralize from 'pluralize';
+import complexEntities from 'complexEntities.json';
 
 export default {
   data() {
@@ -10,17 +10,14 @@ export default {
       ready: false,
       prefix: 'data/',
       updated: 1,
-      entityModifiedApi: 'entityModified',
     }
   },
   watch: {
     ['queueLength'](val) {
       if (val) {
-        nprogress.start()
       } else {
         this.$store.dispatch('actionSetQueue', []);
         this.$store.dispatch('actionSetQueueId', 0);
-        nprogress.done()
       }
     },
   },
@@ -47,15 +44,31 @@ export default {
       }
     },
     getEntityModified(params) {
-      http.get(this.entityModifiedApi)
+      http.getEntityModified()
         .then(data => {
           let emt = data.map(d => {
             d.className = d.className.toLowerCase()
             return d
           })
+          emt = this.addComplexEntities(emt)
           this.manageQueue(params)
           this.getEntities(params, emt)
         })
+    },
+    addComplexEntities(emt) {
+      Object.keys(complexEntities).forEach(key => {
+        let obj = {
+          className: key,
+          dateModified: "",
+          organizationId: +this.$store.getters.getOrganizationId,
+        }
+        let dates = emt.filter(e =>
+          e.organizationId == obj.organizationId && complexEntities[key].includes(e.className)
+        ).map(e => e.dateModified)
+        obj.dateModified = new Date(Math.max.apply(null, dates));
+        emt.push(obj)
+      })
+      return emt
     },
     manageQueue(params) {
       let queue = this.queue.slice()
@@ -75,11 +88,12 @@ export default {
       let key = context ? path + '' + context : path;
       let hasOrganization = foundEntity && foundEntity.contexts && foundEntity.contexts.includes("organization")
       let organizationId = hasOrganization ? params.organizationId : null
-      let mostRecentTime = this.mostRecentTime(emt, params.name, organizationId)
+      let paramsName = context ? params.name : key
+      let mostRecentTime = this.mostRecentTime(emt, paramsName, organizationId)
       localforage.getItem(this.prefix + key)
         .then(res => {
           if (res) {
-            let response = this.decrypt(res)
+            let response = res
             let data = response.data
             let dateModified = response.dateModified
             let isMostRecent = mostRecentTime == new Date(dateModified).getTime()
@@ -90,10 +104,11 @@ export default {
               });
               this.updateFetchState(params);
             } else {
-              this.getRemoteRecords(params, mostRecentTime)
+              this.getRemoteRecords(params, mostRecentTime, true)
             }
           } else {
-            this.getRemoteRecords(params, mostRecentTime)
+            let notCache = mostRecentTime ? true : false
+            this.getRemoteRecords(params, mostRecentTime, notCache)
           }
         })
         .catch((error) => {
@@ -101,28 +116,30 @@ export default {
         });
     },
     mostRecentTime(emt, name, organizationId) {
+      if (name == "workTypeParameterPlanWorkTypes") name = "works"
       let entity = emt
-        .filter(e => {
-          return e.organizationId == organizationId
-        })
-        .find(e => {
-          let plural = pluralize(e.className)
-          return plural == name
-        })
+      .filter(e => {
+        return e.organizationId == organizationId
+      })
+      .find(e => {
+        let plural = pluralize(e.className)
+        return plural == name || e.className == name
+      })
       if (entity) {
         return new Date(entity.dateModified).getTime()
       }
       return false
     },
-    getRemoteRecords(params, mostRecentTime) {
+    getRemoteRecords(params, mostRecentTime, notCache) {
       let foundEntity = this.searchEntitiesForParam(params.name);
       let context = this.resolveContexts(foundEntity);
       let path = this.buildPath(foundEntity, params);
       path = context ? path + '' + context : path;
-      http.get(path).then(data => {
+      let httpGetQuery = notCache ? http.getWithoutCache(path): http.get(path);
+      httpGetQuery.then(data => {
         this.$store.dispatch('actionAddEntities', { name: params.name, data: data });
         if (mostRecentTime) {
-          let value = this.encrypt({ data: data, dateModified: mostRecentTime })
+          let value = {data: data, dateModified: mostRecentTime}
           localforage.setItem(this.prefix + path, value)
           .then((value) => {
             this.updateFetchState(params);
@@ -172,11 +189,5 @@ export default {
       if (id) return this.$store.getters.getEntityById(id, name);
       return this.$store.getters.getEntities(name);
     },
-    encrypt(data) {
-      return this.$crypt.encrypt(JSON.stringify(data), false);
-    },
-    decrypt(data) {
-      return JSON.parse(this.$crypt.decrypt(data, false))
-    }
   }
 }

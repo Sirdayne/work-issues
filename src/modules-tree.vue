@@ -2,7 +2,7 @@
   <div class="cols">
     <div id="modules-tree">
       <ul class='circle-container'>
-        <li v-for="item in links">
+        <li v-for="item in links" :key="item.key">
           <button @click="navigateToLink(item)" :class="defineClass(item)" :id="item.id">
             {{ item.title }}
           </button>
@@ -13,91 +13,105 @@
 </template>
 
 <script>
-  export default {
-    data() {
-      return {
-        links: [
-          {
-            title: 'BI Агро',
-            link: '/biagro',
-            id: '',
-            active: false,
-          },
-          {
-            title: 'Agroinfo',
-            link: '/agroinfo',
-            id: '',
-            active: false,
-          },
-          {
-            title: 'Баланс зерна',
-            link: '/balanszerna',
-            id: '',
-            active: true,
-          },
-          {
-            title: 'Agrostock',
-            link: '/agrostock',
-            id: '',
-            active: false,
-          },
-          {
-            title: 'Admin',
-            link: '/admin',
-            id: '',
-            active: false,
-          },
-          {
-            title: 'Agroplan',
-            link: '/agroplan',
-            id: '',
-            active: true,
-          },
-          {
-            title: 'Agromap',
-            link: '/agromap',
-            id: '',
-            active: true,
-          },
-          {
-            title: 'Agrofact',
-            link: '/agrofact',
-            id: '',
-            active: true,
-          },
-          {
-            title: '',
-            link: '/',
-            id: 'logo',
-            active: false,
-          },
-        ]
+import Auth from 'services/Auth'
+
+export default {
+  data() {
+    return {
+      links: [
+        {
+          title: 'BI Агро',
+          link: '/biagro',
+          id: '',
+          active: false,
+          key: 1,
+        },
+        {
+          title: 'Agroinfo',
+          link: '/agroinfo',
+          id: '',
+          active: false,
+          key: 2,
+        },
+        {
+          title: 'Баланс зерна',
+          link: '/balanszerna',
+          id: '',
+          active: true,
+          key: 3,
+        },
+        {
+          title: 'Agrostock',
+          link: '/agrostock',
+          id: '',
+          active: false,
+          key: 4,
+        },
+        {
+          title: 'Admin',
+          link: '/admin',
+          id: '',
+          active: false,
+          admin: true,
+          key: 5,
+        },
+        {
+          title: 'Agroplan',
+          link: '/agroplan',
+          id: '',
+          active: true,
+          key: 6,
+        },
+        {
+          title: 'Agromap',
+          link: '/agromap',
+          id: '',
+          active: true,
+          key: 7,
+        },
+        {
+          title: 'Agrofact',
+          link: '/agrofact',
+          id: '',
+          active: true,
+          key: 8,
+        },
+        {
+          title: '',
+          link: '/',
+          id: 'logo',
+          active: false,
+          key: 9,
+        },
+      ]
+    }
+  },
+  created() {
+    this.links.find(l => l.admin).active = Auth.getProfile().roles.includes("Admin")
+  },
+  methods: {
+    navigateToLink(obj) {
+      if (obj.active) {
+        let link = obj.link.replace('/', '');
+        this.$router.push(obj.link);
       }
     },
-    methods: {
-      navigateToLink(obj) {
-        if (obj.active) {
-          let link = obj.link.replace('/', '');
-          this.$root.setModule(link);
-          this.$router.push(obj.link);
-        }
-      },
-      defineClass(obj) {
-        if (!obj.active) {
-          return 'circles not-active-circle';
-        } else {
-          return 'circles active-circle';
-        }
-      },
-      defineLink(obj) {
-        if (!obj.active) {
-          return '/';
-        } else {
-          return obj.link;
-        }
+    defineClass(obj) {
+      if (!obj.active) {
+        return 'circles not-active-circle';
+      } else {
+        return 'circles active-circle';
+      }
+    },
+    defineLink(obj) {
+      if (!obj.active) {
+        return '/';
+      } else {
+        return obj.link;
       }
     }
   }
+}
 </script>
 
 <style lang="scss" scoped>

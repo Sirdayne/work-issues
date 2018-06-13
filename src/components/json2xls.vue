@@ -1,6 +1,6 @@
 <template lang="pug">
   el-button.excel(
-    type="default"
+    type="default",
     @click="download()"
   )
 </template>

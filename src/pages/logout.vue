@@ -3,9 +3,11 @@
 </template>
 
 <script>
+import Auth from 'services/Auth'
+
 export default {
   created() {
-    this.$auth.logout()
+    Auth.logout()
   }
 }
 </script>

@@ -1,0 +1,32 @@
+{
+  "name": "CultureRotation",
+  "api": "CultureRotation",
+  "dependencies": [
+    "Cultures"
+  ],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "Cultures.name",
+      "fkey": "cultureId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Нежелательно",
+      "prop": "Cultures.name",
+      "fkey": "notRecommendedList",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Нельзя",
+      "prop": "Cultures.name",
+      "fkey": "forbiddenList",
+      "multiple": true,
+      "filter": true,
+      "iterable": true
+    }
+  ]
+}

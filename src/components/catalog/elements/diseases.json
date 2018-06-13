@@ -1,6 +1,7 @@
 {
   "name": "Diseases",
   "api": "Diseases",
+  "notFilterable": true,
   "dependencies": [],
   "attributes": [
     {

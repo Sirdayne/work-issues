@@ -10,7 +10,7 @@
         .recipes-radio(v-for="b in budgets"): el-radio(v-model="$root.context.budget", :label="b.id") {{b.name}}
 
     el-button(@click="startHelpRecipes") ?
-    el-button.m(size="small", icon="plus", type="primary", @click="$router.push('/recipes/new')", id="step3") Новая группа работ
+    el-button.m(size="small", icon="plus", type="primary", @click="$router.push('/agroplan/recipes/new')", id="step3") Новая группа работ
     el-button.filter(
       @click="filterUnfolded = true",
       type="default",
@@ -47,7 +47,7 @@
     h2 Список работ
     .el-table-cont
       el-table(
-        v-if="filteredRecipes || loading",
+        v-if="filteredRecipes",
         :data="filteredRecipes"
         resizable,
         border
@@ -80,7 +80,7 @@
           width="120",
         )
           template(slot-scope="scope")
-            el-button(@click="$router.push(`/recipes/${scope.row.id}`)", size="small", icon="edit")
+            el-button(@click="$router.push(`/agroplan/recipes/${scope.row.id}`)", size="small", icon="edit")
             el-button(@click="removeRecipe(scope.row.id)", size="small", icon="delete2")
 
 
@@ -90,7 +90,6 @@
 import RecordsLoaderV2 from 'mixins/RecordsLoaderV2';
 import { createIndex } from 'lib/utils'
 import http from 'lib/httpQueryV2'
-import modifiedByName from 'lib/modifiedByName';
 import {EventBus} from 'services/EventBus'
 import ListController from 'mixins/ListController'
 
@@ -104,28 +103,14 @@ export default {
   ],
   data() {
     return {
-      loading: true
+      sowings: [],
+      works: [],
+      types: [],
+      recipes: [],
+      loading: true,
     }
   },
   computed: {
-    types() {
-      return this.fromVuex('technologyRecipeTypes')
-    },
-    sowings() {
-      return this.fromVuex('sowings')
-    },
-    works() {
-      return this.fromVuex('works')
-    },
-    recipes() {
-      let recipes = this.updated && this.fromVuex('technologyRecipe')
-      const types = createIndex(this.types)
-      return recipes.sort((a, b) => new Date(b.dateCreated) - new Date(a.dateCreated))
-      .map(recipe => {
-        recipe.type = types[recipe.technologyRecieptTypeId]
-        return recipe
-      })
-    },
     filteredRecipes() {
       let filteredRecipes = this.recipes.filter(recipe => !this.filterModel.filterType || recipe.type.id === this.filterModel.filterType)
       if (this.filterModel.filterSowing){
@@ -150,9 +135,6 @@ export default {
       return this.fromVuex('budgets');
     }
   },
-  updated() {
-    modifiedByName.addTooltips( this.filteredRecipes );
-  },
   created() {
     this.load()
   },
@@ -165,13 +147,24 @@ export default {
       this.load()
     },
     load() {
-      this.loading = true
       this.fetchEntities([
-        'technologyRecipeTypes',
-        'technologyRecipe',
+        'technologyReciept',
+        'technologyRecieptTypes',
         'sowings',
         'works'
-      ]);
+      ], this.afterFetch);
+    },
+    afterFetch() {
+      this.sowings = this.fromVuex('sowings')
+      this.works = this.fromVuex('works')
+      this.types = this.fromVuex('technologyRecieptTypes')
+      const types = createIndex(this.types)
+      let recipes = this.fromVuex('technologyReciept')
+      this.recipes = recipes.sort((a, b) => new Date(b.dateCreated) - new Date(a.dateCreated))
+        .map(recipe => {
+          recipe.type = types[recipe.technologyRecieptTypeId]
+          return recipe
+        })
     },
     getTotalArea(sowings){
       let result = 0

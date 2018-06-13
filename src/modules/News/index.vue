@@ -16,7 +16,6 @@ export default {
   data() {
     return {
       news: null,
-      env: process.env
     }
   },
   mixins: [

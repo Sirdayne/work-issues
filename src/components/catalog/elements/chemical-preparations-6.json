@@ -46,21 +46,6 @@
       "table": false
     },
     {
-      "label": "Азот",
-      "prop": "nitrogen",
-      "table": false
-    },
-    {
-      "label": "Фосфор",
-      "prop": "phosphorus",
-      "table": false
-    },
-    {
-      "label": "Калий",
-      "prop": "potassium",
-      "table": false
-    },
-    {
       "label": "Всего действующих веществ",
       "prop": "activeSubstance",
       "table": false

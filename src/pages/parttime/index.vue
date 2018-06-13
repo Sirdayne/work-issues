@@ -5,11 +5,11 @@
     :defaultActive="defaultActive",
     v-if="sidebarToggleState"
   )
-    router-link(:to="`/parttime?path=cleaning`")
+    router-link(:to="`/balanszerna/parttime?path=cleaning`")
       el-menu-item(:index="`1`") Очистка
-    router-link(:to="`/parttime?path=drying`")
+    router-link(:to="`/balanszerna/parttime?path=drying`")
       el-menu-item(:index="`2`") Сушка
-    router-link(:to="`/parttime?path=parttime`")
+    router-link(:to="`/balanszerna/parttime?path=parttime`")
       el-menu-item(:index="`3`") Подработка
   .workspace
     template

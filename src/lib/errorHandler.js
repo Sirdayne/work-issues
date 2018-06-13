@@ -1,6 +1,6 @@
 import { Message } from 'element-ui';
 import { Notification } from 'element-ui';
-const isProd = process.env.PROD;
+const isProd = IS_PROD;
 const cyrillicPattern = /[\u0400-\u04FF]/;
 
 export default {
@@ -8,6 +8,10 @@ export default {
     let msg = this.isMessage(error);
     if (msg) {
       this.handleMessage(msg, error)
+    } else {
+      if (error.code == "ECONNABORTED") {
+        this.showMessage("Превышен лимит ожидания!")
+      }
     }
   },
   isMessage(error) {

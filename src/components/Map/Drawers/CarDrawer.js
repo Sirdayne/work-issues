@@ -1,8 +1,9 @@
 import L from 'leaflet'
 import 'lib/MovingMarker'
-import moment, { duration } from 'moment'
 import {EventBus} from 'services/EventBus';
 import TrackTimesMixin from "components/Map/TrackTimesMixin";
+import moment from 'moment'
+import {deepClone} from 'lib/utils';
 
 export default {
   mixins: [TrackTimesMixin],
@@ -14,10 +15,10 @@ export default {
     };
   },
   created() {
-    EventBus.$on('CarDrawer.Teleport', (val) => {
+    EventBus.$on('CarDrawer.TimeTravel', (val) => {
       this.currentMovementState = "paused"
       this._stopUpdate()
-      this._teleport(val)
+      this._timeTravel(val)
     });
     EventBus.$on('CarDrawer.Start', () => {
       if (this.currentMovementState !== "started") {
@@ -59,7 +60,7 @@ export default {
       this.cars[id] = {}
       this.cars[id].latLng = latLng
       this.cars[id].speed = speed
-      this.cars[id].time = this.$store.getters.getTrackTimes.find(tt => tt.id == id).times
+      this.cars[id].time = this.$store.getters.getTrackTimesById(id).times
       let last = this.cars[id].time.length - 1
       let i = index || 0
       let next = i < last ? i + 1 : last
@@ -69,6 +70,7 @@ export default {
       this.cars[id].car.addTo(this.map)
       let msg = this._createPopupMsg(id, this.cars[id].time[0], this.cars[id].time[last], this.cars[id].time[i], speed[i])
       this.cars[id].car.bindPopup(msg)
+      this.cars[id].info = msg.replace(/<\/br>/g, "")
     },
     _getDuration(latLng0, latLng1, speed0, speed1) {
       let ll0 = L.latLng(latLng0)
@@ -77,71 +79,70 @@ export default {
       let speedUp = 10 * this.speedUp
       let avgSpeed = Math.abs(speed1 + speed0) / 2 || 0.1
       let duration = dist / (1000 * avgSpeed) * 3600 * 1000 / speedUp
-      return duration
+      return Math.floor(duration)
     },
     _startMove() {
       try {
         this.timeLoop = setInterval(() => {
-          let mergedTrackTimes = this.$store.getters.getMergedTrackTimes
-          let mergedTime = mergedTrackTimes.currentTimeInMinutes()
-          let trackTimes = this.$store.getters.getTrackTimes
-          let notLastIds = this._getNotLastIds(trackTimes)
-          let minTime = this._getMinTime(notLastIds, trackTimes, mergedTime)
+          let notLastIds = this._getNotLastIds()
+          let minTime = this._getMinTime(notLastIds)
           if (!notLastIds.length) {
             this._stopUpdate()
             return false;
           }
+          let modified = false
           notLastIds.forEach(id => {
-            let trackTimesObject = trackTimes.find(tt => tt.id == id)
-            let timeCond = trackTimesObject.currentTimeInMinutes() <= minTime
+            let trackTimesObject = this.$store.getters.getTrackTimesById(id)
+            let timeCond = trackTimesObject.currentTime() <= minTime
             if (timeCond && !this.cars[id].car.isRunning()) {
               this._makeUpdate(id)
+              modified = true
             }
           })
-          this._updateMergedTrackTimes(mergedTrackTimes)
+          if (modified) this._updateMergedTrackTimes()
         }, 500 / this.speedUp)
       } catch (e) {
         return false;
       }
     },
-    _getMinTime(notLastIds, trackTimes, initialMinTime) {
+    _getMinTime(notLastIds) {
+      let initialMinTime = Number.MAX_SAFE_INTEGER
       let minTime = notLastIds.reduce((min, id) => {
-        let trackTimesObject = trackTimes.find(tt => tt.id == id)
-        let time = trackTimesObject.currentTimeInMinutes()
+        let time = this.$store.getters.getTrackTimesById(id).currentTime()
         return Math.min(min, time)
       }, initialMinTime)
       return minTime
     },
-    _getNotLastIds(trackTimes) {
+    _getNotLastIds() {
       let notLastIds = this.selectedAssignmentsIds.filter(id => {
-        let trackTimesObject = trackTimes.find(tt => tt.id == id)
+        let trackTimesObject = this.$store.getters.getTrackTimesById(id)
         let notLast = trackTimesObject ? trackTimesObject.index < trackTimesObject.last : false
         return notLast
       })
       return notLastIds
     },
-    _updateMergedTrackTimes(mergedTrackTimes) {
-      let trackTimes = this.$store.getters.getTrackTimes
-      let maxTime = 72 * 60
-      let notLastIds = this._getNotLastIds(trackTimes)
-      let minTime = this._getMinTime(notLastIds, trackTimes, maxTime)
-      while (mergedTrackTimes.currentTimeInMinutes() < minTime && mergedTrackTimes.index < mergedTrackTimes.last) {
-        mergedTrackTimes.index++
-      }
-      this.$store.dispatch("actionUpdateMergedTrackTimes", mergedTrackTimes)
-    },
     _makeUpdate(id) {
-      let trackTimes = this.$store.getters.getTrackTimes
-      let trackTimesObject = trackTimes.find(tt => tt.id == id)
-      let last = trackTimesObject.last
-      trackTimesObject.index++
-      this.$store.dispatch("actionUpdateTrackTimes", trackTimesObject)
-      let i = trackTimesObject.index
+      let trackTimesObject = this.$store.getters.getTrackTimesById(id)
+      let i = trackTimesObject.index + 1
+      this.$store.dispatch("actionUpdateTrackTimes", {id: id, index: i})
       let speed = this.cars[id].speed
       let time = this.cars[id].time
       let latLng = this.cars[id].latLng
       let duration = this._getDuration(latLng[i - 1], latLng[i], speed[i - 1], speed[i])
       this.cars[id].car.moveTo(latLng[i], duration)
+    },
+    _updateMergedTrackTimes() {
+      let mergedTrackTimes = this.$store.getters.getMergedTrackTimes
+      let notLastIds = this._getNotLastIds()
+      let minTime = this._getMinTime(notLastIds)
+      let modified = false
+      while (mergedTrackTimes.currentTime() < minTime && mergedTrackTimes.index < mergedTrackTimes.last) {
+        modified = true
+        mergedTrackTimes.index++
+      }
+      if (modified) {
+        this.$store.dispatch("actionUpdateMergedTrackTimes", mergedTrackTimes.index)
+      }
     },
     _createPopupMsg(id, start, end, current, speed) {
       let assignment = this.filteredAssignments.find(a => a.id == id)
@@ -151,20 +152,15 @@ export default {
       ", </br>" + (assignment.subOperationName).trim() +
       ", </br>" + assignment.carModelDisplayString +
       "+" + assignment.instrumentName + "(" + assignment.instrumentWidth + ")" +
-      ", </br>с " + start + " до " + end +
+      ", </br>с " + moment.unix(start).format("DD.MM.YYYY HH:mm") + " до " + moment.unix(end).format("DD.MM.YYYY HH:mm") +
       ", </br>" + (assignment.avgSpeed).toFixed(2) + "км/ч"
       return msg
     },
     _stopMove() {
       this._stopUpdate()
-      let mergedTrackTimes = this.$store.getters.getMergedTrackTimes
-      mergedTrackTimes.index = 0
-      this.$store.dispatch("actionUpdateMergedTrackTimes", mergedTrackTimes)
-      let trackTimes = this.$store.getters.getTrackTimes
+      this.$store.dispatch("actionUpdateMergedTrackTimes", 0)
       this.selectedAssignmentsIds.forEach(id => {
-        let trackTimesObject = trackTimes.find(tt => tt.id == id)
-        trackTimesObject.index = 0
-        this.$store.dispatch("actionUpdateTrackTimes", trackTimesObject)
+        this.$store.dispatch("actionUpdateTrackTimes", {id: id, index: 0})
         this.map.removeLayer(this.cars[id].car)
         this._initCarObject(id, this.cars[id].latLng, this.cars[id].speed)
       })
@@ -173,20 +169,19 @@ export default {
       clearInterval(this.timeLoop)
       this.timeLoop = 0
     },
-    _teleport(index) {
+    _timeTravel(index) {
+      this.$store.dispatch("actionUpdateMergedTrackTimes", index)
       let mergedTrackTimes = this.$store.getters.getMergedTrackTimes
-      mergedTrackTimes.index = index
-      this.$store.dispatch("actionUpdateMergedTrackTimes", mergedTrackTimes)
-      let trackTimes = this.$store.getters.getTrackTimes
       this.selectedAssignmentsIds.forEach(id => {
-        let trackTimesObject = trackTimes.find(tt => tt.id == id)
+        let trackTimesObject = this.$store.getters.getTrackTimesById(id)
         trackTimesObject.index = 0
-        while(trackTimesObject.currentTimeInMinutes() < mergedTrackTimes.currentTimeInMinutes()
+        while(trackTimesObject.currentTime() < mergedTrackTimes.currentTime()
         && trackTimesObject.index < trackTimesObject.last) {
           trackTimesObject.index++
         }
-        this.$store.dispatch("actionUpdateTrackTimes", trackTimesObject)
+        this.$store.dispatch("actionUpdateTrackTimes", {id: id, index: trackTimesObject.index})
         this.map.removeLayer(this.cars[id].car)
+        trackTimesObject = this.$store.getters.getTrackTimesById(id)
         this._initCarObject(id, this.cars[id].latLng, this.cars[id].speed, trackTimesObject.index)
       })
     },
@@ -203,21 +198,19 @@ export default {
     findIndexClosestToTime(time) {
       let mergedTrackTimes = this.$store.getters.getMergedTrackTimes
       let index = 0
-      let minutes = time.split(":")[0] * 60 + +time.split(":")[1]
-      let diff = 3 * 24 * 60
+      let diff = moment().set({"year": 2118}).valueOf() / 1000
       while (index < mergedTrackTimes.last) {
         let t = mergedTrackTimes.times[index]
-        let mm = t.split(":")[0] * 60 + +t.split(":")[1]
-        if (diff > Math.abs(mm - minutes)) {
-          diff = Math.abs(mm - minutes)
+        let cond = diff > Math.abs(t - time)
+        if (cond) {
+          diff = Math.abs(t - time)
         } else {
           index--
           break;
         }
         index++
       }
-      mergedTrackTimes.index = index
-      this.$store.dispatch("actionUpdateMergedTrackTimes", mergedTrackTimes)
+      this.$store.dispatch("actionUpdateMergedTrackTimes", index)
     },
     _destroyCars(id) {
       this.cars[id] = {}

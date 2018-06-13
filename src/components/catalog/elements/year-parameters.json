@@ -1,6 +1,8 @@
 {
   "name": "YearParameters",
   "api": "YearConstants",
+  "organizationsGroupId": true,
+  "notFilterable": true,
   "dependencies": [],
   "attributes": [
     {
@@ -10,10 +12,6 @@
     {
       "label": "ср.год. кол-во раб.дней в месяце",
       "prop": "workingDaysCount"
-    },
-    {
-      "label": "Год",
-      "prop": "year"
     },
     {
       "label": "МЗП",

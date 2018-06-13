@@ -3,19 +3,30 @@ import tokml from 'tokml'
 import 'leaflet-editable'
 import 'leaflet-providers'
 import 'leaflet-easybutton'
-import 'leaflet-easyprint'
+import 'leaflet.browser.print/dist/leaflet.browser.print.min.js'
 import 'leaflet.fullscreen'
+import 'leaflet-groupedlayercontrol'
 import 'leaflet/dist/leaflet.css'
 import 'lib/Leaflet.PolylineMeasure'
 import 'lib/Leaflet.PolylineMeasure.css'
 import geodesy from 'leaflet-geodesy'
 import http from 'lib/httpQueryV2'
-import moment from 'moment'
+import { EventBus } from "services/EventBus";
+
+import fontawesome from '@fortawesome/fontawesome'
+import faDownload from '@fortawesome/fontawesome-free-solid/faDownload'
+import faSearchPlus from '@fortawesome/fontawesome-free-solid/faSearchPlus'
+import faUndo from '@fortawesome/fontawesome-free-solid/faUndo'
+
+fontawesome.library.add(faDownload)
+fontawesome.library.add(faSearchPlus)
+fontawesome.library.add(faUndo)
 
 export default {
   data() {
     return {
       editorButtons: [],
+      editorButton: null,
     }
   },
   computed: {
@@ -28,6 +39,8 @@ export default {
       this.isEditable = false
       this.drawMap();
       this.drawDetails();
+      this.addFieldOverlay();
+      this.addFieldWorkOverlay();
     },
     drawMap() {
       if (this.map) this.map.remove();
@@ -36,8 +49,23 @@ export default {
       this._addFieldsTooltipToggleButton();
       this._addScale();
       this._addRuler();
+      this._addPrinterTitle();
       this._addPrinter();
-      this._addFieldBoundariesEditor();
+      this._ifMapEditor();
+      this._addCheckboxEvents();
+      this._addExport();
+      this._addPanelBtn();
+    },
+    _ifMapEditor(){
+      let endpoint = `account/userinfo/`;
+      http.get(endpoint)
+        .then(data => {
+          if (data) {
+            if (data.roles.includes('MapEditor')) {
+              this._addFieldBoundariesEditor();
+            }
+          }
+        })
     },
     _addLayers() {
       let attribution = 'AgroStream';
@@ -45,7 +73,16 @@ export default {
       let satellite = L.tileLayer.provider('Esri.WorldImagery', {attribution: attribution});
       let baseLayers = { "Спутник": satellite, "OpenStreetMaps": osm};
       this.map = L.map('map', {editable: true, layers: [osm]}).setView([53.2858, 69.4466], 12);
-      L.control.layers(baseLayers).addTo(this.map);
+      let groupedOverlays = {
+        "Слои": {
+          "Скрыть": new L.FeatureGroup()
+        },
+      };
+      let options = {
+        exclusiveGroups: ["Слои"],
+        groupCheckboxes: false
+      };
+      this.LayerControl = L.control.groupedLayers(baseLayers, groupedOverlays, options).addTo(this.map);
     },
     _addFullscreen() {
       let fsControl = new L.Control.FullScreen({
@@ -63,17 +100,26 @@ export default {
       L.control.polylineMeasure({position:'topright', unit:'metres', clearMeasurementsOnStop: true}).addTo(this.map);
     },
     _addPrinter() {
-      L.easyPrint({
+      this.map.on("browser-pre-print", e => {});
+      this.map.on("browser-print-start", e => {this.mapPrintState = "started"});
+      this.map.on("browser-print", e => {});
+      this.map.on("browser-print-end", e => {this.mapPrintState = "ended"});
+      L.control.browserPrint({
         title: 'Печать',
-        position: 'topright',
-        sizeModes: ['Current', 'A4Landscape', 'A4Portrait'],
-        defaultSizeTitles: {Current: 'Текущий', A4Landscape: 'Альбом', A4Portrait: 'Портрет'},
-        filename: "карта",
-        hideClasses: ["date-selector"],
+        position: "topright",
+        closePopupsOnPrint: true,
+        printModes: ["Auto", "Custom", "Landscape"],
+        printModesNames: {Auto:"Авто", Custom:"Область", Landscape: "Альбом"},
+      }).addTo(this.map);
+    },
+    _addPrinterTitle() {
+      L.easyButton({
+        id: 'print-title', position: 'topright', type: 'replace', leafletClasses: true,
+        states:[{stateName: 'title', onClick: this.setPrintTitle, title: 'Заголовок карты', icon: 'el-icon-setting'}]
       }).addTo(this.map);
     },
     _addFieldBoundariesEditor() {
-      L.easyButton({
+      this.editorButton = L.easyButton({
         id: 'el-icon-edit', position: 'topright', type: 'replace', leafletClasses: true,
         states:[{stateName: 'edit', onClick: this.changeEditable, title: 'Редактировать', icon: 'el-icon-edit'}]
       }).addTo(this.map);
@@ -90,89 +136,215 @@ export default {
     },
     _addFieldsTooltipToggleButton() {
       L.easyButton({
-        id: 'el-icon-view', position: 'topright', type: 'replace', leafletClasses: true,
-        states:[{stateName: 'toggle', onClick: this.toggleFieldsTooltip, title: 'Показать/скрыть названия полей', icon: 'el-icon-view'}]
+        position: 'topright', type: 'replace', leafletClasses: true,
+        states:[
+          {
+            stateName: 'show-fields-tooltips',
+            onClick: this.showFieldsTooltips,
+            title: 'Показать названия полей',
+            icon: 'fas fa-search-plus'
+          },
+          {
+            stateName: 'hide-fields-tooltips',
+            onClick: this.hideFieldsTooltips,
+            title: 'Вернуть',
+            icon: 'fas fa-undo'
+          },
+        ]
       }).addTo(this.map);
+    },
+    _addCheckboxEvents(){
+      this.map.on('overlayadd', (e) => {
+        this.tracks.bringToFront()
+        if (e.name == "Карта посева") {
+          this.mapsowingCheckboxed = true
+          this.fieldWorkOverlaySelected = false
+        } else if (e.name == "Карта работ") {
+          this.fieldWorkOverlaySelected = true
+          this.mapsowingCheckboxed = false
+        }
+      });
+      this.map.on('overlayremove', (e) => {
+        this.tracks.bringToFront()
+        if (e.name == "Карта посева") {
+          this.mapsowingCheckboxed = false
+        } else if (e.name == "Карта работ") {
+          this.fieldWorkOverlaySelected = false
+        }
+      });
+    },
+    _addExport() {
+      L.easyButton({
+        position: 'topright', type: 'replace', leafletClasses: true,
+        states:[{stateName: 'exportMap', onClick: this.exportMap, title: 'Экспорт карты', icon: 'fas fa-download'}]
+      }).addTo(this.map);
+    },
+    _addPanelBtn() {
+      L.easyButton({
+        id: 'el-icon-bottom', position: 'topright', type: 'replace', leafletClasses: true,
+        states: [
+          {stateName: 'close', title: 'Скрыть инфо', icon: '<span class="close-icon">&cross;</span>', onClick: (control) => { this.togglePanelBottom(false); control.state('open');}},
+          {stateName: 'open', title: 'Показать инфо', icon: '<span class="iota-icon">&iukcy;</span>', onClick: (control) => { this.togglePanelBottom(true); control.state('close');}}
+        ]
+      }).addTo(this.map)
+    },
+    togglePanelBottom(state) {
+      EventBus.$emit('MapTogglePanelBottom', state);
     },
     drawDetails() {
       this.removeCars();
       this.drawFields();
       this.drawWarehouses();
       this.drawTracks();
+      this.drawPolyline();
     },
-    revealLastCoordinatesOfCars() {
-      if (this.carCoordinates.length) {
-        let carIcon = L.icon({
-            iconUrl: require('assets/tractor_small.png'),
-            iconSize:     [32, 32],
-            iconAnchor:   [15, 25],
-            popupAnchor:  [0, -16],
-        });
-        this.carCoordinates.forEach(c => {
-          let ll = L.latLng(c.point.latitude, c.point.longitude)
-          this.cars[c.carId] = {}
-          this.cars[c.carId].car = L.marker(ll, {icon: carIcon})
-            .addTo(this.map).bindPopup('#' + c.carId + ' ' + c.name).openPopup();
-        });
-        this.map.fitBounds(this.fields.getBounds());
-      }
+    setPrintTitle() {
+      this.mapPrintTitle = prompt('Введите название заголовка?', this.mapPrintTitle) || this.mapPrintTitle
     },
     changeEditable() {
       let seedLimitIds = this.selectedAssignments.map(id => {
         return this.filteredAssignments.find(a => a.id == id).seedLimitId
       })
       let cond = seedLimitIds.every((val, i, arr) => val && val === arr[0])
-      if (cond) {
-        this.isEditable = !this.isEditable;
-        if (this.isEditable) {
-          this.editorButtons.forEach(b => b.enable())
-          this.highlightedPolygons.forEach(polygon => {
-            polygon.enableEdit();
-            polygon.on('click', function (e) {
-              if ((e.originalEvent.ctrlKey || e.originalEvent.metaKey) && this.editEnabled()) {
-                this.editor.newHole(e.latlng);
-              }
-            })
-          })
+      this.selectedSeedLimitIdForKml = null
+      if (seedLimitIds.length === 1 && seedLimitIds[0] === 0){
+        this.dialogSelectSeedLimitIdForKml = true
+        this.seedLimitsFromEditField = this.seedLimitsYear.filter(s => s.fieldId == this.highlightedPolygons[0].fieldId)
+      } else {
+        if (cond) {
+          this.editPolygon()
         } else {
-          this.editorButtons.forEach(b => b.disable())
+          this.$message({
+            message: "Редактирование запрещено",
+            type: "info",
+            duration: 5000,
+            showClose: false,
+          });
+        }
+      }
+    },
+    editPolygonBySelectedSeedLimit() {
+      if (this.selectedSeedLimitIdForKml) {
+        this.dialogSelectSeedLimitIdForKml = false
+        this.editPolygon()
+      }
+    },
+    editPolygon() {
+      this.checkEditPolygons()
+      if (this.isEditable) {
+        this.enterModeEdit()
+        this.enableBtns()
+        if (this.selectedPolygonForEdit) {
+          this.editPolygonPoints(this.selectedPolygonForEdit)
+        } else {
           this.highlightedPolygons.forEach(polygon => {
-            polygon.disableEdit();
-            polygon.off()
+            this.editPolygonPoints(polygon)
           })
         }
       } else {
+        this.editorButtons.forEach(b => b.disable())
+        this.highlightedPolygons.forEach(polygon => {
+          polygon.disableEdit();
+          polygon.off()
+        })
+      }
+    },
+    enableBtns() {
+      this.editorButtons.forEach(b => b.enable())
+    },
+    checkEditPolygons() {
+      if (this.selectedPolygonForEdit || this.highlightedPolygons.length > 0){
+        this.isEditable = !this.isEditable;
+      } else {
         this.$message({
-          message: "Редактирование запрещено",
+          message: "Нет выбранных треков на поле!",
           type: "info",
           duration: 5000,
           showClose: false,
         });
       }
     },
+    editPolygonPoints(polygon) {
+      polygon.enableEdit();
+      polygon.on('click', function (e) {
+        if ((e.originalEvent.ctrlKey || e.originalEvent.metaKey) && this.editEnabled()) {
+          this.editor.newHole(e.latlng);
+        }
+      })
+    },
     cancelEdits() {
+      this.exitModeEdit()
       this.initMap()
     },
     saveEdits() {
       let seedLimitIds = this.selectedAssignments.map(id => {
         return this.filteredAssignments.find(a => a.id == id).seedLimitId
       })
-      this.highlightedPolygons.forEach(polygon => {
-        let kmlData = {
-          seedLimitId: seedLimitIds[0],
-          kml: tokml(polygon.toGeoJSON())
-        };
-        http.post('SeedLimitCoordinates/' + this.$root.context.organization , kmlData)
-      });
-      this.isEditable = false;
-    },
-    toggleFieldsTooltip() {
-      if (this.fields) {
-        this.fields.eachLayer(polygon => {
-          polygon.toggleTooltip()
+      let seedLimitId = seedLimitIds[0]
+      if (seedLimitIds[0] === 0) {
+        seedLimitId = this.selectedSeedLimitIdForKml
+      }
+      if (this.selectedPolygonForEdit) {
+        this.postKmlData(this.selectedPolygonForEdit.seedLimitId, tokml(this.selectedPolygonForEdit.toGeoJSON()), this.getArea(this.selectedPolygonForEdit))
+      } else {
+        this.highlightedPolygons.forEach(polygon => {
+          this.postKmlData(seedLimitId, tokml(polygon.toGeoJSON()), this.getArea(polygon))
         })
       }
-      this.map.setZoom(13)
+      this.isEditable = false;
+      this.exitModeEdit()
+    },
+    enterModeEdit() {
+      this.modeEditPoints = true
+    },
+    exitModeEdit() {
+      this.highlightedPolygons = []
+      this.highlightedPolygons.forEach(polygon => {
+        polygon.disableEdit();
+        polygon.off()
+      })
+      this.modeEditPoints = false
+    },
+    postKmlData(seedLimitId, kml, area) {
+      let kmlData = {
+        seedLimitId: seedLimitId,
+        kml: kml,
+        area: area
+      }
+      http.post('SeedLimitCoordinates/' + this.$root.context.organization , kmlData).then(() => {
+        this.updateSeedLimitCoordinates()
+        this.$message({
+          message: "Успешно изменено в карте посева!",
+          type: "success",
+          duration: 5000,
+          showClose: false,
+        });
+      })
+    },
+    exportMap() {
+      this.exportMapVisible = true
+    },
+    showFieldsTooltips(control) {
+      let activeFields = (this.mapsowingCheckboxed) ? this.SowingPolygons : (this.fieldWorkOverlaySelected) ? this.fieldWorkPolygons : this.fields
+      if (activeFields) {
+        activeFields.eachLayer(polygon => {
+          polygon.unbindTooltip()
+          polygon.bindTooltip(polygon.label, {permanent: true, direction: "center", opacity: 1, className: 'tooltip-transparent'})
+        })
+        this.map.setZoom(13)
+        control.state('hide-fields-tooltips');
+      }
+    },
+    hideFieldsTooltips(control) {
+      let activeFields = (this.mapsowingCheckboxed) ? this.SowingPolygons : (this.fieldWorkOverlaySelected) ? this.fieldWorkPolygons : this.fields
+      if (activeFields) {
+        activeFields.eachLayer(polygon => {
+          polygon.unbindTooltip()
+          polygon.bindTooltip(polygon.label, {permanent: false, direction: "center", opacity: 1, className: 'tooltip-transparent'})
+        })
+        this.map.fitBounds(activeFields.getBounds());
+        control.state('show-fields-tooltips');
+      }
     },
     getArea(polygon) {
       return Math.round(geodesy.area(polygon) / 10000);

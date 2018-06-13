@@ -6,10 +6,10 @@
     el-button.main-controls(size="small", @click="stop()", title="Стоп") &#x23f9;
     el-button(size="small", @click="speedUp(10)", v-show="!speededUp", title="Ускорить") 10x
     el-button(size="small", @click="speedUp(1)", v-show="speededUp", title="Нормализовать") 1x
-    el-button(size="small", @click="toggleTeleport()", title="Переместиться") &#8986;
-  el-slider.seeker(v-model="commonTrackTimes.index", :step="1", :min="0", :max="commonTrackTimes.total - 1",
-    :format-tooltip="commonTrackTimes.tooltip", @change="commonSliderChange", :disabled="!teleport",
-    v-show="teleport")
+    el-button(size="small", @click="toggleTimeTravel()", title="Переместиться") &#8986;
+  el-slider.seeker(v-model="mttIndex", :step="1", :min="0", :max="mergedTrackTimes.last",
+    :format-tooltip="showTooltip", @change="commonSliderChange", :disabled="!timeTravel",
+    v-show="timeTravel")
 </template>
 
 <script>
@@ -22,57 +22,69 @@ export default {
   },
   data() {
     return {
-      teleport: false,
+      timeTravel: false,
       playing: false,
       speededUp: false,
+      mttIndex: 0,
     };
   },
-  created() {
+  watch: {
+    mergedTrackTimes(mtt) {
+      this.mttIndex = mtt.index
+    }
   },
   computed: {
-    commonTrackTimes() {
+    mergedTrackTimes() {
       return this.$store.getters.getMergedTrackTimes;
     },
     playState() {
-      return this.playing && this.commonTrackTimes.index < this.commonTrackTimes.last
+      return this.playing && this.mergedTrackTimes.index < this.mergedTrackTimes.last
     },
     trackTimes() {
+      let trackTimes = this.$store.getters.getTrackTimes
+      if (trackTimes.length > 0) {
+        EventBus.$emit('RemoveTraktorTracks');
+      }
       return this.$store.getters.getTrackTimes;
     },
   },
   methods: {
     commonSliderChange(val) {
-      if (this.teleport) {
-        EventBus.$emit('CarDrawer.Teleport', val);
+      if (this.timeTravel) {
+        EventBus.$emit('CarDrawer.TimeTravel', val);
       }
     },
-    toggleTeleport() {
-      this.teleport = !this.teleport
-      this.$store.dispatch('actionSetTeleport', this.teleport);
-      this.playing = false
+    showTooltip() {
+      return this.mergedTrackTimes.tooltip()
     },
-    turnOffTeleport() {
-      this.teleport = false
-      this.$store.dispatch('actionSetTeleport', this.teleport);
+    toggleTimeTravel() {
+      this.playing = false
+      EventBus.$emit('CarDrawer.Pause');
+      this.timeTravel = !this.timeTravel
+      this.$store.dispatch('actionSetTimeTravel', this.timeTravel);
+    },
+    turnOffTimeTravel() {
+      this.timeTravel = false
+      this.$store.dispatch('actionSetTimeTravel', this.timeTravel);
     },
     start() {
-      this.turnOffTeleport()
+      this.turnOffTimeTravel()
       this.playing = true
       EventBus.$emit('CarDrawer.Start');
     },
     pause() {
-      this.turnOffTeleport()
+      this.turnOffTimeTravel()
       this.playing = false
       EventBus.$emit('CarDrawer.Pause');
     },
     stop() {
-      this.turnOffTeleport()
+      this.turnOffTimeTravel()
       this.playing = false
       EventBus.$emit('CarDrawer.Stop');
     },
     speedUp(num) {
       this.speededUp = !this.speededUp
-      this.turnOffTeleport()
+      this.turnOffTimeTravel()
       this.playing = true
       EventBus.$emit('CarDrawer.SpeedUp', num);
     },

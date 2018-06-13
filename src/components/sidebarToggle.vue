@@ -23,8 +23,18 @@ div(v-show="isSidebarToggleVisible")
       isSidebarToggleVisible() {
         let path = this.$route.path ? this.$route.path : ''
         if (!path || path === "/") return false
-        let doNotShowSidebar = ["/dashboard", "/login", "/logout", "/modules-tree", "/news", "/sowings", "/recipes", "/map"]
+        let doNotShowSidebar = [
+          "/agrostream/dashboard",
+          "/login",
+          "/logout",
+          "/modules-tree",
+          "/agrofact/news",
+          "/agroplan/news",
+          "/agroplan/sowings",
+          "/agroplan/recipes",
+        ]
         let isVisible = !(doNotShowSidebar.some(s => new RegExp('^' + s).test(path)))
+        isVisible = isVisible && (this.$root.module != "agrostream")
         return isVisible
       },
     }
@@ -43,7 +53,7 @@ div(v-show="isSidebarToggleVisible")
   height 60px
   font-size 0.7rem
   padding 0
-  z-index 1
+  z-index 401
   &.open
     left 330px
   &.closed

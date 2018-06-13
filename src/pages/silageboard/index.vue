@@ -5,9 +5,9 @@
     :defaultActive="defaultActive",
     v-if="sidebarToggleState"
   )
-    router-link(:to="`/silageboard?path=organization`")
+    router-link(:to="`/balanszerna/silageboard?path=organization`")
       el-menu-item(:index="`1`") Организация
-    router-link(:to="`/silageboard?path=tok`")
+    router-link(:to="`/balanszerna/silageboard?path=tok`")
       el-menu-item(:index="`2`") ТОК
   .workspace
     template

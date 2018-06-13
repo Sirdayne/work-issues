@@ -1,42 +1,26 @@
 import Vue from 'vue'
-import injector from 'vue-inject'
 import VueRouter from 'vue-router'
-import VueResource from 'vue-resource'
 import ElementUI from 'element-ui'
 
 import 'normalize.css'
 import 'element-ui/lib/theme-default/index.css'
 import locale from 'element-ui/lib/locale/lang/ru-RU'
 import './misc/patches.styl'
+import './misc/eleme.styl'
+import './misc/fx-elements.styl'
 
 import App from './App.vue'
 import routes from './routes'
 
-import Auth  from './services/Auth'
-import Crypt from './services/Crypt'
-
-var VueScrollTo = require('vue-scrollto');
-
 import { store } from './store/store';
 
-require('./components/FormFieldsLibrary/_FormFieldsService');
+const AppConstructor = Vue.extend(App);
 
-Vue.use(injector)
+
 Vue.use(VueRouter)
-Vue.use(VueResource)
 Vue.use(ElementUI, {
   locale
 })
-
-Vue.use(VueScrollTo, {
-  container: ".dashboard-page",
-  duration: 500,
-  easing: "ease",
-  offset: -80,
-  cancelable: true,
-  onDone: false,
-  onCancel: false
-});
 
 const router = new VueRouter({
   mode: 'hash',
@@ -44,14 +28,32 @@ const router = new VueRouter({
   routes
 })
 
-Vue.use(Crypt)
-Vue.use(Auth, {
-  router,
-  crypt: Crypt
+import Auth from 'services/Auth'
+router.beforeEach((to, from, next) => {
+  let isRoleOk = !to.meta.role || Auth.getProfile() && Auth.getProfile().roles.includes(to.meta.role)
+  if ((Auth.isAuthenticated() || to.meta.login) && isRoleOk) {
+    document.title = to.meta.title ? to.meta.title + ' - AgroStream' : 'AgroStream'
+  }
+  if (to.meta.auth !== false && !Auth.isAuthenticated()) {
+    next('/login')
+  } else if (to.meta.login && Auth.isAuthenticated()) {
+    next('/')
+  } else if (to.meta.role) {
+    isRoleOk ? next() : next(new Error("Недостаточно прав"))
+  } else {
+    next()
+  }
+})
+router.onError(err => {
+  alert(err)
 })
 
-new Vue({
-  router,
+new AppConstructor({
   store,
-  ...App,
-}).$mount('#app')
+  router,
+  el: '#app',
+})
+
+if (module.hot) {
+  module.hot.accept()
+}

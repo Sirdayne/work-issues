@@ -1,4 +1,5 @@
 export const modules = {
+  "agrostream": "agrostream",
   "admin": "admin",
   "agrofact": "agrofact",
   "agroinfo": "agroinfo",

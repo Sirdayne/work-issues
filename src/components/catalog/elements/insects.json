@@ -1,6 +1,7 @@
 {
   "name": "Insects",
   "api": "Insects",
+  "notFilterable": true,
   "dependencies": [],
   "attributes": [
     {

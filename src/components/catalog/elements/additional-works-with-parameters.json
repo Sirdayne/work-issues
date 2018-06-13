@@ -29,7 +29,8 @@
       "filter": true,
       "iterable": true,
       "default": false,
-      "viewable": false
+      "viewable": false,
+      "form": false
     },
     {
       "label": "Параметр",

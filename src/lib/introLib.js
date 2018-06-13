@@ -3,13 +3,11 @@ import 'intro.js/introjs.css';
 
 let introHelp = intro.introJs();
 
-//intro.introJs().start();
-//setting options for intro.js
-  introHelp.setOption("nextLabel", " Вперед &rarr;");
-  introHelp.setOption("prevLabel", " &larr; Назад ");
-  introHelp.setOption("skipLabel", " Закрыть ");
-  introHelp.setOption("doneLabel", " Закрыть ");
-//introHelp.start();
+introHelp.setOption("nextLabel", " Вперед &rarr;");
+introHelp.setOption("prevLabel", " &larr; Назад ");
+introHelp.setOption("skipLabel", " Закрыть ");
+introHelp.setOption("doneLabel", " Закрыть ");
+
 export default {
   begin(steps) {
     introHelp.setOptions({

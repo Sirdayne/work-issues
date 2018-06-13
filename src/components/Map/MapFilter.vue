@@ -9,17 +9,23 @@
     el-button(:disabled="!filterEnabled", type="text", @click="clearFilter()", title="Сбросить фильтр") Сбросить
   .filter
     .filters
-      el-button.filter-button.combine-button(:class="{'filter-button-focused': filterBy == 'combines'}", @click="updateFilterContent('combines')", title="Комбайны")
-      el-button.filter-button.tractor-button(:class="{'filter-button-focused': filterBy == 'tractors'}", @click="updateFilterContent('tractors')", title="Трактора")
-      el-button.filter-button.truck-button(:class="{'filter-button-focused': filterBy == 'freights'}", @click="updateFilterContent('freights')", title="Грузовики")
-      el-button.filter-button.sprayer-button(:class="{'filter-button-focused': filterBy == 'sprayers'}", @click="updateFilterContent('sprayers')", title="Опрыскиватели")
+      el-button.filter-button.tractor-button(:class="{'filter-button-focused': filterBy == 'cars'}", @click="updateFilterContent('cars')", title="Машины")
       el-button.filter-button.field-button(:class="{'filter-button-focused': filterBy == 'fields'}", @click="updateFilterContent('fields')", title="Поля")
       el-button.filter-button.driver-button(:class="{'filter-button-focused': filterBy == 'drivers'}", @click="updateFilterContent('drivers')", title="Водители")
     .filter-content
       template(v-if="filterContent")
-        ul.filter-content-ul
-          li(v-for="c in filterContentFiltered", @click="updateFilter(c.id)",
-            :class="{'filter-content-clicked': checkedFilterContent[filterContext].includes(c.id)}") {{ defineLabel(c) }}
+        template(v-if="filterBy == 'cars'")
+          ul.plus-minus-list
+            li(v-for="ct in carTypes", @click="updateSelectedCarType(ct)",
+              v-if="carsFiltered[ct.id].length",
+              :class="['pml-item', ct.isSelected ? 'pml-minus-item' : 'pml-plus-item']") {{ct.name}} ({{carsFiltered[ct.id].length}})
+              ul.filter-content-ul(v-if="ct.isSelected")
+                li(v-for="c in filterCarsFiltered", @click.stop="updateFilter(c.id)",
+                  :class="[c.carstatusColorClass, {'filter-content-clicked': checkedFilterContent[filterContext].includes(c.id)}]") {{ defineLabel(c) }}
+        template(v-else)
+          ul.filter-content-ul
+            li(v-for="c in filterContentFiltered", @click="updateFilter(c.id)",
+              :class="{'filter-content-clicked': checkedFilterContent[filterContext].includes(c.id)}") {{ defineLabel(c) }}
       template(v-else)
         p Нет данных
 </template>
@@ -27,13 +33,16 @@
 <script>
 import { EventBus } from "services/EventBus";
 import RecordsLoaderV2 from "mixins/RecordsLoaderV2";
-import GlobalMethods from "components/FormFieldsLibrary/GlobalMethods";
 import moment from "moment";
+import http from 'lib/httpQueryV2';
+import { Message } from 'element-ui'
 
 export default {
   name: "MapFilter",
-  props: [],
-  mixins: [GlobalMethods, RecordsLoaderV2],
+  props: [
+    "data",
+  ],
+  mixins: [RecordsLoaderV2],
   data() {
     return {
       searchText: "",
@@ -53,19 +62,33 @@ export default {
       filterContent: [],
       filterContext: "",
       filterBy: "",
-      combines: [],
-      freights: [],
-      tractors: [],
-      sprayers: [],
-      carModels: [],
       cars: [],
-      carTypes: [],
       employees: [],
-      fields: [],
       filterIds: ["carIds", "fieldIds", "employeeIds", "instrumentIds"],
+      carTypes: [],
+      selectedCarTypeId: null,
+      carstatus: [],
+      carstatusDate: null,
     };
   },
   computed: {
+    filterCarsFiltered() {
+      let filterCarsFiltered = this.carsFiltered[this.selectedCarTypeId] || []
+      filterCarsFiltered = filterCarsFiltered.filter(
+        f =>
+          this.defineLabel(f)
+            .toLowerCase()
+            .indexOf(this.searchText.toLowerCase()) > -1
+      )
+      return filterCarsFiltered
+    },
+    carsFiltered() {
+      let carsFiltered = {}
+      this.carTypes.forEach(ct => {
+        carsFiltered[ct.id] = this.cars.filter(car => car.carTypeId == ct.id)
+      })
+      return carsFiltered
+    },
     filterContentFiltered() {
       return this.filterContent.filter(
         f =>
@@ -77,51 +100,105 @@ export default {
     filterEnabled() {
       return this.filterIds.some(fb => this.filter[fb].length)
     },
-  },
-  created() {
-    this.apply()
-    EventBus.$on("MapController.SelectedDateChanged", date => {
-      this.filter.startDate = moment(date).set({
-        hour: 0,
-        minute: 0,
-        second: 0,
-        millisecond: 0
-      });
-      this.filter.endDate = moment(date).set({
-        hour: 23,
-        minute: 59,
-        second: 59,
-        millisecond: 0
-      });
-      this.apply()
-    });
-    this.fetchEntities([
-      "carmodels",
-      "cars",
-      "cartypes",
-      "employees",
-      "leafletFields"
-    ], this.afterFetch);
-  },
-  methods: {
-    afterFetch() {
-      this.carModels = this.fromVuex("carmodels");
-      this.cars = this.fromVuex("cars");
-      this.carTypes = this.fromVuex("cartypes");
-      this.employees = this.fromVuex("employees");
-      this.fields = this.fromVuex("leafletFields").map(f => {
+    fields() {
+      let leafletFields = this.fromVuex("leafletFields").map(f => {
         f.newName = f.fieldName
         f.id = f.fieldId
         return f
       })
-      if (this.carTypes && this.carTypes.length) {
-        let harvesters = this.getCarsByCarTypeName("Harvester");
-        this.combines = this.getCarsByCarTypeName("Combine").concat(harvesters);
-        this.tractors = this.getCarsByCarTypeName("Tractor");
-        this.sprayers = this.getCarsByCarTypeName("Sprayer");
-        this.freights = this.getCarsByCarTypeName("FreightCar");
-        this.updateFilterContent("combines");
+      return leafletFields || []
+    },
+  },
+  created() {
+    this.apply()
+    this.getCarstatus(moment(this.$store.getters.getSelectedDate).format("YYYY-MM-DDTHH:mm:ss"))
+    EventBus.$on("MapController.SelectedDateChanged", date => {
+      this.filter.startDate = moment(date).set({hour: 0, minute: 0, second: 0, millisecond: 0});
+      this.filter.endDate = moment(date).set({hour: 23, minute: 59, second: 59, millisecond: 0});
+      this.getCarstatus(moment(date).format("YYYY-MM-DDTHH:mm:ss"))
+      this.apply()
+    });
+    EventBus.$on("MapController.TrackDateChanged", date => {
+      this.getCarstatus(moment(date).format("YYYY-MM-DDTHH:mm:ss"))
+    });
+    EventBus.$once("traktorTracksTriggered", (carId) => {
+      this.updateFilterContent('cars')
+      let carTypeId = this.cars.find(c => c.id == carId).carTypeId
+      let carType = this.carTypes.find(ct => ct.id == carTypeId)
+      this.updateSelectedCarType(carType)
+
+      this.updateFilter(carId)
+    }),
+    EventBus.$on("Map.FieldDblclicked", (fieldId) => {
+      this.updateFilterContent('fields')
+      this.updateFilter(fieldId)
+    }),
+    this.afterFetch()
+  },
+  methods: {
+    afterFetch() {
+      this.employees = this.fromVuex("employees");
+      this.carTypes = this.fromVuex("cartypes").filter(ct => ct.id != 3)
+      this.unselectCarTypes()
+      this.updateFilterContent("cars");
+    },
+    getCarstatus(selectedDate) {
+      if (this.carstatusDate && this.carstatusDate.slice(0, 10) == selectedDate.slice(0, 10)) {
+        this.carstatusDate = selectedDate
+        this.setCars()
+      } else {
+        this.carstatusDate = selectedDate
+        this.setCars()
+        let body = {
+          "organizationId": this.$root.context.organization,
+          "daterange": {
+            "start": moment(selectedDate, "YYYY-MM-DDTHH:mm:ss").hour(0).minute(0).second(0).format("YYYY-MM-DDTHH:mm:ss"),
+            "end": moment(selectedDate, "YYYY-MM-DDTHH:mm:ss").hour(23).minute(59).second(59).format("YYYY-MM-DDTHH:mm:ss"),
+          },
+          "interval": 20,
+        }
+        http.post("carstatus", body)
+          .then(data => {
+            let cond = this.carstatusDate && this.carstatusDate.slice(0, 10) == selectedDate.slice(0, 10)
+            if (cond) {
+              this.carstatus = data || []
+              this.setCars()
+            }
+          })
       }
+    },
+    unselectCarTypes() {
+      this.carTypes = this.carTypes.map(ct => {
+        ct.isSelected = false
+        return ct
+      });
+    },
+    setCars() {
+      let carstatus = this.carstatus.find(cs => moment(cs.time.slice(0, 19)).isSameOrAfter(this.carstatusDate.slice(0, 19), "second"))
+      carstatus = carstatus && carstatus.data || []
+      let cars = this.fromVuex("cars").map(c => {
+        let green, yellow, gray, red
+        if (carstatus.length) {
+          green = carstatus.find(cs => cs.status == 0).carIds.includes(c.id)
+          yellow = carstatus.find(cs => cs.status == 1).carIds.includes(c.id)
+          gray = carstatus.find(cs => cs.status == 2).carIds.includes(c.id)
+          red = carstatus.find(cs => cs.status == 3).carIds.includes(c.id)
+        }
+        c.carstatusColorClass = red ? "car-status-color-red"
+          : yellow ? "car-status-color-yellow"
+          : green ? "car-status-color-green"
+          : gray ? "car-status-color-gray"
+          : ""
+        return c
+      });
+      this.cars = cars || []
+      if (this.filterBy == "cars") this.updateFilterContent("cars")
+    },
+    updateSelectedCarType(cartype) {
+      let isSelected = cartype.isSelected
+      this.unselectCarTypes()
+      cartype.isSelected = isSelected ? false : !isSelected
+      this.selectedCarTypeId = cartype.isSelected ? cartype.id : null
     },
     clearFilter(doNotApply) {
       this.filterIds.forEach(fb => this.filter[fb] = [])
@@ -133,10 +210,7 @@ export default {
     updateFilterContent(filterBy) {
       this.filterBy = filterBy
       let filterMap = {
-        "combines": {content: this.combines, context: "carIds"},
-        "tractors": {content: this.tractors, context: "carIds"},
-        "freights": {content: this.freights, context: "carIds"},
-        "sprayers": {content: this.sprayers, context: "carIds"},
+        "cars": {content: this.cars, context: "carIds"},
         "fields": {content: this.fields, context: "fieldIds"},
         "drivers": {content: this.employees, context: "employeeIds"},
       }
@@ -175,6 +249,7 @@ export default {
           }
         })
       this.filter[this.filterContext] = this.checkedFilterContent[this.filterContext]
+      if (this.$route.params.id) return;
       this.apply()
     },
     apply() {
@@ -188,21 +263,11 @@ export default {
 .field-button
   background-image: url('~assets/field.png')
 
-.combine-button
-  background-image: url('~assets/combine-harvester.svg')
-
-.tractor-button
-  background-image: url('~assets/tractor-front.svg')
-
-.truck-button
-  background-image: url('~assets/delivery-truck.svg')
-
-
 .driver-button
   background-image: url('~assets/male-user-manager.svg')
 
-.sprayer-button
-  background-image: url('~assets/sprayer.svg')
+.tractor-button
+  background-image: url('~assets/tractor-front.svg')
 
 .map-filter
   display: flex
@@ -230,7 +295,7 @@ export default {
 
 .filters
   display flex
-  height calc((32px + 15px) * 5)
+  height calc((32px + 10px) * 3)
   align-items center
   justify-content space-between
   flex-direction column
@@ -253,6 +318,31 @@ export default {
   padding 0 10px 10px 5px
   box-sizing border-box
   font-size 12px
+
+.plus-minus-list >>> .pml-item:hover
+  cursor pointer
+.plus-minus-list
+  list-style none
+  margin 0
+  padding 0
+  .pml-item
+    padding 8px 15px 8px 5px
+  .pml-minus-item:before
+    content '-'
+    display inline-block
+    position relative
+    width 7px
+    margin-right 5px
+    margin-bottom 10px
+    color red
+    text-align center
+  .pml-plus-item:before
+    content '+'
+    display inline-block
+    position relative
+    width 7px
+    margin-right 5px
+    color #4db3ff
 
 .filter-content-ul
   list-style none
@@ -283,4 +373,25 @@ export default {
 .filter-button-focused
   box-shadow 1px 1px 20px orange
   border 1px solid orange
+
+.car-status-color-gray:before
+  content '\25A3'
+  position relative
+  margin-right 5px
+  color gray
+.car-status-color-red:before
+  content '\25A3'
+  position relative
+  margin-right 5px
+  color #f00
+.car-status-color-yellow:before
+  content '\25A3'
+  position relative
+  margin-right 5px
+  color yellow
+.car-status-color-green:before
+  content '\25A3'
+  position relative
+  margin-right 5px
+  color #0f0
 </style>

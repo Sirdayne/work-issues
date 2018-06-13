@@ -14,6 +14,7 @@
   "Cultures": "cultures",
   "SeedPrices": "seed-prices",
   "UnitTypes": "unit-types",
+  "WeedTypes": "weed-types",
   "ChemicalPreparationTypes": "chemical-preparation-types",
   "ChemicalPreparations": "chemical-preparations",
   "ChemicalPreparations0": "chemical-preparations-0",
@@ -41,7 +42,6 @@
   "WarehouseTypes": "warehouse-types",
   "Warehouses": "warehouses",
   "Storages": "storages",
-  "FieldDistances": "field-distances",
   "FuelTypes": "fuel-types",
   "CarTypes": "car-types",
   "CarMarks": "car-marks",
@@ -58,9 +58,13 @@
   "WorkDates": "work-dates",
   "PrimaryWorkNorms": "primary-work-norms",
   "AdditionalWorkNorms": "additional-work-norms",
-  "GrowthPhases": "growth-phases",
   "FieldContours": "field-contours",
   "Terrains": "terrains",
   "SoilTypes": "soil-types",
-  "Compositions": "compositions"
+  "DlinaGona": "dlinagona",
+  "Compositions": "compositions",
+  "CultureRotation": "culture-rotation",
+  "NutrientsAddition": "nutrients-addition",
+  "WorkConditions": "work-conditions",
+  "Inventory": "inventory"
 }

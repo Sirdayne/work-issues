@@ -1,8 +1,11 @@
-import { getCookie } from 'lib/utils'
 import axios from 'axios'
+import { setupCache } from 'axios-cache-adapter'
 import errorHandler from 'lib/errorHandler'
 import msgHandler from 'lib/msgHandler'
 import nprogress from 'lib/NProgress'
+import localforage from 'localforage'
+import cacheHandler from 'lib/cacheHandler'
+import Auth from 'services/Auth'
 
 const WEATHER_API = 'http://api.apixu.com/v1/'
 const WEATHER_KEY = '2283b83b99334bb886f84936183101'
@@ -10,9 +13,13 @@ const WEATHER_KEY = '2283b83b99334bb886f84936183101'
 const DARK_API = ' https://api.darksky.net/'
 const DARK_KEY = 'dfd21f1d38a686cbb76f6e8a5fbd9db6'
 
+const TIMEOUT = 5 * 60 * 1000
+
+var requestsCount = 0
+
 let weatherApi = axios.create({
   baseURL: WEATHER_API,
-  timeout: 180000,
+  timeout: TIMEOUT,
   responseType: 'json',
   headers: {
     'Content-Type': 'application/json',
@@ -20,54 +27,142 @@ let weatherApi = axios.create({
 })
 
 let api = axios.create({
-  baseURL: process.env.API_URL + 'api/',
-  timeout: 180000,
+  baseURL: SERVER_URL + 'api/',
+  timeout: TIMEOUT,
   responseType: 'json',
   headers: {
     'Content-Type': 'application/json',
   }
 });
 api.interceptors.request.use(function (config) {
-  config.headers['Authorization'] = getCookie('authToken');
+  if (requestsCount == 0) nprogress.start()
+  requestsCount++
+  config.headers['Authorization'] = Auth.getToken();
   return config;
 }, function (error) {
+  requestsCount--
+  if (requestsCount == 0) nprogress.done()
   return Promise.reject(error);
 });
 api.interceptors.response.use(function (response) {
+  requestsCount--
+  if (requestsCount == 0) nprogress.done()
   msgHandler.handle(response);
   return response;
 }, function (error) {
+  requestsCount--
+  if (requestsCount == 0) nprogress.done()
   errorHandler.handle(error);
   return Promise.reject(error);
 });
 
-let auth = axios.create({
-  baseURL: process.env.API_URL + 'token',
-  timeout: 90000,
+const cache = setupCache({
+  maxAge: 24 * 60 * 60 * 1000,
+  limit: 100,
+  store: localforage,
+})
+let apiCache = axios.create({
+  baseURL: SERVER_URL + 'api/',
+  timeout: TIMEOUT,
+  adapter: cache.adapter,
+  responseType: 'json',
   headers: {
-    'Content-Type': 'application/x-www-form-urlencoded'
+    'Content-Type': 'application/json',
   }
 });
-auth.interceptors.request.use(function (config) {
-  nprogress.start()
+
+apiCache.interceptors.request.use(function (config) {
+  if (requestsCount == 0) nprogress.start()
+  requestsCount++
+  config.headers['Authorization'] = Auth.getToken();
   return config;
 }, function (error) {
-  nprogress.done()
+  requestsCount--
+  if (requestsCount == 0) nprogress.done()
   return Promise.reject(error);
 });
-auth.interceptors.response.use(function (response) {
-  nprogress.done()
+apiCache.interceptors.response.use(function (response) {
+  requestsCount--
+  if (requestsCount == 0) nprogress.done()
+  msgHandler.handle(response);
   return response;
 }, function (error) {
-  nprogress.done()
+  requestsCount--
+  if (requestsCount == 0) nprogress.done()
   errorHandler.handle(error);
   return Promise.reject(error);
 });
 
+const cacheEM = setupCache({
+  maxAge: 2 * 1000,
+  limit: 100,
+  store: localforage,
+})
+let apiEM = axios.create({
+  baseURL: SERVER_URL + 'api/entityModified',
+  timeout: 60000,
+  adapter: cacheEM.adapter,
+  responseType: 'json',
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
+apiEM.interceptors.request.use(function (config) {
+  if (requestsCount == 0) nprogress.start()
+  requestsCount++
+  config.headers['Authorization'] = Auth.getToken();
+  return config;
+}, function (error) {
+  requestsCount--
+  if (requestsCount == 0) nprogress.done()
+  return Promise.reject(error);
+});
+apiEM.interceptors.response.use(function (response) {
+  requestsCount--
+  if (requestsCount == 0) nprogress.done()
+  msgHandler.handle(response);
+  return response;
+}, function (error) {
+  requestsCount--
+  if (requestsCount == 0) nprogress.done()
+  errorHandler.handle(error);
+  return Promise.reject(error);
+});
+
+let apiJobs = axios.create({
+  baseURL: SERVER_URL + 'jobs/',
+  timeout: TIMEOUT,
+  responseType: 'json',
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
+apiJobs.interceptors.request.use(function (config) {
+  if (requestsCount == 0) nprogress.start()
+  requestsCount++
+  config.headers['Authorization'] = Auth.getToken();
+  return config;
+}, function (error) {
+  requestsCount--
+  if (requestsCount == 0) nprogress.done()
+  return Promise.reject(error);
+});
+apiJobs.interceptors.response.use(function (response) {
+  requestsCount--
+  if (requestsCount == 0) nprogress.done()
+  msgHandler.handle(response);
+  return response;
+}, function (error) {
+  requestsCount--
+  if (requestsCount == 0) nprogress.done()
+  errorHandler.handle(error);
+  return Promise.reject(error);
+});
 
 export default {
   delete(path, id) {
     let url = id !== undefined ? path + '/' + id : path;
+    cacheHandler.findAndRemove(path)
     return api.delete(url);
   },
   download(path, data, filename, config) {
@@ -93,8 +188,28 @@ export default {
   },
   get(path, id) {
     let url = id !== undefined ? path + '/' + id : path;
+    return apiCache.get(url)
+      .then(function(response) {
+        return response.data;
+      })
+  },
+  getWithoutCache(path, id) {
+    let url = id !== undefined ? path + '/' + id : path;
     return api.get(url)
       .then(function(response) {
+        return response.data;
+      })
+  },
+  getJobs(path) {
+    let url = path;
+    return apiJobs.get(url)
+      .then(function(response) {
+        return response.data;
+      })
+  },
+  getEntityModified() {
+    return apiEM.get()
+      .then((response) => {
         return response.data;
       })
   },
@@ -111,29 +226,24 @@ export default {
         return response.data;
       })
   },
-  login(data) {
-    return auth.post('', data);
-  },
   post(path, data) {
-    nprogress.start()
+    cacheHandler.findAndRemove(path)
     return api.post(path, data)
       .then(function(response) {
-        nprogress.done()
         return response.data;
       })
-      .catch(function (error) {
-        nprogress.done()
-      });
+  },
+  all(requests) {
+    return axios.all(requests)
+      .then(axios.spread(function (...responses) {
+        return responses;
+      }));
   },
   put(path, data) {
-    nprogress.start()
+    cacheHandler.findAndRemove(path)
     return api.put(path, data)
       .then(function(response) {
-        nprogress.done()
         return response.data;
       })
-      .catch(function (error) {
-        nprogress.done()
-      });
   },
 }

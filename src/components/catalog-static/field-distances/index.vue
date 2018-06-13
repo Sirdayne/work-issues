@@ -154,8 +154,10 @@
         let field = ''
         let warehouse = ''
         this.fielddistances.forEach(x => {
-          field = this.fields.find(f => f.id == x.fieldId).newName
-          warehouse = this.warehouses.find(w => w.id == x.warehouseId).name
+          field = this.fields.find(f => f.id == x.fieldId)
+          field = field ? field.newName : 'удалено'
+          warehouse = this.warehouses.find(w => w.id == x.warehouseId)
+          warehouse = warehouse ? warehouse.name : 'удалено'
           if (field && warehouse) {
             array.push({
               'Поле': field,
@@ -191,7 +193,7 @@
           return w
         })
         this.fields = this.fromVuex('fields')
-        this.notCreatedFields = this.fields
+        this.notCreatedFields = this.fields.slice()
         this.loading = false
       },
       getDistance(fieldId, warehouseId){
@@ -293,58 +295,69 @@
 </script>
 
 <style scoped>
-  .tableHeading {
-    display: inline-block;
-    margin-right: 20px;
-  }
+.tableHeading {
+  display: inline-block;
+  margin-right: 20px;
+}
 
-  .downloadLzkStyle {
-    display: block;
-    margin-top: 20px;
-  }
+.downloadLzkStyle {
+  display: block;
+  margin-top: 20px;
+}
 
-  .downloadFieldSelect {
-    width: 250px;
-  }
-  .catalog-static-container{
-    width: 100%;
-  }
-  .fx-cell{
-    font-size: 14px;
-    padding: 10px 0;
-    position: relative;
-  }
-  .fx-cell p{
-    font-size: 14px;
-    margin: 0px;
-    padding: 0px;
-  }
-  .top-form{
-    margin-top: 11px;
-    display: flex;
-  }
-  .top-form .el-form-item{
-    margin-bottom: 15px;
-  }
-  .tf-search{
-    flex: auto 1 0
-  }
-  .tf-search>>>.el-form-item__content{
-    width: 100%;
-    box-shadow: 0 0 11px #bfcbd9;
-  }
-  .tf-filter{
-    margin: 0 10px 15px 0
-  }
-  .tf-xls{
-    margin: 0 0 15px 0
-  }
+.downloadFieldSelect {
+  width: 250px;
+}
+.catalog-static-container{
+  width: 100%;
+}
+.fx-cell{
+  font-size: 14px;
+  padding: 10px 0;
+  position: relative;
+}
+.fx-cell-edit{
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  height: 22px;
+  width: 28px;
+  padding: 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 1px solid #dfe6ec;
+  box-sizing: border-box;
+}
+.fx-cell p{
+  font-size: 14px;
+  margin: 0px;
+  padding: 0px;
+}
+.top-form{
+  margin-top: 11px;
+  display: flex;
+}
+.top-form .el-form-item{
+  margin-bottom: 15px;
+}
+.tf-search{
+  flex: auto 1 0
+}
+.tf-search>>>.el-form-item__content{
+  width: 100%;
+  box-shadow: 0 0 11px #bfcbd9;
+}
+.tf-filter{
+  margin: 0 10px 15px 0
+}
+.tf-xls{
+  margin: 0 0 15px 0
+}
 
-  .fd-full{
-    width: 100%;
-  }
-  .fd-form .el-input{
-    width: 70px;
-  }
-
+.fd-full{
+  width: 100%;
+}
+.fd-form .el-input{
+  width: 70px;
+}
 </style>

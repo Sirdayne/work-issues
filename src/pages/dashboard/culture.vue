@@ -4,7 +4,7 @@
     .dashboard-sidebar
       .ds-link(  v-scroll-to="'#scroll-structures'" ) Структуры
       .ds-link(  v-scroll-to="'#scroll-works'" ) Работы
-      router-link(:to="`/dashboard/`")
+      router-link(:to="`/agrostream/dashboard/`")
         .ds-link На главную
 
     .dashboard-content
@@ -120,13 +120,10 @@
 <script>
 import httpQueryV2 from 'lib/httpQueryV2'
 import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
-import GlobalMethods from 'components/FormFieldsLibrary/GlobalMethods'
 import VueChartist from 'v-chartist'
 import $ from 'jquery'
 import moment from 'moment'
 import './dashboard.styl'
-
-import localForageLib from 'lib/localForageLib'
 
 export default {
   mixins: [
@@ -147,8 +144,6 @@ export default {
       'sowings',
       'workDates'
     ], this.afterFetch );
-
-    this.localForageArrays[this.keyCulture] = [];
   },
   updated() {
     let elSlider1 = document.querySelector('#el-slider-1 .el-slider__button')
@@ -161,7 +156,7 @@ export default {
   },
   mounted() {
     // для vue-scroll, scrolling - надо поменять высоту на %
-    var elApp = document.querySelector('#app');
+    var elApp = document.querySelector('#app-container');
     elApp.style.height = "100%";
     //scroll в начале
     this.$scrollTo('#dashboard-container');
@@ -201,7 +196,6 @@ export default {
       vuexAreaAssignments: null,
       keyCulture: 'sortsDBculture' + this.$route.params.id,
       routeId: this.$route.params.id,
-      localForageArrays: {}
     }
   },
   methods: {
@@ -215,10 +209,6 @@ export default {
       this.vuexRecipes = this.fromVuex('technologyRecipe');
       this.vuexFields = this.fromVuex('fields');
       this.vuexAreaAssignments = this.fromVuex('AreaAssignments');
-      //from IndexedDB
-      //localForageLib.getLocalForage('worksDatesDBculture' + this.routeId, this.computedWorksDates, this.localForageArrays );
-      localForageLib.getLocalForage(this.keyCulture , this.computedSorts, this.localForageArrays );
-      console.log(this.keyCulture);
     },
     otherSortsShow(){
       this.otherSortsDisplay = !this.otherSortsDisplay;
@@ -272,11 +262,6 @@ export default {
       });
 
       return culturesArray;
-    },
-    computedSorts(){
-      let sorts = this.localForageArrays[this.keyCulture] || [];
-      console.log(sorts, this.keyCulture, 'sorts');
-      return sorts;
     },
     sorts() {
       let sorts = this.vuexSorts;
@@ -448,10 +433,6 @@ export default {
         worksPercentagePlan = 0;
       return worksPercentagePlan.toFixed(2);
     },
-//    computedWorksDates() {
-//      let worksDates = this.localForageArrays['worksDatesDBculture' + this.routeId] || [];
-//      return worksDates;
-//    },
     worksDates() {
       let worksDates = [];
       //находим минимальную и макс даты в areaassignments -> datetimerange

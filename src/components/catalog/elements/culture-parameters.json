@@ -1,6 +1,7 @@
 {
   "name": "CultureParameters",
   "api": "CultureParameters",
+  "notFilterable": true,
   "dependencies": [],
   "attributes": [
     {

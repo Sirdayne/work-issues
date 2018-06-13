@@ -13,121 +13,48 @@ div
     el-form-item(label="Топ нарушителей:")
       el-select(v-model="item.rowCount" placeholder="Выбрать")
         el-option(
-          v-for="count in item.rowCounts"
-          :key="count.value"
-          :label="count.label"
+          v-for="count in item.rowCounts",
+          :key="count.value",
+          :label="count.label",
           :value="count.value"
           )
     el-form-item(label="Параметр нарушения:")
       el-select(v-model="item.violationParam" placeholder="Выбрать")
         el-option(
-          v-for="param in item.violationParams"
-          :key="param.value"
-          :label="param.label"
+          v-for="param in item.violationParams",
+          :key="param.value",
+          :label="param.label",
           :value="param.value"
         )
   h2(class="tableHeading") Нарушения скоростного режима
     span(:style="{marginRight: '30px'}")
     el-button.excel(type='default', @click="exportTable('form')") .
-  el-table(
-    v-if="tableData.length || loading",
-    :data="paginate(tableData)",
-    border,
-    resizable,
-    v-loading="loading",
-    element-loading-text="Загружается...",
-    height="1",
-  ).content
-    el-table-column(
-      prop="date.startFormated",
-      label="Дата",
-      header-align="center",
-    )
-    el-table-column(
-      prop="employee",
-      label="Водитель",
-      header-align="center",
-    )
-    el-table-column(
-      prop="car",
-      label="Машина",
-      header-align="center",
-    )
-    el-table-column(
-      prop="instrument",
-      label="Орудие",
-      header-align="center",
-    )
-    el-table-column(
-      prop="field",
-      label="Поле",
-      header-align="center",
-    )
-    el-table-column(
-      prop="work",
-      label="Работа",
-      header-align="center",
-    )
-    el-table-column(
-      label="Скорость по технологии",
-      header-align="center",
-    )
+    filter-cols(:cols="cols")
+  .el-table-cont
+    el-table(
+      :data="paginate(tableData)",
+      border,
+      resizable,
+      max-height="500",
+      v-loading="loading",
+      element-loading-text="Загружается...",
+    ).content
+      el-table-column(v-for="col in cols", v-if="col.active", :prop="col.prop", :label="col.label", :width="col.width", :key="col.prop", header-align="center")
       el-table-column(
-        prop="techMinSpeed",
-        label="мин.",
-        header-align="center",
+        label="Трек",
+        width="130",
+        align="center",
       )
-      el-table-column(
-        prop="techMaxSpeed",
-        label="макс.",
-        header-align="center",
-      )
-    el-table-column(
-      prop="speed",
-      label="Макс. скорость",
-      header-align="center",
+        template(slot-scope="scope")
+          el-button(@click="$router.push(`/agrofact/map/${scope.row.id}`)", type="primary", size="small") Показать
+    el-pagination(
+      layout="total, prev, pager, next",
+      :total="tableData.length",
+      :page-size="perPage",
+      :current-page="currentPage",
+      @current-change="onCurrentPageChange",
+      @size-change="onPerPageChange",
     )
-    el-table-column(
-      prop="violationSpeed",
-      label="Сред. скорость нарушения",
-      header-align="center",
-    )
-    el-table-column(
-      prop="deviation",
-      :label="(item.violationParam ? 'макс': 'мин') + '. отклонение'",
-      header-align="center",
-    )
-    el-table-column(
-      prop="violationSquare",
-      label="Площадь обработанная при нарушении",
-      header-align="center",
-    )
-    el-table-column(
-      prop="violationCount",
-      label="Кол-во нарушений",
-      header-align="center",
-    )
-    el-table-column(
-      prop="avgSpeed",
-      label="Эксплуатационная скорость задания",
-      header-align="center",
-    )
-    el-table-column(
-      label="Трек",
-      fixed="right",
-      width="130",
-      align="center",
-    ): template(slot-scope="scope")
-      el-button(@click="$router.push(`/map/${scope.row.id}`)", type="primary", size="small") Показать
-  .no-results(v-else) Нет результатов
-  el-pagination(
-    layout="total, prev, pager, next",
-    :total="totalItems",
-    :page-size="perPage",
-    :current-page="currentPage",
-    @current-change="onCurrentPageChange",
-    @size-change="onPerPageChange",
-  )
 </template>
 
 <script>
@@ -137,10 +64,12 @@ import ListController from 'mixins/ListController'
 import moment from 'moment'
 import MapController from 'components/Map/MapController'
 import {EventBus} from 'services/EventBus'
+import filterCols from "components/filterCols"
 
 export default {
   components: {
-    MapController
+    MapController,
+    filterCols,
   },
   mixins: [
     RecordsLoaderV2,
@@ -148,128 +77,86 @@ export default {
   ],
   data() {
     return {
+      cols: [
+        {prop: "date.startFormated", label: "Дата", active: true},
+        {prop: "employee", label: "Водитель", active: true},
+        {prop: "car", label: "Машина", active: true},
+        {prop: "instrument", label: "Орудие", active: true},
+        {prop: "field", label: "Поле", active: true},
+        {prop: "work", label: "Работа", active: true},
+        {prop: "techMinSpeed", label: "Скорость по технологии мин.", active: true},
+        {prop: "techMaxSpeed", label: "Скорость по технологии макс.", active: true},
+        {prop: "violationSpeed", label: "Сред. скорость нарушения", active: true},
+        {prop: "deviation", label: "Отклонение", active: true},
+        {prop: "violationSquare", label: "Площадь обработанная при нарушении", active: true},
+        {prop: "processedSquare", label: "Общая площадь обработки", active: true},
+        {prop: "avgSpeed", label: "Эксплуатационная скорость задания", active: true},
+      ],
       item: {
         violationParam: 1,
-        violationParams: [{
-            value: 0,
-            label: "мин."
-          },
-          {
-            value: 1,
-            label: "макс."
-          },
-        ],
-        violationCount: -1,
-        violationCounts: [{
-            value: -1,
-            label: "Все"
-          },
-          {
-            value: 3,
-            label: "3"
-          },
-          {
-            value: 7,
-            label: "7"
-          },
-          {
-            value: 10,
-            label: "10"
-          },
-        ],
+        violationParams: [{value: 0,label: "мин."},{value: 1,label: "макс."}],
         rowCount: -1,
-        rowCounts: [{
-            value: -1,
-            label: "Все"
-          },
-          {
-            value: 3,
-            label: "3"
-          },
-          {
-            value: 7,
-            label: "7"
-          },
-          {
-            value: 10,
-            label: "10"
-          },
+        rowCounts: [
+          {value: -1,label: "Все"},
+          {value: 3,label: "3"},
+          {value: 7,label: "7"},
+          {value: 10,label: "10"},
         ],
         selectedDate: {
-          from: new Date(new Date(new Date()
-              .getTime() - (5 * 24 * 60 * 60 * 1000))
-            .setFullYear(this.$root.context.year)),
-          till: new Date(new Date()
-            .setFullYear(this.$root.context.year)),
+          from: moment().set({'year': this.$root.context.year, 'hour': 0, 'minute': 0, 'second': 0, 'millisecond': 0}).subtract(5, "days"),
+          till: moment().set({'year': this.$root.context.year, 'hour': 23, 'minute': 59, 'second': 59, 'millisecond': 999}),
         }
       },
       perPage: 5,
       currentPage: 1,
       loading: true,
+      speedmonitoring: [],
     }
   },
   computed: {
-    assignments() {
-      return this.fromVuex('assignments')
+    tableData: function () {
+      let from = this.item.selectedDate.from || moment().set({'year': this.$root.context.year, 'hour': 0, 'minute': 0, 'second': 0, 'millisecond': 0}).subtract(5, "days")
+      let till = this.item.selectedDate.till || moment().set({'year': this.$root.context.year, 'hour': 23, 'minute': 59, 'second': 59, 'millisecond': 999})
+      let violationParam = this.item.violationParam
+      let rowCount = this.item.rowCount
+      let tableData = this.speedmonitoring.filter(function (sm) {
+        let dateRange = (moment(sm.date.start, "YYYY-MM-DDTHH:mm:ss").isSameOrAfter(moment(from)) &&
+          moment(sm.date.end, "YYYY-MM-DDTHH:mm:ss").isSameOrBefore(moment(till)))
+        let vp = sm.violationParam == violationParam || sm.violationParam == -1
+        return dateRange && vp
+      })
+      .map(function (sm) {
+        sm.deviation = violationParam ? sm.maxDeviation : sm.minDeviation
+        sm.speed = violationParam ? sm.maxSpeed : sm.minSpeed
+        sm.violationSpeed = violationParam ? sm.violationMaxAvgSpeed : sm.violationMinAvgSpeed;
+        return sm
+      })
+      .sort((a, b) => b.deviation - a.deviation)
+      if (rowCount > 0) tableData = tableData.slice(0, rowCount)
+      return tableData
     },
-    speedmonitoring() {
-      return this.fromVuex('speedmonitoring')
+  },
+  created() {
+    this.loading = true
+    this.fetchEntities([
+      'speedmonitoring',
+    ], this.afterFetch);
+  },
+  methods: {
+    afterFetch() {
+      this.speedmonitoring = this.fromVuex('speedmonitoring')
         .sort((a, b) => new Date(b.date.start) - new Date(a.date.start))
         .map(sm => {
           sm.date.startFormated = moment(sm.date.start).format("DD.MM.YYYY")
           return sm
         });
+      this.loading = false
     },
-    totalItems: function () {
-      return this.tableData.length;
-    },
-    tableData: function () {
-      if (this.speedmonitoring.length) this.loading = true
-      let from = this.item.selectedDate.from || new Date(new Date()
-        .getTime() - (5 * 24 * 60 * 60 * 1000))
-      let till = this.item.selectedDate.till || Date.now()
-      let violationParam = this.item.violationParam
-      let rowCount = this.item.rowCount
-      let violationCount = this.item.violationCount
-      let tableData = this.speedmonitoring.filter(function (record) {
-          let start = new Date(record.date.start)
-          let end = new Date(record.date.end)
-          let dateRange = (start >= from) && (end <= till)
-          let vp = (record.violationParam === violationParam) || (record.violationParam === -1)
-          let vc = (record.violationCount <= violationCount) || (violationCount === -1)
-          return dateRange && vp && vc
-        })
-        .map(function (record) {
-          record.deviation = violationParam ? record.maxDeviation : record.minDeviation
-          record.speed = violationParam ? record.maxSpeed : record.minSpeed
-          record.violationSpeed = violationParam ? record.violationMaxAvgSpeed : record.violationMinAvgSpeed;
-          return record
-        })
-        .sort((a, b) => b.deviation - a.deviation)
-      if (rowCount > 0) tableData = tableData.slice(0, rowCount)
-      if (this.speedmonitoring.length) this.loading = false
-      return tableData
-    },
-  },
-  created() {
-    this.fetchEntities([
-      'assignments',
-      'speedmonitoring',
-    ]);
-    EventBus.$on('AppYearChanged', (year) => {
-      this.item.selectedDate.from = new Date(new Date(this.item.selectedDate.from)
-        .setFullYear(year));
-      this.item.selectedDate.till = new Date(new Date(this.item.selectedDate.till)
-        .setFullYear(year));
-    });
-  },
-  methods: {
     exportTable(name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
           let endpoint = "SpeedMonitoringForm";
           let filename = "Нарушения скоростного режима";
-
           let body = {
             OrganizationId: this.$root.context.organization,
             Date: {
@@ -279,7 +166,6 @@ export default {
             rowCount: this.item.rowCount,
             ViolationParam: this.item.violationParam,
           };
-
           http.downloadXLS(endpoint, body, filename);
         } else {
           return false;

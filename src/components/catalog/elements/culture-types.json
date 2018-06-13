@@ -1,6 +1,7 @@
 {
   "name": "CultureTypes",
   "api": "CultureTypes",
+  "notFilterable": true,
   "dependencies": [],
   "attributes": [
     {

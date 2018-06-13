@@ -1,5 +1,4 @@
 import sort from 'mixins/sort'
-import search from 'mixins/search'
 import filter from 'mixins/filter'
 import paginate from 'mixins/paginate'
 
@@ -16,7 +15,6 @@ export default {
   },
   mixins: [
     sort,
-    search,
     filter,
     paginate
   ],

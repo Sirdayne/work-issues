@@ -1,5 +1,5 @@
 <template lang="pug">
-div
+div(v-loading="fieldsLoading")
   ul.list: li.field(
     v-for="field in filteredFields",
   )
@@ -13,43 +13,46 @@ div
 </template>
 
 <script>
-import sowingsModel from '_models/Sowings'
-import culturesModel from '_models/Cultures'
-import datasets from 'mixins/datasets2'
-
-import { createIndexes } from 'helpers'
-
-import {EventBus} from 'services/EventBus';
+import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
+import {EventBus} from 'services/EventBus'
+import moment from 'moment'
+import ListController from 'mixins/ListController'
 
 export default {
   mixins: [
-    datasets
+    RecordsLoaderV2,
+    ListController,
+  ],
+  props: [
+    'quickFilter',
+    'brigadeId',
   ],
   data() {
     return {
       activeFieldId: null,
       checkedFields: {},
-      crutch: 1
+      fields: [],
+      sowings: [],
+      fieldsLoading: true,
     }
   },
-  props: [
-    'fields',
-    'culture'
-  ],
   created() {
-    this.makeBlank()
+    EventBus.$on('SowingAdded', () => {
+      this.load()
+    });
+    this.load()
   },
   methods: {
+    load(){
+      this.fieldsLoading = true
+      this.fetchEntities([
+        'fields',
+        'sowings',
+      ], this.afterFetch );
+    },
     makeBlank() {
       this.fields.forEach(field => {
         this.checkedFields[field.id] = false
-      })
-    },
-    onContextChange(ctx) {
-      this.crutch = 2
-      this.makeBlank()
-      this.$nextTick(() => {
-        this.crutch = 3
       })
     },
     fieldClick(field) {
@@ -59,46 +62,41 @@ export default {
     },
     sync() {
       this.$emit('input', Object.keys(this.checkedFields).filter(id => this.checkedFields[id]))
-    }
+    },
+    afterFetch(){
+      this.fields = this.fromVuex('fields');
+      this.sowings = this.fromVuex('sowings').filter(sowing => sowing.year == this.$root.context.year);
+      this.fieldsLoading = false
+      this.makeBlank()
+    },
   },
   computed: {
     filteredFields() {
-      let sowings = this.datasetForModel(sowingsModel)
-      let cultures = this.datasetForModel(culturesModel).records
-      let p = []
-      if (!sowings.isReady) return []
-      let fields = createIndexes(this.fields, 'id')
-      let sowingsSet = createIndexes(sowings.records.filter(sowing => sowing.year === this.context.year), 'fieldId', true)
-      return this.crutch? this.fields.filter(field => {
-        let sowings = sowingsSet[field.id]
-        if (!sowings) return true
-        if (fields[sowings[0].fieldId].area - sowings.reduce((a,b) => a + b.area, 0) > 0) return true
-        /*if (
-          this.culture && cultures.find(c => c.id === this.culture).isWinter &&
-          sowings.find(sowing => [6,7].indexOf(cultures.find(c => c.id === sowing.culture).cultureTypeId))
-        ) return true
-        if (
-          this.culture && [6,7].indexOf(cultures.find(c => c.id === this.culture).cultureTypeId) !== -1 &&
-          cultures.find(c => c.id === sowing.culture).isWinter
-        ) return true*/
-        return false
-      }) : []
-      /*
-      if (this.culture && cultures.find(c => c.id === this.culture).isWinter) {
-        // for winter
-      } else if (this.culture && [6,7].indexOf(cultures.find(c => c.id === this.culture).cultureTypeId) !== -1) {
-        // for winter
-      } else {
-
-      }*/
-      /*throw new Error('fields')
-      if (this.culture && cultures.find(c => c.id === this.culture).isWinter) {
-        p = cultures.filter(c => c.cultureTypeId === 7).map(c => c.id)
+      let array = []
+      if (this.formatFields.length > 0){
+        array = this.formatFields.filter(field => {
+          return (!this.quickFilter || field.name.toLowerCase().includes(this.quickFilter.toLowerCase())) && (!this.brigadeId || field.brigadeId === this.brigadeId)
+        })
       }
-      return this.crutch? this.fields.filter(field => {
-        return (!sowings.records.find(sowing => sowing.year === this.context.year && (p.indexOf(sowing.cultureId) === -1 && sowing.fieldId === field.id)))
-      }) : []*/
-    }
+      return array
+    },
+    formatFields() {
+      let array = []
+      if (this.fields.length > 0) {
+        this.fields.forEach(field => {
+          let sowedArea = 0
+          this.sowings.forEach(sowing => {
+            if (field.id == sowing.fieldId){
+              sowedArea += sowing.area
+            }
+          })
+          if (sowedArea < field.area){
+            array.push(field)
+          }
+        })
+      }
+      return array
+    },
   }
 }
 </script>

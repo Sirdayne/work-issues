@@ -1,62 +1,73 @@
 <template lang="pug">
-.cols
+.cols(v-loading="loading", element-loading-text="Загрузка...")
   el-menu.sidebar(
-  style="position: relative"
+    :class="{'closed-sidebar': !sidebarToggleState}",
+    style="position: relative",
   )
     .budgets: .budget(v-for="b in budgets"): el-radio(v-model="$root.context.budget", :label="b.id") {{b.name}}
-    upload
-    #chart-container
-      canvas#chart(height="200", width="200")
+    .chart-container
+      canvas.chart#chart-cultures(height="200", width="200")
+    .chart-container
+      canvas.chart#chart-sorts(height="200", width="200")
+    .chart-container
+      canvas.chart#chart-ripeness(height="200", width="200")
 
   .workspace
-    #map-container
+    #map-container(:class="{'map-active': showPanelBottom}")
       #svgs(v-if="sowings")
         svg(v-for="field in leafletFields", width="0", height="0")
           defs
             linearGradient(:id="field.fieldId", x1="0%", y1="0%", x2="100%", y2="0%")
-              stop(v-for="area in field.areas", :offset="area.area", :stop-color="area.color", stop-opacity="1", :key="area.id")
+              stop(v-for="area in field.areas", :offset="area.area", :stop-color="area.color", stop-opacity="1", :key="area.numvfor")
+      h1.map-print-title(v-show="mapPrintState == 'started'", leaflet-browser-print-content) {{mapPrintTitle}}
       #map
-    .panel-bottom(v-if="ready")
+        .map-culture-filter
+          el-select(v-model="selectedCulture", clearable, filterable)
+            el-option(
+              v-for="item in filteredCultures",
+              :label="item.nameAndTotalArea",
+              :value="item.id",
+              :key="item.id",
+              :style="{color: item.color}",
+            )
+      table(leaflet-browser-print-pages)
+        tr(v-for="(item, index) in filteredCultures")
+          td(:style="{backgroundColor: item.color, width: '15px'}")
+          td() {{ item.nameAndTotalArea }}
+      .panel-legend(v-if="showPanelLegend")
+        .panel-legend-row(v-for="item in filteredCultures")
+          p {{item.name}}
+          .color-legend(:style=`{background: item.color}`)
+    .panel-bottom(v-if="ready && showPanelBottom")
       .passport(v-if="tab === 'passport'")
         passport( :fieldId="fieldClickedId",
-                  :fields="fieldsVuex",
-                  :brigades="brigades",
-                  :fieldzones="fieldzones",
-                  :fieldcontours="fieldcontours",
-                  :terrains="terrains",
-                  :soiltypes="soiltypes",
-                  :compositions="compositions",
-                  :croprotations="croprotations",
-                  :seedlimits="seedlimits",
-                  :sorts="sorts",
-                  :sowings="sowings",
-                  :reproductions="reproductions",
-                  :orientation="true",
-                )
+                  :orientation="true")
 
       div(v-else)
-        sevoborot(:fieldClickedId="fieldClickedId", :fieldClickedName="fieldClickedName", :croprotations="croprotations", :tab="tab")
+        sevoborot(:fieldClickedId="fieldClickedId", :fieldClickedName="fieldClickedName", :year="true")
         fieldsworks(:fieldClickedId="fieldClickedId", :fieldworks="fieldworks")
 
 
-    .fx-tabs(v-if="ready")
+    .fx-tabs(v-if="ready && showPanelBottom")
       .fx-tab(v-for="item in tabs", @click="changeTab(item.key, item.id)", :class="{ 'fx-tab-active': item.active }") {{ item.name }}
 
 </template>
 
 <script>
-import http from 'lib/httpQueryV2'
 import { EventBus } from 'services/EventBus'
 import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
 import ListController from 'mixins/ListController'
-import moment from 'moment'
+import randomcolor from 'randomcolor'
+import Chart from 'chart.js'
+import sevoborot from "components/panelbottom/sevoborot"
+import fieldsworks from "components/panelbottom/fieldsworks"
+import passport from "components/agromap/field/fieldpassport/passport"
 
 import L from 'leaflet'
-import tokml from 'tokml'
 import 'leaflet-editable'
 import 'leaflet-providers'
 import 'leaflet-easybutton'
-import 'leaflet-easyprint'
+import 'leaflet.browser.print/dist/leaflet.browser.print.min.js'
 import 'leaflet/dist/leaflet.css'
 import 'lib/Leaflet.PolylineMeasure'
 import 'lib/Leaflet.PolylineMeasure.css'
@@ -64,12 +75,12 @@ import geodesy from 'leaflet-geodesy'
 
 import 'leaflet-hotline'
 
-import Chart from 'chart.js'
+import fontawesome from '@fortawesome/fontawesome'
+import faSearchPlus from '@fortawesome/fontawesome-free-solid/faSearchPlus'
+import faUndo from '@fortawesome/fontawesome-free-solid/faUndo'
 
-import sevoborot from "components/panelbottom/sevoborot"
-import fieldsworks from "components/panelbottom/fieldsworks"
-import upload from "components/mapsowing/upload"
-import passport from "components/agromap/field/fieldpassport/passport"
+fontawesome.library.add(faSearchPlus)
+fontawesome.library.add(faUndo)
 
 export default {
   mixins: [
@@ -79,62 +90,44 @@ export default {
   components: {
     sevoborot,
     fieldsworks,
-    upload,
     passport
   },
   data() {
     return {
-      reproductions: [],
-      brigades: [],
-      fieldzones: [],
-      fieldcontours: [],
-      terrains: [],
-      soiltypes: [],
-      compositions: [],
-      seedlimits: [],
-      sorts: [],
-      fieldsVuex: [],
       budgets: [],
       leafletFields: [],
+      lfCultureIds: [],
       sowings: [],
       legend: [],
-      croprotations: [],
-      editorButtons: [],
-      pieSlicesNumber: 8,
-      pieOthersPercent: 10,
-      pieParts: [],
       fieldworks: [],
-      pieIds: [],
-      pieCultures: [],
-      pieAreas: [],
-      pieColors: [],
+      cultures: [],
+      sorts: [],
+      ripenessgroups: [],
+      selectedCulture: null,
       fields: new L.FeatureGroup(),
       highlightedFilteredFields: new L.FeatureGroup(),
       loading: true,
       fieldClickedId: null,
       fieldClickedName: null,
-      showPanelBottom: false,
+      fieldClickedPolygon: null,
       tabs: [
-        {
-          id: 0,
-          name: 'Паспорт',
-          key: 'passport',
-          active: false
-        },
-        {
-          id: 1,
-          name: 'История',
-          key: 'history',
-          active: true
-        },
-        {
-          id: 2,
-          name: 'План',
-          key: 'plan',
-          active: false
-        },
+        { id: 0, name: 'Паспорт', key: 'passport', active: false},
+        { id: 1, name: 'История', key: 'history', active: true}
       ],
-      tab: 'history'
+      tab: 'history',
+      mapPrintTitle: `Карта размещения посевов на ${this.$root.context.year} год`,
+      mapPrintState: "",
+      vuexFields: [],
+      noneColor: 'rgba(170, 170, 170, 1)',
+      showPanelBottom: false,
+      showPanelLegend: false,
+      legendButton: null,
+      bottomButton: null,
+      charts: {
+        'chart-cultures': null,
+        'chart-sorts': null,
+        'chart-ripeness': null
+      },
     }
   },
   created() {
@@ -142,61 +135,96 @@ export default {
       'leafletFields',
       'sowings',
       'legend',
-      'croprotations',
       'fieldworks',
       'budgets',
-      'fieldzones',
-      'fieldcontours',
-      'terrains',
-      'soiltypes',
-      'compositions',
-      'seedlimits',
+      'cultures',
       'sorts',
+      'ripenessgroups',
       'fields',
-      'reproductions',
-      'brigades',
     ], this.afterFetch );
+  },
+  watch: {
+    'selectedCulture'(val, oldVal) {
+      let findedCulture = this.cultures.find(c => c.id === val)
+      this.drawPies(findedCulture)
+      this.fields.eachLayer(polygon => {
+        if (polygon.cultureIds.indexOf(val) > -1 || val == ''){
+          polygon.setStyle({fillColor: 'url(#'+polygon.fieldId+')'})
+          polygon.on('mouseout', () => { polygon.setStyle({fillColor: 'url(#'+polygon.fieldId+')'}) })
+        } else {
+          polygon.setStyle({fillColor: this.noneColor})
+          polygon.on('mouseout', () => { polygon.setStyle({fillColor: this.noneColor}) })
+        }
+      })
+    },
   },
   computed: {
     sidebarToggleState() {
-      return this.$store.getters.getSidebarToggleState;
+      if (this.map){
+        this.map._onResize()
+        this.map.invalidateSize()
+      }
+      return this.$store.getters.getSidebarToggleState
+    },
+    filteredCultures() {
+      let cultures = this.cultures.filter(x => this.lfCultureIds.indexOf(x.id) > -1)
+      cultures.map(c => {
+        let totalArea = 0
+        this.fields.eachLayer(polygon => {
+          if (polygon.cultureIds.indexOf(c.id) > -1) {
+            let s = this.sowings.find(s => s.fieldId == polygon.fieldId && s.cultureId == c.id)
+            let a = s && s.area || 0
+            totalArea += a
+          }
+        })
+        c.color = this.getColorFromLegend(c.id)
+        c.nameAndTotalArea = [c.shortName, "-", totalArea, "га"].join(" ")
+        return c
+      })
+      return cultures
     },
   },
   methods: {
     afterFetch(){
       this.budgets = this.fromVuex('budgets')
-      this.leafletFields = this.fromVuex('leafletFields')
-      this.sowings = this.fromVuex('sowings').filter(x => x.year === this.$root.context.year)
       this.legend = this.fromVuex('legend')
-      this.croprotations = this.fromVuex('croprotations')
       this.fieldworks = this.fromVuex('fieldworks')
-      this.fieldzones = this.fromVuex('fieldzones')
-      this.fieldcontours = this.fromVuex('fieldcontours')
-      this.terrains = this.fromVuex('terrains')
-      this.soiltypes = this.fromVuex('soiltypes')
-      this.compositions = this.fromVuex('compositions')
-      this.seedlimits = this.fromVuex('seedlimits').filter(x => x.year === this.$root.context.year)
+      this.cultures = this.fromVuex('cultures')
+      this.vuexFields = this.fromVuex('fields')
       this.sorts = this.fromVuex('sorts')
-      this.reproductions = this.fromVuex('reproductions')
-      this.fieldsVuex = this.fromVuex('fields')
-      this.brigades = this.fromVuex('brigades')
+      this.ripenessgroups = this.fromVuex('ripenessgroups')
+      this.sowings = this.fromVuex('sowings').filter(x => x.year === this.$root.context.year)
+      this.sowings.forEach(sowing => {
+        let sort = this.sorts.find(s => s.id == sowing.cultureSortId)
+        sowing.ripenessGroupId = sort ? sort.ripenessGroupId : 'нет данных'
+      })
 
-      this.leafletFields = this.leafletFields.map(f => {
-        f.sowings = []
+      this.leafletFields = this.fromVuex('leafletFields').map(f => {
         f.areas = []
+        f.cultureIds = []
         let sumArea = 0
-        let i = 0
+        let numvfor = 0
+        let findedField = false
         this.sowings.forEach(x => {
-          if(x.fieldId === f.fieldId){
-            //sowings used for PIE
-            f.sowings.push({cultureId: x.cultureId, cultureName: x.cultureName, area: x.area, color: this.getColorFromLegend(x.cultureId)})
-            //areas used for SVG and GRADIENTS
-            f.areas.push({id: i, area: sumArea + '%', color: this.getColorFromLegend(x.cultureId)})
-            sumArea+=x.areaPercent
-            i++
-            f.areas.push({id: i, area: sumArea + '%', color: this.getColorFromLegend(x.cultureId)})
+          if (x.fieldId === f.fieldId) {
+            findedField = true
+            f.cultureIds.push(x.cultureId)
+            this.lfCultureIds.push(x.cultureId)
           }
         })
+        this.sowings.forEach(x => {
+          if(x.fieldId === f.fieldId) {
+            let color = this.getColorFromLegend(x.cultureId)
+            if (f.cultureIds.length <= 1) sumArea += x.areaPercent
+            f.areas.push({numvfor: numvfor++, area: sumArea + '%', color: color})
+            if (f.cultureIds.length > 1) sumArea += x.areaPercent
+            if (f.cultureIds.length <= 1) color = this.noneColor
+            f.areas.push({numvfor: numvfor++, area: sumArea + '%', color: color})
+          }
+        })
+        if (!findedField){
+          f.areas.push({numvfor: numvfor++, area: '100%', color: this.noneColor})
+        }
         return f
       })
       this.loading = false
@@ -204,13 +232,26 @@ export default {
         this.initMap()
       }
       if (this.sowings.length > 0){
-        this.dividePies()
-        this.createChart()
+        this.dividePie(this.cultures, 'cultureId', 'Площади культур на полях (га)', 'chart-cultures')
       }
+    },
+    drawPies(findedCulture) {
+      if (findedCulture){
+        this.dividePie(this.sorts, 'cultureSortId', `${findedCulture.name} - Сорта (га)`, 'chart-sorts', findedCulture)
+        this.dividePie(this.ripenessgroups, 'ripenessGroupId', `Группы спелости (га)`, 'chart-ripeness', findedCulture)
+      }
+    },
+    updateLeafletFields() {
+      this.fetchEntities([
+        'leafletFields'
+      ], this.afterFetch );
     },
     getColorFromLegend(id) {
       let legend = this.legend.find(x => x.itemId === id)
       return legend.rgbColor
+    },
+    getRandomColor(color) {
+      return randomcolor({hue: color})
     },
     initMap() {
       this.drawMap();
@@ -219,9 +260,12 @@ export default {
     drawMap() {
       if (this.map) this.map.remove();
       this._addLayers();
+      this._addFieldsTooltipToggleButton();
       this._addScale();
       this._addRuler();
+      this._addPrinterTitle();
       this._addPrinter();
+      this._addPanelBtns();
     },
     _addLayers() {
       let attribution = 'AgroStream';
@@ -238,14 +282,83 @@ export default {
       L.control.polylineMeasure({position:'topright', unit:'metres', clearMeasurementsOnStop: true}).addTo(this.map);
     },
     _addPrinter() {
-      L.easyPrint({
+      this.map.on("browser-pre-print", e => {});
+      this.map.on("browser-print-start", e => {this.mapPrintState = "started"});
+      this.map.on("browser-print", e => {});
+      this.map.on("browser-print-end", e => {this.mapPrintState = "ended"});
+      L.control.browserPrint({
         title: 'Печать',
-        position: 'topright',
-        sizeModes: ['A4Landscape', 'A4Portrait'],
-        defaultSizeTitles: {Current: 'Текущий', A4Landscape: 'Альбом', A4Portrait: 'Портрет'},
-        filename: "карта",
-        exportOnly: true,
+        position: "topright",
+        closePopupsOnPrint: true,
+        printModes: ["Auto", "Custom", "Landscape"],
+        printModesNames: {Auto:"Авто", Custom:"Область", Landscape: "Альбом"},
       }).addTo(this.map);
+    },
+    _addPrinterTitle() {
+      L.easyButton({
+        id: 'print-title', position: 'topright', type: 'replace', leafletClasses: true,
+        states:[{stateName: 'title', onClick: this.setPrintTitle, title: 'Заголовок карты', icon: 'el-icon-setting'}]
+      }).addTo(this.map);
+    },
+    setPrintTitle() {
+      this.mapPrintTitle = prompt('Введите название заголовка?', this.mapPrintTitle) || this.mapPrintTitle
+    },
+    _addPanelBtns() {
+      this.legendButton = L.easyButton({
+        id: 'el-icon-legend', position: 'topright', type: 'replace', leafletClasses: true,
+        states: [
+          {stateName: 'open', title: 'Показать легенды', icon: '<span class="lambda-icon">&lambda;</span>', onClick: (control) => { this.showPanelLegend = true; control.state('close');}},
+          {stateName: 'close', title: 'Скрыть легенды', icon: '<span class="close-icon">&cross;</span>', onClick: (control) => { this.showPanelLegend = false; control.state('open');}}
+        ]
+      }).addTo(this.map)
+      this.bottomButton = L.easyButton({
+        id: 'el-icon-bottom', position: 'topright', type: 'replace', leafletClasses: true,
+        states: [
+          {stateName: 'open', title: 'Показать инфо', icon: '<span class="iota-icon">&iukcy;</span>', onClick: (control) => { this.showPanelBottom = true; control.state('close');}},
+          {stateName: 'close', title: 'Скрыть инфо', icon: '<span class="close-icon">&cross;</span>', onClick: (control) => { this.showPanelBottom = false; control.state('open');}}
+        ]
+      }).addTo(this.map)
+    },
+    _addFieldsTooltipToggleButton() {
+      L.easyButton({
+        position: 'topright', type: 'replace', leafletClasses: true,
+        states:[
+          {
+            stateName: 'show-fields-tooltips',
+            onClick: this.showFieldsTooltips,
+            title: 'Показать названия полей',
+            icon: 'fas fa-search-plus'
+          },
+          {
+            stateName: 'hide-fields-tooltips',
+            onClick: this.hideFieldsTooltips,
+            title: 'Вернуть',
+            icon: 'fas fa-undo'
+          },
+        ]
+      }).addTo(this.map);
+    },
+    showFieldsTooltips(control) {
+      let activeFields = this.fields
+      if (activeFields) {
+        activeFields.eachLayer(polygon => {
+          polygon.unbindTooltip()
+          polygon.bindTooltip(polygon.label, {permanent: true, direction: "center", opacity: 1, className: 'tooltip-transparent'})
+        })
+        this.map.setZoom(13)
+        control.state('hide-fields-tooltips');
+      }
+    },
+    hideFieldsTooltips(control) {
+      let activeFields = this.fields
+      if (activeFields) {
+        activeFields.eachLayer(polygon => {
+          polygon.unbindTooltip()
+          polygon.bindTooltip(polygon.label, {permanent: false, direction: "center", opacity: 1, className: 'tooltip-transparent'})
+        })
+        this.map.fitBounds(activeFields.getBounds());
+        control.state('show-fields-tooltips');
+      }
     },
     removeFields() {
       if (this.map) {
@@ -256,32 +369,21 @@ export default {
       this.removeFields()
       this.fields = new L.FeatureGroup();
       let polygons = [];
-      this.highlightedPolygons = [];
       if (this.leafletFields && this.leafletFields.length) {
         this.leafletFields.forEach(field => {
           let latLng = JSON.parse(field.kml);
-          let polygon = L.polygon(latLng, {color: '#fff', fillColor: 'rgba(0,0,0,0.1)', weight: 1, fillOpacity: 0.5})
-          let here = this
-          let thisColor = 'rgba(0,0,0,0.1)'
-          if (field.sowings.length > 0){
-            field.sowings.forEach(sowing => {
-              polygon = L.polygon(latLng, {color: '#fff', fillColor: 'url(#'+field.fieldId+')', weight: 1, fillOpacity: 1, className: ''});
-              thisColor = 'url(#'+field.fieldId+')'
-            })
-          }
+          let polygon = L.polygon(latLng, {color: '#000', fillColor: 'url(#'+field.fieldId+')', weight: 1, fillOpacity: 0.7, className: ''});
           polygon.label = field.fieldName;
           polygon.fieldId = field.fieldId;
-          polygon.on('mouseover', function () {this.setStyle({fillColor: '#fff'})})
-          polygon.on('mouseout', function () {this.setStyle({fillColor: thisColor})})
-          polygon.on('click', function () {
-            here.fieldClickedId = field.fieldId
-            here.fieldClickedName = field.fieldName
-            here.showPanelBottom = true
+          polygon.cultureIds = field.cultureIds;
+          polygon.on('mouseover', () => {polygon.setStyle({fillColor: 'rgba(255, 255, 255, 1)'})})
+          polygon.on('mouseout', () => {polygon.setStyle({fillColor: 'url(#'+field.fieldId+')'})})
+          polygon.on('click', () => {
+              this.showPanelBottom = true
+              this.fieldClickedId = field.fieldId
+              this.fieldClickedName = field.fieldName
+              this.fieldClickedPolygon = polygon
           })
-//            if (this.selectedFields && this.selectedFields.length && this.selectedFields.includes(field.fieldId)) {
-//              polygon.setStyle({color: 'black', weight: 1, fillOpacity: 0.6});
-//              this.highlightedPolygons.push(polygon);
-//            }
           this.fields.addLayer(polygon);
           polygons.push(polygon);
         });
@@ -291,67 +393,67 @@ export default {
           this.map.setView(this.fields.getBounds().getCenter(), 12);
 
           this.fields.eachLayer(polygon => {
-            polygon.bindTooltip(polygon.label, {
-              permanent: true,
-              direction: "center",
-              opacity: 1,
-              className: 'tooltip-transparent'
-            })
+            polygon.bindTooltip(polygon.label, { permanent: false, direction: "center", opacity: 1, className: 'tooltip-transparent'})
           })
         }
       }
     },
-    dividePies(){
-      this.pieParts = []
-      this.pieIds = this.sowings.map(x => x.cultureId).filter((v, i, a) => a.indexOf(v) === i)
-      this.pieIds.forEach(x => {
-        let sowing = this.sowings.find(s => s.cultureId === x)
+    dividePie(items, sortKey, title, htmlId, selectedCulture) {
+      let sowings = selectedCulture ? this.sowings.filter(s => s.cultureId === selectedCulture.id) : this.sowings
+      let pieIds = sowings.map(x => x[sortKey]).filter((elem, index, array) => array.indexOf(elem) === index)
+      let pieParts = []
+      pieIds.forEach(x => {
+        let finded = items.find(s => s.id === x)
+        finded = finded ? finded : 'нет данных'
         let sum = 0
-        this.sowings.forEach(s => {
-          if (s.cultureId === x) {
+        sowings.forEach(s => {
+          if (s[sortKey] === x) {
             sum += s.area
           }
         })
-        let color = this.getColorFromLegend(x)
-        this.pieParts.push({cultureId: x, cultureName: sowing.cultureName, area: sum, color: color })
+        let mixColor = this.getMixColor(sowings, sortKey, x)
+        let color = htmlId === 'chart-cultures' ? this.getColorFromLegend(x) : this.getRandomColor(mixColor)
+        pieParts.push({id: x, name: finded.name, area: sum, color: color })
       })
-      this.pieParts.sort(this.sortUp);
-//      if (this.pieParts.length > this.pieSlicesNumber){
-//        let sumPies = 0
-//        for(let i = this.pieSlicesNumber; i < this.pieParts.length; i++){
-//          sumPies+=this.pieParts[i].area
-//        }
-//        this.pieParts.splice(this.pieSlicesNumber, this.pieParts.length - this.pieSlicesNumber)
-//        this.pieParts.push({ cultureName: 'Прочее', area: sumPies, color: '#fff'})
-//      }
-      /* Percentage for other Pies */
+      pieParts.sort(this.sortUp)
+      pieParts = htmlId === 'chart-cultures' ? this.calculatePieOthers(pieParts) : pieParts
+      pieParts.sort(this.sortDown)
+      let pieLabels = pieParts.map(x => x.name)
+      let pieAreas = pieParts.map(x => x.area)
+      let pieColors = pieParts.map(x => x.color)
+      this.createChart(title, pieLabels, pieAreas, pieColors, htmlId)
+    },
+    getMixColor(sowings, sortKey, x) {
+      let sowing = sowings.find(s => s[sortKey] == x)
+      return this.getColorFromLegend(sowing.cultureId)
+    },
+    calculatePieOthers(pieParts) {
+      const OTHERS_PERCENT = 10
       let pieWholeArea = 0
-      this.pieParts.forEach(x => pieWholeArea += x.area)
-      let pieOthersArea = pieWholeArea * this.pieOthersPercent / 100
+      pieParts.forEach(x => pieWholeArea += x.area)
+      let pieOthersArea = pieWholeArea * OTHERS_PERCENT / 100
       let sumPies = 0
       let j = 0
-      while(sumPies + this.pieParts[j+1].area < pieOthersArea) {
-        sumPies+=this.pieParts[j].area
+      while(sumPies + pieParts[j+1].area < pieOthersArea) {
+        sumPies+=pieParts[j].area
         j++
       }
-      this.pieParts.splice(0, j)
-      this.pieParts.push({ cultureName: 'Прочее', area: sumPies, color: '#fff'})
-      /* Percentage for other Pies*/
-      this.pieParts.sort(this.sortDown)
-      this.pieCultures = this.pieParts.map(x => x.cultureName)
-      this.pieAreas = this.pieParts.map(x => x.area)
-      this.pieColors = this.pieParts.map(x => x.color)
+      pieParts.splice(0, j)
+      pieParts.push({ name: 'Прочее', area: sumPies, color: '#fff'})
+      return pieParts
     },
-    createChart(){
-      var ctx = "chart";
-      var myChart = new Chart(ctx, {
+    createChart(title, labels, areas, colors, htmlId){
+      if (this.charts[htmlId]) {
+        this.charts[htmlId].destroy()
+      }
+      this.charts[htmlId] =  new Chart(htmlId, {
         type: 'pie',
         data: {
-          labels: this.pieCultures,
+          labels: labels,
           datasets: [{
             label: "Площадь (га)",
-            backgroundColor: this.pieColors,
-            data: this.pieAreas
+            backgroundColor: colors,
+            data: areas
           }]
         },
         options: {
@@ -360,33 +462,32 @@ export default {
           },
           title: {
             display: true,
-            text: 'Площади культур на полях (га)'
+            text: title
           }
         }
       });
     },
     sortUp(a, b) {
-      if (a.area > b.area) {
-        return 1;
-      }
-      if (a.area < b.area) {
-        return -1;
-      }
-      return 0;
+      if (a.area > b.area)
+        return 1
+      if (a.area < b.area)
+        return -1
+      return 0
     },
     sortDown(a, b) {
-      if (a.area < b.area) {
-        return 1;
-      }
-      if (a.area > b.area) {
-        return -1;
-      }
-      return 0;
+      if (a.area < b.area)
+        return 1
+      if (a.area > b.area)
+        return -1
+      return 0
     },
     changeTab(tab, id){
       this.tabs.forEach(t => t.active = false)
       this.tabs[id].active = true
       this.tab = tab
+    },
+    getArea(polygon) {
+      return Math.round(geodesy.area(polygon) / 10000);
     },
   }
 }
@@ -411,24 +512,52 @@ export default {
   z-index 0
 
 #map-container
-  height calc(100% - 280px)
+  height 100%
   width 100%
   position relative
   box-sizing border-box
   border 1px solid #323232
+  &.map-active
+    height calc(100% - 280px)
+
+.panel-legend
+  position absolute
+  padding 10px 15px
+  bottom 30px
+  left 12px
+  height 250px
+  width 250px
+  box-sizing border-box
+  border-radius 5px 0 0 5px
+  border 1px solid #323232
+  background #fff
+  overflow auto
+  z-index 401
+  &-row
+    width 100%
+    margin 5px 0
+    p
+      font-size 13px
+      margin 0
+      width 100%
+    .color-legend
+      display inline-block
+      height 7px
+      width 100px
+
 
 .panel-bottom
   height 250px
   position static
 
-#chart-container
+.chart-container
   width 250px
   height 250px
-  position absolute
-  bottom 10px
-  left 35px
+  position static
+  margin-left 33px
+  margin-bottom 20px
 
-  #chart
+  .chart
     display block
 
 #map
@@ -448,10 +577,19 @@ export default {
   border 1px solid #dfe6ec
   box-sizing border-box
 
-@media only screen and (max-height : 660px)
-  #chart-container
-    position static
-    margin-left 35px
+.map-culture-filter
+  left calc(50% - 108px)
 
+.grid-print-container > .title
+  color white
+
+.map-print-title
+  grid-row 1
+  justify-self center
+  text-align center
+  color grey
+
+.closed-sidebar
+  display none
 </style>
 

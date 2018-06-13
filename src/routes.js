@@ -1,6 +1,9 @@
 import AssignmentsRoutes from "./pages/assignments/routes"
+import AdminRoutes from "./pages/admin/routes"
+import AgromapRoutes from "./pages/agromap/routes"
 import MonitoringRoutes from "./pages/monitoring/routes"
-import {modules} from "modules.js"
+import ReportsRoutes from "./pages/reports/routes"
+import ReportsPlanRoutes from "./pages/reportsplan/routes"
 const Catalog = () => import ("./pages/catalog")
 const CatalogByType = () => import ("./components/catalog")
 const CatalogFormByType = () => import ("./components/catalog/form")
@@ -11,10 +14,12 @@ const Culture = () => import ("./pages/dashboard/culture.vue")
 const Work = () => import ("./pages/dashboard/work.vue")
 const CropBalanceUsers = () => import ("./pages/CropBalanceUsers.vue")
 const Map = () => import ("./pages/map/index.vue")
+const MapNew = () => import ("./pages/mapnew/index.vue")
 const ModulesTree = () => import ("modules-tree")
 const Login = () => import ("./pages/login")
 const Logout = () => import ("./pages/logout")
-const SowList = () => import ("modules/SowList")
+const SowListOld = () => import ("modules/SowList")
+const SowList = () => import ("./pages/sowings")
 const Sowing = () => import ("modules/Sowing")
 const Reports = () => import ("./pages/reports")
 const Recipes = () => import ("./pages/recipes")
@@ -25,9 +30,9 @@ const Parttime = () => import ("./pages/parttime")
 const Silageboard = () => import ("./pages/silageboard")
 const Reportsbz = () => import ("./pages/reportsbz")
 const Reportsplan = () => import ("./pages/reportsplan")
-const FieldAgroMap = () => import ("./pages/field")
-const NotepadAgroMap = () => import ("./pages/notepad")
 const MapSowingAgroPlan = () => import ("./pages/mapsowing")
+const Admin = () => import ("./pages/admin")
+const Agromap = () => import ("./pages/agromap")
 
 module.exports = [
   {
@@ -56,23 +61,19 @@ module.exports = [
   },
   {
     path: "/agrofact",
-    redirect: "/catalog"
+    redirect: "/agrofact/catalog"
   },
   {
     path: "/agroplan",
-    redirect: "/catalog"
+    redirect: "/agroplan/catalog"
   },
   {
     path: "/balanszerna",
-    redirect: "/catalog"
+    redirect: "/balanszerna/catalog"
   },
   {
-    path: "/agromap",
-    redirect: "/notepad"
-  },
-  {
-    path: "/catalog",
-    redirect: "/catalog/fields",
+    path: "/agrofact/catalog",
+    redirect: "/agrofact/catalog/fields",
     component: Catalog,
     children: [
       {
@@ -90,187 +91,233 @@ module.exports = [
     ]
   },
   {
-    path: "/news",
+    path: "/agroplan/catalog",
+    redirect: "/agroplan/catalog/fields",
+    component: Catalog,
+    children: [
+      {
+        path: ":type",
+        component: CatalogByType,
+      },
+      {
+        path: ":type/form",
+        component: CatalogFormByType,
+      },
+      {
+        path: ":type/form/:id",
+        component: CatalogFormByType,
+      },
+    ]
+  },
+  {
+    path: "/balanszerna/catalog",
+    redirect: "/balanszerna/catalog/fields",
+    component: Catalog,
+    children: [
+      {
+        path: ":type",
+        component: CatalogByType,
+      },
+      {
+        path: ":type/form",
+        component: CatalogFormByType,
+      },
+      {
+        path: ":type/form/:id",
+        component: CatalogFormByType,
+      },
+    ]
+  },
+  {
+    path: "/agrofact/news",
     component: News,
     meta: {
       title: "Новости",
     },
   },
   {
-    path: "/reportsplan",
+    path: "/agroplan/news",
+    component: News,
+    meta: {
+      title: "Новости",
+    },
+  },
+  {
+    path: "/agroplan/reports",
     component: Reportsplan,
     meta: {
-      module: modules.agroplan,
       title: "Отчеты",
     },
+    children: [...ReportsPlanRoutes],
   },
   {
-    path: "/reports",
+    path: "/agrofact/reports",
+    redirect: "/agrofact/reports/operative-informations",
     component: Reports,
     meta: {
-      module: modules.agrofact,
       title: "Отчеты",
     },
+    children: [...ReportsRoutes],
   },
   {
-    path: "/dashboard",
+    path: "/agrostream/dashboard",
     component: Dashboard,
     meta: {
       title: "Dashboard",
     },
   },
   {
-    path: "/dashtest",
+    path: "/agrostream/dashtest",
     component: Dashtest,
     meta: {
       title: "Dashtest",
     },
   },
   {
-    path: "/dashboard/culture/:id",
+    path: "/agrostream/dashboard/culture/:id",
     component: Culture,
     meta: {
       title: "Dashboard - Культура",
     },
   },
   {
-    path: "/dashboard/work/:id",
+    path: "/agrostream/dashboard/work/:id",
     component: Work,
     meta: {
       title: "Dashboard - Работа",
     },
   },
   {
-    path: "/cropbalanceusers",
+    path: "/agrostream/cropbalanceusers",
     component: CropBalanceUsers,
     meta: {
       title: "CropBalanceUsers",
     },
   },
   {
-    path: "/assignments",
-    redirect: "/assignments/list",
+    path: "/agrofact/assignments",
+    redirect: "/agrofact/assignments/list",
     component: Assignments,
-    meta: {
-      module: modules.agrofact,
-    },
     children: [...AssignmentsRoutes],
   },
   {
-    path: "/map",
+    path: "/agrofact/map",
     component: Map,
     meta: {
-      module: modules.agrofact,
       title: "Карта",
     },
   },
   {
-    path: "/map/:id",
+    path: "/agrofact/map/:id",
     component: Map,
     meta: {
-      module: modules.agrofact,
       title: "Карта",
     },
   },
   {
-    path: "/monitoring",
-    redirect: "/monitoring/speedmonitoring",
+    path: "/agrofact/mapnew",
+    component: MapNew,
+    meta: {
+      title: "Карта",
+    },
+  },
+  {
+    path: "/agrofact/monitoring",
+    redirect: "/agrofact/monitoring/speedmonitoring",
     component: Monitoring,
-    meta: {
-      module: modules.agrofact,
-    },
     children: [...MonitoringRoutes],
   },
   {
-    path: "/sowings",
+    path: "/agroplan/sowingsold",
+    component: SowListOld,
+    meta: {
+      title: "Посевы",
+    },
+  },
+  {
+    path: "/agroplan/sowings",
     component: SowList,
     meta: {
-      module: modules.agroplan,
       title: "Посевы",
     },
   },
   {
-    path: "/sowings/new",
+    path: "/agroplan/sowings/new",
     component: Sowing,
     meta: {
-      module: modules.agroplan,
       title: "Посевы",
     },
   },
   {
-    path: "/recipes",
+    path: "/agroplan/recipes",
     component: Recipes,
     meta: {
-      module: modules.agroplan,
       title: "Работы",
     },
   },
   {
-    path: "/recipes/new",
+    path: "/agroplan/recipes/new",
     component: RecipesForm,
     meta: {
-      module: modules.agroplan,
       title: "Новая группа работ",
     },
   },
   {
-    path: "/recipes/:id",
+    path: "/agroplan/recipes/:id",
     component: RecipesForm,
     meta: {
-      module: modules.agroplan,
       title: "Работы",
     },
   },
   {
-    path: "/parttime",
+    path: "/balanszerna/parttime",
     component: Parttime,
     meta: {
-      module: modules.balanszerna,
       title: "Подработка",
     },
   },
   {
-    path: "/reportsbz",
+    path: "/balanszerna/reports",
     component: Reportsbz,
     meta: {
-      module: modules.balanszerna,
       title: "Отчеты",
     },
   },
   {
-    path: "/silageboard",
+    path: "/balanszerna/silageboard",
     component: Silageboard,
     meta: {
-      module: modules.balanszerna,
       title: "Силосная доска",
     },
   },
   {
-    path: "/field",
-    component: FieldAgroMap,
-    meta: {
-      module: modules.agromap,
-      title: "Поле",
-    },
-  },
-  {
-    path: "/notepad",
-    component: NotepadAgroMap,
-    meta: {
-      module: modules.agromap,
-      title: "Агроблокнот",
-    },
-  },
-  {
-    path: "/mapsowing",
+    path: "/agroplan/mapsowing",
     component: MapSowingAgroPlan,
     meta: {
-      module: modules.agroplan,
       title: "Карта посева",
     },
   },
   {
+    path: "/admin",
+    redirect: "/admin/organization",
+    component: Admin,
+    meta: {
+      title: "Админ",
+      role: "Admin",
+    },
+    children: [...AdminRoutes],
+  },
+  {
+    path: "/agromap",
+    redirect: "/agromap/field",
+    component: Agromap,
+    meta: {
+      title: "Agromap",
+    },
+    children: [...AgromapRoutes],
+  },
+  {
     path: "/:page",
-    redirect: "/news",
+    redirect: "/modules-tree",
   },
 ]

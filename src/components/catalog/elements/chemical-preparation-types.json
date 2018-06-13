@@ -1,6 +1,7 @@
 {
   "name": "ChemicalPreparationTypes",
   "api": "ChemicalPreparationTypes",
+  "notFilterable": true,
   "dependencies": [],
   "attributes": [
     {

@@ -3,18 +3,19 @@ const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
 
 module.exports = merge(common, {
-  devtool: '#eval-source-map',
+  mode: 'development',
+  devtool: 'eval',
   module: {
     rules: [{
         test: /\.vue$/,
         loader: 'vue-loader',
-        options: {
-          esModule: true,
-        }
       },
       {
         test: /\.css$/,
         use: [
+          {
+            loader: 'vue-style-loader',
+          },
           {
             loader: 'style-loader',
           },
@@ -40,21 +41,19 @@ module.exports = merge(common, {
     ]
   },
   devServer: {
-    historyApiFallback: true,
+    inline: true,
+    hot: true,
+    host: 'localhost',
+    port: 8080,
     compress: true,
-    stats: {
-      warnings: true,
-    },
-    hot: true
+    clientLogLevel: "warning",
   },
   plugins: [
     new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: '"development"',
-        PROD: 'false',
-        API_URL: '"http://agroplanapi-test.azurewebsites.net/"',
-      }
+      IS_PROD: JSON.stringify(false),
+      SERVER_URL: JSON.stringify("http://agroplanapi-test.azurewebsites.net/"),
     }),
+    new webpack.NamedModulesPlugin(),
     new webpack.HotModuleReplacementPlugin(),
   ]
 });

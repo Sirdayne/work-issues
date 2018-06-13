@@ -1,6 +1,7 @@
 {
   "name": "AdditionalWorkNorms",
   "api": "FuelNorms",
+  "organizationsGroupId": true,
   "dependencies": [
     "Works",
     "CultureTypes",
@@ -60,27 +61,32 @@
     {
       "label": "Агроусловия от",
       "prop": "conditionFrom",
-      "table": false
+      "table": false,
+      "xls": true
     },
     {
       "label": "Агроусловия до",
       "prop": "conditionTo",
-      "table": false
+      "table": false,
+      "xls": true
     },
     {
       "label": "Тарифный коэффициент",
       "prop": "tarifCoeficient",
-      "table": false
+      "table": false,
+      "xls": true
     },
     {
       "label": "Минимальная скорость",
       "prop": "minSpeed",
-      "table": false
+      "table": false,
+      "xls": true
     },
     {
       "label": "Максимальная скорость",
       "prop": "maxSpeed",
-      "table": false
+      "table": false,
+      "xls": true
     },
     {
       "label": "isAdditional",

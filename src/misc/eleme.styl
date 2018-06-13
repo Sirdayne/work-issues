@@ -1,0 +1,75 @@
+/* fixes for element.eleme.ui */
+
+.el-select
+  .el-tag
+    position relative
+    height auto
+    width auto
+    .el-select__tags-text
+      padding-left 18px
+      white-space normal
+    .el-tag__close
+      position absolute
+      top 5px
+      left 2px
+
+.el-input-number
+  vertical-align middle
+
+.el-select .el-input__inner
+  -webkit-user-select none
+  -moz-user-select none
+  -ms-user-select none
+  user-select none
+
+.el-table th>.cell,
+.el-table .cell
+  word-break normal
+
+.tags
+  margin 0 -5px
+  .el-tag
+    margin 0 5px
+
+.el-menu-item.is-active
+  color #bfcbd9
+
+.el-dialog--tiny
+  width 30%
+  min-width 300px
+
+.el-tabs__header
+  margin 0
+
+/* pages/recipes/form - for help tooltip */
+.el-tooltip__popper.is-light
+  width 200px
+
+.el-loading-mask
+  z-index 2000!important
+
+.el-notification
+  z-index 10001!important
+
+.el-dialog__wrapper
+  z-index 10002!important
+
+.el-select-dropdown, .el-picker-panel
+  z-index 10004!important
+
+
+.el-table
+  td.table-inside > div.cell
+    padding 0
+  .edited-row
+    background-color #eef1f696
+  .new-row
+    background-color #eef1f696
+.borderless-table
+  border none
+  td:last-child
+    border-right none
+  &.el-table::after, &.el-table::before
+    display none
+  tr.el-table__row:last-child > td
+    border-bottom none

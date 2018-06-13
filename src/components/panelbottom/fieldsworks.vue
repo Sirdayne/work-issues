@@ -2,23 +2,21 @@
 .fx-table
   .fx-table(v-if="fieldwork && firstwork")
     .fx-row.fx-grey
-      .fx-cell Работа
+      .fx-cell.fx-button( style="cursor: pointer;", @click="changeSpoiler('.fx-spoiler-3')" ) + Работа
       .fx-cell Площадь
       .fx-cell Препарат
       .fx-cell Машина
       .fx-cell Инструмент
       .fx-cell Редактировать
     .fx-row
-      button.fx-cell.fx-button.fx-light-grey( style="cursor: pointer;", @click="changeSpoiler('.fx-spoiler-3')" )
-        span(v-if="fieldwork.length > 0") +
-        span {{ firstwork.workName }}
+      .fx-cell {{ firstwork.workName }}
       .fx-cell {{ firstwork.area }}
       .fx-cell
         el-tag( v-for="item in firstwork.chemicalTreatments", :key="item.id") {{ item.chemicalPreparationName }} ({{ item.normative }} )
       .fx-cell {{ firstwork.car }}
       .fx-cell {{ firstwork.instrument }}
       button.fx-a
-        router-link(:to="`/recipes/${firstwork.technologyRecieptId}`")
+        router-link(:to="`/agroplan/recipes/${firstwork.technologyRecieptId}`")
           i(class="el-icon-edit")
   .fx-spoiler.fx-spoiler-3
     .fx-table(v-if="fieldwork.length > 0", v-for="elem in fieldwork")
@@ -31,7 +29,7 @@
         .fx-cell {{ elem.car }}
         .fx-cell {{ elem.instrument }}
         button.fx-a
-          router-link(:to="`/recipes/${elem.technologyRecieptId}`")
+          router-link(:to="`/agroplan/recipes/${elem.technologyRecieptId}`")
             i(class="el-icon-edit")
 </template>
 

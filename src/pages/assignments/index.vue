@@ -6,18 +6,18 @@
     unique-opened,
     router,
   )
-    router-link(:to="`/assignments/list`")
-      el-menu-item(:index="`/assignments/list`") Список заданий
-    router-link(:to="`/assignments/new`")
-      el-menu-item(:index="`/assignments/new`") Добавить задание
-    router-link(:to="`/assignments/transportation`")
-      el-menu-item(:index="`/assignments/transportation`") Добавить транспортировку
-    router-link(:to="`/assignments/seed`")
-      el-menu-item(:index="`/assignments/seed`") Расчет семян
-    router-link(:to="`/assignments/chemistry`")
-      el-menu-item(:index="`/assignments/chemistry`") Расчет химии
-    router-link(:to="`/assignments/fertilizer`")
-      el-menu-item(:index="`/assignments/fertilizer`") Расчет удобрений
+    router-link(:to="`/agrofact/assignments/list`")
+      el-menu-item(:index="`/agrofact/assignments/list`") Добавить задание
+    router-link(:to="`/agrofact/assignments/transportation`")
+      el-menu-item(:index="`/agrofact/assignments/transportation`") Добавить транспортировку
+    router-link(:to="`/agrofact/assignments/seed`")
+      el-menu-item(:index="`/agrofact/assignments/seed`") Расчет семян
+    router-link(:to="`/agrofact/assignments/chemistry`")
+      el-menu-item(:index="`/agrofact/assignments/chemistry`") Расчет СЗР
+    router-link(:to="`/agrofact/assignments/fertilizer`")
+      el-menu-item(:index="`/agrofact/assignments/fertilizer`") Расчет удобрений
+    router-link(:to="`/agrofact/assignments/protravka-semyan`")
+      el-menu-item(:index="`/agrofact/assignments/protravka-semyan`") Протравка семян
   router-view.workspace
 </template>
 

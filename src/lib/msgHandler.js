@@ -11,9 +11,9 @@ export default {
     return response && response.config && response.config.method
   },
   handleMessage(method, response) {
-    if (!["delete", "post", "put"].includes(method)) return false
+    if (!["delete", "put"].includes(method)) return false
+    if (typeof response.data === "object" && response.data) return false
     let msg = "Успешно "
-    if (method == "post") msg += "создано!"
     if (method == "put") msg += "сохранено!"
     if (method == "delete") msg += "удалено!"
     this.showMessage(msg)

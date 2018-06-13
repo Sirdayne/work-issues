@@ -1,3 +1,4 @@
+import geodesy from 'leaflet-geodesy'
 (function (factory) {
   if (typeof define === 'function' && define.amd) {
     // AMD
@@ -18,135 +19,135 @@
   var self;
   var arrow;
   var arcpoints;
-	/**
-	 * Polyline Measure class
-	 * @extends L.Control
-	 */
+  /**
+   * Polyline Measure class
+   * @extends L.Control
+   */
   L.Control.PolylineMeasure = L.Control.extend({
 
-		/**
-		 * Default options for the tool
-		 * @type {Object}
-		 */
+    /**
+     * Default options for the tool
+     * @type {Object}
+     */
     options: {
-			/**
-			 * Position to show the control. Possible values are: 'topright', 'topleft', 'bottomright', 'bottomleft'
-			 * @type {String}
-			 * @default
-			 */
+      /**
+       * Position to show the control. Possible values are: 'topright', 'topleft', 'bottomright', 'bottomleft'
+       * @type {String}
+       * @default
+       */
       position: 'topleft',
-			/**
-			 * Which units the distances are displayed in. Possible values are: 'metres', 'landmiles', 'nauticalmiles'
-			 * @type {String}
-			 * @default
-			 */
+      /**
+       * Which units the distances are displayed in. Possible values are: 'metres', 'landmiles', 'nauticalmiles'
+       * @type {String}
+       * @default
+       */
       unit: 'metres',
-			/**
-			 * Title for the control going to be switched on
-			 * @type {String}
-			 * @default
-			 */
+      /**
+       * Title for the control going to be switched on
+       * @type {String}
+       * @default
+       */
       measureControlTitleOn: "Включить измерение",
-			/**
-			 * Title for the control going to be switched off
-			 * @type {String}
-			 * @default
-			 */
+      /**
+       * Title for the control going to be switched off
+       * @type {String}
+       * @default
+       */
       measureControlTitleOff: "Отключить измерение",
-			/**
-			 * HTML to place inside the control. This should just be a unicode icon
-			 * @type {String}
-			 * @default
-			 */
+      /**
+       * HTML to place inside the control. This should just be a unicode icon
+       * @type {String}
+       * @default
+       */
       measureControlLabel: '&#128208;',
-			/**
-			 * Classes to apply to the control
-			 * @type {Array}
-			 * @default
-			 */
+      /**
+       * Classes to apply to the control
+       * @type {Array}
+       * @default
+       */
       measureControlClasses: [],
-			/**
-			 * Background color for control when selected
-			 * @type {String}
-			 * @default
-			 */
+      /**
+       * Background color for control when selected
+       * @type {String}
+       * @default
+       */
       backgroundColor: '#8f8',
-			/**
-			 * Cursor type to show when creating measurements
-			 * @type {String}
-			 * @default
-			 */
+      /**
+       * Cursor type to show when creating measurements
+       * @type {String}
+       * @default
+       */
       cursor: 'crosshair',
-			/**
-			 * Clear the measurements on stop
-			 * @type {Boolean}
-			 * @default
-			 */
+      /**
+       * Clear the measurements on stop
+       * @type {Boolean}
+       * @default
+       */
       clearMeasurementsOnStop: true,
-			/**
-			 * Show a control to clear all the measurements
-			 * @type {Boolean}
-			 * @default
-			 */
+      /**
+       * Show a control to clear all the measurements
+       * @type {Boolean}
+       * @default
+       */
       showMeasurementsClearControl: false,
-			/**
-			 * Title text to show on the clear measurements control button
-			 * @type {String}
-			 * @default
- 			 */
+      /**
+       * Title text to show on the clear measurements control button
+       * @type {String}
+       * @default
+        */
       clearControlTitle: 'Очистить измерения',
-			/**
-			 * Clear control inner html
-			 * @type {String}
-			 * @default
- 			 */
+      /**
+       * Clear control inner html
+       * @type {String}
+       * @default
+        */
       clearControlLabel: '&times;',
-			/**
-			 * Collection of classes to add to clear control button
-			 * @type {Array}
-			 * @default
-			 */
+      /**
+       * Collection of classes to add to clear control button
+       * @type {Array}
+       * @default
+       */
       clearControlClasses: [],
-			/**
-			 * Show a control to change the units of measurements
-			 * @type {Boolean}
-			 * @default
-			 */
+      /**
+       * Show a control to change the units of measurements
+       * @type {Boolean}
+       * @default
+       */
       showUnitControl: false,
-			/**
-			 * Styling settings for the temporary dashed line
+      /**
+       * Styling settings for the temporary dashed line
              * @type {Object}
-			 */
+       */
       tempLine: {
-				/**
-				 * Dashed line color
-				 * @type {String}
-				 * @default
-				 */
+        /**
+         * Dashed line color
+         * @type {String}
+         * @default
+         */
         color: '#00f',
-				/**
-				 * Dashed line weight
-				 * @type {Number}
-				 * @default
-				 */
+        /**
+         * Dashed line weight
+         * @type {Number}
+         * @default
+         */
         weight: 2
       },
-			/**
-			 * Styling for the solid line
-			 * @type {Object}
-			 */
+      /**
+       * Styling for the solid line
+       * @type {Object}
+       */
       fixedLine: {
-				/**
-				 * Solid line color
-				 * @type {String}
-				 * @default
-				 */
+        /**
+         * Solid line color
+         * @type {String}
+         * @default
+         */
         color: '#006',
-				/**
-				 * Solid line weight
-				 * @type {Number}
-				 * @default
-				 */
+        /**
+         * Solid line weight
+         * @type {Number}
+         * @default
+         */
         weight: 2
       },
       /**
@@ -295,17 +296,17 @@
       }
     },
 
-		/**
-		 * Create a control button
-		 * @param {String} 		label		    Label to add
-		 * @param {String} 		title			Title to show on hover
-		 * @param {Array} 		classesToAdd	Collection of classes to add
-		 * @param {Element} 	container		Parent element
-		 * @param {Function} 	fn				Callback function to run
-		 * @param {Object} 		context			Context
-		 * @returns {Element}					Created element
-		 * @private
-		 */
+    /**
+     * Create a control button
+     * @param {String}     label        Label to add
+     * @param {String}     title      Title to show on hover
+     * @param {Array}     classesToAdd  Collection of classes to add
+     * @param {Element}   container    Parent element
+     * @param {Function}   fn        Callback function to run
+     * @param {Object}     context      Context
+     * @returns {Element}          Created element
+     * @private
+     */
     _createControl: function (label, title, classesToAdd, container, fn, context) {
       var anchor = document.createElement('a');
       anchor.innerHTML = label;
@@ -318,11 +319,11 @@
       return anchor;
     },
 
-		/**
-		 * Method to fire on add to map
-		 * @param {Object} 		map 	Map object
-		 * @returns {Element}			Containing element
-		 */
+    /**
+     * Method to fire on add to map
+     * @param {Object}     map   Map object
+     * @returns {Element}      Containing element
+     */
     onAdd: function (map) {
       self = this;
       self._container = document.createElement('div');
@@ -356,7 +357,7 @@
         var measureUnits = self.options.unit === "metres" ? "метры" : self.options.unit
         var title = "Ед. измерения " + measureUnits;
         if (self.options.unit == "metres") {
-          var label = "m";
+          var label = "м";
         } else if (self.options.unit == "landmiles") {
           var label = "mi";
         } else {
@@ -369,10 +370,10 @@
       return self._container;
     },
 
-		/**
-		 * Toggle the measure functionality on or off
-		 * @private
-		 */
+    /**
+     * Toggle the measure functionality on or off
+     * @private
+     */
     _toggleMeasure: function () {
       self._measuring = !self._measuring;
       if (self._measuring) {   // if measuring is going to be switched on
@@ -410,9 +411,9 @@
       }
     },
 
-		/**
-		 * Clear all measurements from the map
-		 */
+    /**
+     * Clear all measurements from the map
+     */
     _clearAllMeasurements: function () {
       if ((self._cntCircle !== undefined) && (self._cntCircle !== 0)) {
         self._finishPath();
@@ -433,7 +434,7 @@
         document.getElementById("unitControlId").innerHTML = "nm";
       } else {
         self.options.unit = "metres";
-        document.getElementById("unitControlId").innerHTML = "m";
+        document.getElementById("unitControlId").innerHTML = "м";
       }
       self._unitControl.title = "Change units [" + self.options.unit + "]";
       self._lines.map(function (line) {
@@ -502,7 +503,7 @@
         }
       }
       else {
-        var unit = "km";
+        var unit = "км";
         if (dist >= 1000000) {
           dist = (dist / 1000).toFixed(0);
         } else if (dist >= 100000) {
@@ -512,7 +513,7 @@
           dist = (dist / 1000).toFixed(2);
         } else {
           dist = (dist).toFixed(1);
-          unit = "m";
+          unit = "м";
         }
       }
       return { value: dist, unit: unit };
@@ -615,11 +616,11 @@
     },
 
 
-		/**
-		 * Event to fire on mouse move
-		 * @param {Object} e Event
-		 * @private
-		 */
+    /**
+     * Event to fire on mouse move
+     * @param {Object} e Event
+     * @private
+     */
     _mouseMove: function (e) {
       self._map.on('click', self._mouseClick, self);  // necassary for _dragCircle. If switched on already within _dragCircle an unwanted click is fired at the end of the drag.
       if (!e.latlng || !self._currentLine) {
@@ -631,6 +632,7 @@
       tooltip.setLatLng(e.latlng);
       var distanceSegment = e.latlng.distanceTo(lastPoint);
       self._updateTooltipDistance(tooltip, self._currentLine.distance + distanceSegment, distanceSegment);
+      self._currentLine.setAreaTooltip()
     },
 
     _startLine: function () {
@@ -644,6 +646,7 @@
       };
 
       self._currentLine = {
+        area: null,
         points: [],
         tooltips: [],
         markers: [],
@@ -701,6 +704,7 @@
             var distanceSegment = lastPoint.distanceTo(latlng);
             var tooltip = self._currentLine.tooltips.last();
             self._updateTooltipDistance(tooltip, this.distance + distanceSegment, distanceSegment);
+            self._currentLine.setAreaTooltip()
             this.distance += distanceSegment;
             self._drawArrow(arc);
             self._arrArrowsCurrentline.push(arrow);
@@ -740,18 +744,33 @@
             self._layerPaint.removeLayer(this.markers.last());
           }
           self._resetPathVariables();
-        }
+        },
+        getArea: function () {
+          let area = 0
+          let polygon = L.polygon(this.points);
+          area = (geodesy.area(polygon) / 10000).toFixed(2);
+          this.area = +area
+        },
+        setAreaTooltip: function () {
+          if (this.points.length > 2)  {
+            this.getArea()
+            let tooltip = this.tooltips.last()
+            let text = tooltip._icon.innerHTML
+            text += '<div class="polyline-measure-tooltip-total">' + this.area + '&nbsp;га</div>';
+            tooltip._icon.innerHTML = text;
+          }
+        },
       };
       this._currentLine.points.last = last;
       this._currentLine.tooltips.last = last;
       this._currentLine.markers.last = last;
     },
 
-		/**
-		 * Event to fire on mouse click
-		 * @param {Object} e Event
-		 * @private
-		 */
+    /**
+     * Event to fire on mouse click
+     * @param {Object} e Event
+     * @private
+     */
     _mouseClick: function (e) {
       // skip if there is no latlng or this event's container point matches the finishing point for the line we just completed
       if (!e.latlng || (self._finishPoint && self._finishPoint.equals(e.containerPoint))) {
@@ -828,6 +847,7 @@
         totalDistance += distance;
         self._updateTooltipDistance(item, totalDistance, distance);
       });
+      self._lines[lineNr].setAreaTooltip()
       self._map.on('mouseup', self._dragCircleMouseup, self);
     },
 

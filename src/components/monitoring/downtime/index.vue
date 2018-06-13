@@ -98,7 +98,7 @@ div
       width="130",
       align="center",
     ): template(slot-scope="scope")
-      el-button(@click="$router.push(`/map/${scope.row.id}`)", type="primary", size="small") Показать
+      el-button(@click="$router.push(`/agrofact/map/${scope.row.id}`)", type="primary", size="small") Показать
   .no-results(v-else) Нет результатов
   el-pagination(
     layout="total, prev, pager, next",

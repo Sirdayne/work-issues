@@ -1,20 +1,24 @@
 <template lang="pug">
 div
-  ul.list(v-if="items.length"): li.item(
-    v-for="item in items", class="step2-2"
-  )
-    input.checkbox(
-      :id="`fields_select_plate_${_uid}_${item.id}`",
-      type="checkbox",
-      :value="item.id",
-      v-model="selected",
-      @click="select(item)"
-    )
-    label.label-for-checkbox(
-      :class="{active: activeCondition(item) || highlightActive && activeId === item.id}",
-      :for="`fields_select_plate_${_uid}_${item.id}`"
-    )
-      slot(name="item", :item="item") {{item.displayString}}
+  ul.list(v-if="items.length")
+    li.item(v-for="item in items", class="step2-2")
+      template(v-if="item.blocked")
+        .label-for-checkbox.blocked
+          slot(name="item", :item="item") {{item.displayString}}
+      template(v-else)
+        input.checkbox(
+          :id="`fields_select_plate_${_uid}_${item.id}`",
+          type="checkbox",
+          :value="item.id",
+          v-model="selected",
+          @click="select(item)"
+        )
+        label.label-for-checkbox(
+          :class="{active: activeCondition(item) || highlightActive && activeId === item.id}",
+          :for="`fields_select_plate_${_uid}_${item.id}`"
+        )
+          slot(name="item", :item="item") {{item.displayString}}
+
   p.no-results(v-else) Нет результатов
 </template>
 
@@ -81,19 +85,24 @@ export default {
   height 100%
   line-height 1.3
   padding 10px
+  margin 1px
   box-sizing border-box
   font-size 13px
   cursor pointer
   background #9e9e9e
-  border 2px solid #fff
+  border 1px solid #fff
   &.active
-    border 2px solid #48576a
+    border 1px solid #48576a
   >>> .checkbox:checked + &
     background #63a263
     color #fff
     &.active
-      border 2px solid #fff
+      border 1px solid #fff
       background #336f33
+  &.blocked
+    cursor default
+    background rgba(0,0,0,0)
+    border 1px solid #323232
 
 .list
   padding 0

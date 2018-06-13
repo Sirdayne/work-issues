@@ -1,11 +1,10 @@
 <template lang="pug">
 .cols(
-  v-loading="!ready || savingProcess",
+  v-loading="loading",
   element-loading-text="Загружается...",
   class="tooltips-changed"
   )
-  template(v-if="ready")
-
+  template
     template(v-if="currentStepId === 0")
       el-menu.sidebar(
         v-if="types.length",
@@ -13,7 +12,7 @@
         default-active="1",
         id="step1"
       )
-        router-link(v-for="type in visibleTypes", :to="`/recipes/new?recipeType=${type.id}`", :key="type.id" v-if="Object.keys(worksByType).length")
+        router-link(v-for="type in visibleTypes", :to="`/agroplan/recipes/new?recipeType=${type.id}`", :key="type.id" v-if="Object.keys(worksByType).length")
           el-menu-item(:index='`${type.id}`') {{type.name}}
       .workspace
         el-form(
@@ -124,7 +123,7 @@
                     )
 
         .bottom-panel
-          el-button.m(size="small", @click="$router.push('/recipes')", id="step5") К списку работ
+          el-button.m(size="small", @click="$router.push('/agroplan/recipes')", id="step5") К списку работ
           el-button(size="small", @click="resetAggregatesCount(true)", id="step3") Сброс
 
           el-button-group.r
@@ -146,7 +145,7 @@
           el-button(size="small", @click="resetSowings(true)", id="step2-4") Сброс
           el-button(size="small", @click="currentStepId--", id="step2-5") Предыдущий шаг
           el-button(size="small", type="primary", native-type="submit", @click.prevent="save", id="step2-6") Сохранить #[i.el-icon-check]
-          el-button(size="small", @click="$router.push('/recipes')", id="step2-7") К списку работ
+          el-button(size="small", @click="$router.push('/agroplan/recipes')", id="step2-7") К списку работ
       .workspace(style="position: relative;")
         .panel-fields( :class="{ 'panel-fields-active' : showPanelBottom }", id="step2-1")
           el-form(
@@ -158,7 +157,7 @@
 
             fields-select-plates(
               ref="fieldsSelectPlates",
-              :items="filteredSowings",
+              :items="filteredSowingsAfterBlock",
               v-model="savedSowings",
               :highlightActive="false",
               :activeCondition="sowingIsActive"
@@ -174,8 +173,8 @@
               span(slot="footer")
                 el-button(type="primary", native-type="submit", @click="setSowingPercent") OK
         .panel-bottom(v-if="ready && showPanelBottom")
-          sevoborot(:fieldClickedId="fieldClickedId", :fieldClickedName="fieldClickedName", :croprotations="croprotations")
-          lastassignments(:fieldClickedId="fieldClickedId", :fieldlastassignments="fieldlastassignments", :fields="fields")
+          sevoborot(:fieldClickedId="fieldClickedId", :fieldClickedName="fieldClickedName")
+          lastassignments(:fieldClickedId="fieldClickedId")
 
 </template>
 
@@ -196,6 +195,8 @@ import $ from 'jquery'
 import sevoborot from "components/panelbottom/sevoborot"
 import lastassignments from "components/panelbottom/lastassignments"
 
+import localforage from 'localforage';
+
 let _dataLoaded = false
 let _watchers = []
 
@@ -211,7 +212,7 @@ export default {
   data() {
     return {
       steps: [],
-      savingProcess: false,
+      loading: true,
       editMode: false,
       currentStepId: 0,
       formRules: {
@@ -259,10 +260,27 @@ export default {
       filterSowingsByCultureName: '',
       fieldClickedId: null,
       fieldClickedName: null,
-      fieldlastassignments: [],
-      croprotations: [],
       showPanelBottom: false,
-      loading: true
+
+      validationSavedAggregates: [],
+      validationCultures: [],
+      validationAllCultures: false,
+
+      chemicalPreparations: [],
+      unitType: [],
+      brigades : [],
+      cars: [],
+      carModels: [],
+      cultures: [],
+      fields: [],
+      fuelNorms: [],
+      vuexFuelNorms: [],
+      instruments: [],
+      instrumentsByOrganization: [],
+      technologyRecipe: [],
+      types: [],
+      works: [],
+      workTypes: [],
     }
   },
   created() {
@@ -283,56 +301,24 @@ export default {
       'instruments',
       'instrumentsByOrganization',
       'sowings',
-      'technologyRecipe',
-      'technologyRecipeTypes',
+      'technologyReciept',
+      'technologyRecieptTypes',
       'works',
       'workTypes',
       'chemicalpreparations',
       'unitTypes',
-      'fieldlastassignments',
-      'croprotations'
     ], this.fetchCompleted);
   },
   destroyed() {
     _dataLoaded = false
   },
   computed: {
-    chemicalPreparations() {
-      return this.fromVuex('chemicalPreparations')
-    },
-    unitTypes() {
-      return this.fromVuex('unitTypes')
-    },
-    brigades() {
-      return this.fromVuex('brigades')
-    },
-    cars() {
-      return this.fromVuex('cars')
-    },
-    carModels() {
-      return this.fromVuex('carModels')
-    },
     chemicals() {
       return this.fromVuex('chemicals')
         .map(preparat => {
           preparat.name = preparat.name.trim()
           return preparat
         }).sort((a, b) => a.name.localeCompare(b.name))
-    },
-    cultures() {
-      return this.fromVuex('cultures')
-    },
-    fields() {
-      return this.fromVuex('fields')
-    },
-    fuelNorms() {
-      return this.fromVuex('fuelNorms')
-    },
-    instruments() {
-      return this.fromVuex('instruments')
-    },
-    instrumentsByOrganization() {
-      return this.fromVuex('instrumentsByOrganization')
     },
     sowings() {
       const indexedCultures = createIndex(this.cultures)
@@ -346,18 +332,6 @@ export default {
         sowings.push(sowing)
       })
       return sowings
-    },
-    technologyRecipe() {
-      return this.fromVuex('technologyRecipe')
-    },
-    types() {
-      return this.fromVuex('technologyRecipeTypes')
-    },
-    works() {
-      return this.fromVuex('works')
-    },
-    workTypes() {
-      return this.fromVuex('workTypes')
     },
     visibleTypes() {
       return Object.keys(this.worksByType).length && this.types.filter(
@@ -375,6 +349,25 @@ export default {
         (!this.filterSowingsByFieldBrigade || sowing.field.brigadeId === this.filterSowingsByFieldBrigade) &&
         (this.filterSowingsByCultureName.trim() === '' || sowing.culture.name.toLowerCase().includes(this.filterSowingsByCultureName.trim().toLowerCase()) || sowing.culture.shortName.toLowerCase().includes(this.filterSowingsByCultureName.trim().toLowerCase()))
       )
+    },
+    filteredSowingsAfterBlock() {
+      let array = []
+      if (this.filteredSowings && this.filteredSowings.length > 0){
+        this.filteredSowings.forEach(sowing => {
+          if (this.validationAllCultures){
+            sowing.blocked = false
+          } else {
+            sowing.blocked = true
+            if (this.validationCultures && this.validationCultures.length > 0) {
+              if (this.validationCultures.includes(sowing.cultureId)) {
+                sowing.blocked = false
+              }
+            }
+          }
+          array.push(sowing)
+        })
+      }
+      return array
     },
     technologyRecieptSowings() {
       let fields = this.sowings.filter(el => this.savedSowings.some(elem => elem == el.id))
@@ -463,8 +456,21 @@ export default {
       return preparation ? preparation.maxNorm : 0;
     },
     fetchCompleted() {
-      this.fieldlastassignments = this.fromVuex('fieldlastassignments')
-      this.croprotations = this.fromVuex('croprotations')
+      this.chemicalPreparations = this.fromVuex('chemicalPreparations')
+      this.unitTypes = this.fromVuex('unitTypes')
+      this.brigades = this.fromVuex('brigades')
+      this.cars = this.fromVuex('cars')
+      this.carModels = this.fromVuex('carModels')
+      this.cultures = this.fromVuex('cultures')
+      this.fields = this.fromVuex('fields')
+      this.fuelNorms = this.fromVuex('fuelNorms')
+      this.vuexFuelNorms =  this.fromVuex('fuelNorms')
+      this.instruments = this.fromVuex('instruments')
+      this.instrumentsByOrganization = this.fromVuex('instrumentsByOrganization')
+      this.technologyRecipe = this.fromVuex('technologyReciept')
+      this.types = this.fromVuex('technologyRecieptTypes')
+      this.works = this.fromVuex('works')
+      this.workTypes = this.fromVuex('workTypes')
 
       if (Object.keys(this.worksByType).length) {
         if (this.editMode) this.getInitialState()
@@ -474,6 +480,7 @@ export default {
           this.currentStepId = 0
         }
       }
+      this.loading = false
       this.resetSowings()
       this.init()
     },
@@ -725,7 +732,38 @@ export default {
       this.filterSowingsByFieldBrigade = null
       this.filterSowingsByFieldName = ''
     },
+    blockSowingPlates(){
+      this.validationAllCultures = false
+      this.validationSavedAggregates = []
+      this.validationCultures = []
+      for (let item in this.savedAggregatesCount) {
+        let out = JSON.parse(item)
+        let foundedWork = this.works.find(w => out.workId == w.id)
+        out.workTypeId = foundedWork ? foundedWork.planWorkTypeId : 0
+        this.validationSavedAggregates.push(out)
+      }
+      this.vuexFuelNorms.forEach(norm => {
+        this.validationSavedAggregates.forEach(aggregate => {
+          let condition = norm.carModelsIds.includes(aggregate.carModelId) && norm.instrumentsIds.includes(aggregate.instrumentId) && norm.subOperationsIds.includes(aggregate.workTypeId)
+          if (condition){
+            if (norm.culturesIds.length == 0 && norm.cultureTypesIds.length == 0){
+              this.validationAllCultures = true
+            } else {
+              norm.culturesIds.forEach(culture => {
+                this.validationCultures.push(culture)
+              })
+              this.cultures.forEach(culture => {
+                if (norm.cultureTypesIds.includes(culture.cultureTypeId)){
+                  this.validationCultures.push(culture.id)
+                }
+              })
+            }
+          }
+        })
+      })
+    },
     goToStep2() {
+      this.blockSowingPlates()
       this.$refs.formStep1Container.validate(valid => {
         if (!valid) {
           this.$message({
@@ -789,12 +827,22 @@ export default {
         })
         this.item.recieptWorks.push(_work)
       })
-      this.savingProcess = true
+      this.loading = true
       http.post(path, this.item).then(() => {
         this.resetAll()
         this.init()
-        this.savingProcess = false
+        this.loading = false
+        this.clearLocalForageForTechnologyReciepts()
       })
+    },
+    clearLocalForageForTechnologyReciepts() {
+      const organization = this.$root.context.organization
+      const budget = this.$root.context.budget
+      const year = this.$root.context.year
+      const path = SERVER_URL + `api/technologyReciept/${organization}/${budget}/${year}`
+      localforage.removeItem(path).then(() => {
+      }).catch(function(err) {
+      });
     }
   }
 }

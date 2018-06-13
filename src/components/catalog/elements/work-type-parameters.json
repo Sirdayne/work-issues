@@ -1,6 +1,7 @@
 {
   "name": "WorkTypeParameters",
   "api": "WorkTypeParameters",
+  "notFilterable": true,
   "dependencies": [],
   "attributes": [
     {

@@ -1,0 +1,12 @@
+{
+  "name": "WorkConditions",
+  "api": "WorkConditions",
+  "notFilterable": true,
+  "dependencies": [],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    }
+  ]
+}

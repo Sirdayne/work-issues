@@ -68,43 +68,59 @@ export default {
   ],
   props: [
     'fieldClickedId',
-    'fieldlastassignments',
-    'fields'
   ],
   data() {
     return {
-      lastarray: [],
       tableChemistryLast: null,
       tableChemistry: [],
       tableFertilizer: [],
       tableLast: null,
+      fields: [],
+      fieldlastassignments: [],
     }
   },
   computed: {
     tableData() {
-      let tableData = this.lastarray.find(x => x.fieldId === this.fieldClickedId)
-      this.tableChemistry = tableData.chemistry
-      this.tableChemistryLast = this.tableChemistry.pop()
-      this.tableFertilizer =  tableData.fertilizer
-      this.tableLast = tableData.lastWork
+      let tableData = []
+      if (this.lastarray.length > 0){
+        tableData = this.lastarray.find(x => x.fieldId === this.fieldClickedId)
+        this.tableChemistry = tableData.chemistry
+        this.tableChemistryLast = this.tableChemistry.pop()
+        this.tableFertilizer =  tableData.fertilizer
+        this.tableLast = tableData.lastWork
+      }
       return tableData
+    },
+    lastarray() {
+      let array = []
+      if (this.fieldlastassignments.length > 0){
+        array = this.fieldlastassignments.map(x => {
+          if(x.chemistry.length > 0){
+            this.dateFormat(x.chemistry);
+          }
+          if(x.fertilizer.length > 0){
+            this.dateFormat(x.fertilizer);
+          }
+          if(x.lastWork){
+            x.lastWork.date.startFormated = moment(x.lastWork.date.start).format("DD.MM.YYYY")
+          }
+          return x
+        });
+      }
+      return array
     },
   },
   created() {
-    this.lastarray = this.fieldlastassignments.map(x => {
-      if(x.chemistry.length > 0){
-        this.dateFormat(x.chemistry);
-      }
-      if(x.fertilizer.length > 0){
-        this.dateFormat(x.fertilizer);
-      }
-      if(x.lastWork){
-        x.lastWork.date.startFormated = moment(x.lastWork.date.start).format("DD.MM.YYYY")
-      }
-      return x
-    });
+    this.fetchEntities([
+      'fields',
+      'fieldlastassignments',
+    ], this.afterFetch );
   },
   methods: {
+    afterFetch(){
+      this.fields = this.fromVuex('fields')
+      this.fieldlastassignments = this.fromVuex('fieldlastassignments')
+    },
     dateFormat(array){
       array.map(y => {
         y.date.startFormated = moment(y.date.start).format("DD.MM.YYYY")

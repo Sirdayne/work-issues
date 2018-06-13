@@ -1,16 +1,16 @@
-import {modules} from "modules.js"
 const SpeedMonitoring = () => import ("components/monitoring/speedmonitoring")
 const Downtime = () => import ("components/monitoring/downtime")
 const CarStatus = () => import ("components/monitoring/carstatus")
 const WorkPlan = () => import ("components/monitoring/workplan")
 const Overdrive = () => import ("components/monitoring/overdrive")
+const NoAssignments = () => import ("components/monitoring/noassignments")
+const ViolationRotation = () => import ("components/monitoring/violationrotation")
 
 module.exports = [
   {
     path: "speedmonitoring",
     component: SpeedMonitoring,
     meta: {
-      module: modules.agrofact,
       title: "Скоростной режим",
     },
   },
@@ -18,7 +18,6 @@ module.exports = [
     path: "downtime",
     component: Downtime,
     meta: {
-      module: modules.agrofact,
       title: "Простои",
     },
   },
@@ -26,7 +25,6 @@ module.exports = [
     path: "carstatus",
     component: CarStatus,
     meta: {
-      module: modules.agrofact,
       title: "Статус техники",
     },
   },
@@ -34,7 +32,6 @@ module.exports = [
     path: "workplan",
     component: WorkPlan,
     meta: {
-      module: modules.agrofact,
       title: "Календарь работ",
     },
   },
@@ -42,8 +39,21 @@ module.exports = [
     path: "overdrive",
     component: Overdrive,
     meta: {
-      module: modules.agrofact,
       title: "Перегоны",
+    },
+  },
+  {
+    path: "noassignments",
+    component: NoAssignments,
+    meta: {
+      title: "Нет заданий",
+    },
+  },
+  {
+    path: "violationrotation",
+    component: ViolationRotation,
+    meta: {
+      title: "Нарушение ротации",
     },
   },
 ]

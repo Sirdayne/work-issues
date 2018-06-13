@@ -14,7 +14,6 @@ div.cols
 <script>
 import httpQueryV2 from 'lib/httpQueryV2'
 import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
-import GlobalMethods from 'components/FormFieldsLibrary/GlobalMethods'
 import VueChartist from 'v-chartist'
 import $ from 'jquery'
 import moment from 'moment'
@@ -54,7 +53,7 @@ export default {
   },
   mounted() {
     // для vue-scroll, scrolling - надо поменять высоту на %
-    var elApp = document.querySelector('#app');
+    var elApp = document.querySelector('#app-container');
     elApp.style.height = "100%";
     //scroll в начале
     this.$scrollTo('#dashboard-container');

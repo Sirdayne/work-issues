@@ -10,9 +10,32 @@
     "FieldContours",
     "Terrains",
     "SoilTypes",
-    "Compositions"
+    "Compositions",
+    "DlinaGona"
   ],
   "attributes": [
+    {
+      "label": "Новое наименование",
+      "prop": "Fields.newName",
+      "fkey": "id",
+      "filter": true,
+      "iterable": true,
+      "table": false,
+      "xls": false,
+      "form": false,
+      "viewable": false
+    },
+    {
+      "label": "Наименование",
+      "prop": "Fields.name",
+      "fkey": "id",
+      "filter": true,
+      "iterable": true,
+      "table": false,
+      "xls": false,
+      "form": false,
+      "viewable": false
+    },
     {
       "label": "Наименование",
       "prop": "name"
@@ -100,6 +123,13 @@
       "label": "Код ДЗЗ",
       "prop": "geosysId",
       "table": false
+    },
+    {
+      "label": "Длина гона",
+      "prop": "DlinaGona.name",
+      "fkey": "dlinaGona",
+      "filter": true,
+      "iterable": true
     }
   ]
 }

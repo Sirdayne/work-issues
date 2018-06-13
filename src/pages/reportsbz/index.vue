@@ -10,21 +10,21 @@
   )
     el-submenu(:index="`0`")
       template(slot="title") Отчеты ТОК
-      router-link(:to="`/reportsbz?path=accounting-incoming-transfers`")
+      router-link(:to="`/balanszerna/reports?path=accounting-incoming-transfers`")
         el-menu-item(:index="`1`") Журнал весовщика - прием
-      router-link(:to="`/reportsbz?path=accounting-internal-transfers`")
+      router-link(:to="`/balanszerna/reports?path=accounting-internal-transfers`")
         el-menu-item(:index="`2`") Журнал весовщика - перемещение
-      router-link(:to="`/reportsbz?path=accounting-outgoing-transfers`")
+      router-link(:to="`/balanszerna/reports?path=accounting-outgoing-transfers`")
         el-menu-item(:index="`3`") Журнал весовщика - отгрузка
-      router-link(:to="`/reportsbz?path=accounting-grain-registry`")
+      router-link(:to="`/balanszerna/reports?path=accounting-grain-registry`")
         el-menu-item(:index="`4`") Реестр приема зерна
     el-submenu(:index="`5`")
       template(slot="title") Отчеты хоз-ва
-      router-link(:to="`/reportsbz?path=`")
+      router-link(:to="`/balanszerna/reports?path=`")
         el-menu-item(:index="`6`")
     el-submenu(:index="`7`")
       template(slot="title") Отчеты группы
-      router-link(:to="`/reportsbz?path=`")
+      router-link(:to="`/balanszerna/reports?path=`")
         el-menu-item(:index="`8`")
   .workspace(v-if="ready")
     template(v-if="this.path === `accounting-incoming-transfers`")

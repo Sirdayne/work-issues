@@ -5,6 +5,7 @@
   "editable": true,
   "dependencies": [
     "CarModels",
+    "CarTypes",
     "Brigades",
     "GpsProviders"
   ],
@@ -17,6 +18,13 @@
       "label": "Модель",
       "prop": "CarModels.name",
       "fkey": "carModelId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Тип техники",
+      "prop": "CarTypes.name",
+      "fkey": "carTypeId",
       "filter": true,
       "iterable": true
     },

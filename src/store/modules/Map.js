@@ -2,6 +2,8 @@ import {
   EventBus
 } from "services/EventBus";
 import http from 'lib/httpQueryV2';
+import moment from 'moment';
+import {deepClone} from 'lib/utils';
 
 const state = {
   selectedAssignments: [],
@@ -11,18 +13,30 @@ const state = {
     tracks: [],
   },
   assignmentsWithoutTracks: [],
-  teleport: false,
+  timeTravel: false,
+  selectedDate: moment().hour(8).minute(0).second(0).subtract(1, 'days').format(),
+  gpsDateStart: null,
+  gpsDateEnd: null,
 };
 
 const getters = {
   getSelectedAssignments: (state) => {
-    return state.selectedAssignments;
+    return deepClone(state.selectedAssignments)
   },
   getSelectedFields: (state) => {
-    return state.selectedFields;
+    return deepClone(state.selectedFields);
   },
-  getTeleport: (state) => {
-    return state.teleport;
+  getTimeTravel: (state) => {
+    return state.timeTravel;
+  },
+  getSelectedDate: (state) => {
+    return state.selectedDate
+  },
+  getGpsDateStart: (state) => {
+    return state.gpsDateStart
+  },
+  getGpsDateEnd: (state) => {
+    return state.gpsDateEnd
   },
 };
 
@@ -81,8 +95,17 @@ const mutations = {
     let indexOf = state.assignmentsWithoutTracks.indexOf(payload);
     state.assignmentsWithoutTracks.splice(indexOf, 1);
   },
-  setTeleport: (state, payload) => {
-    state.teleport = payload
+  setTimeTravel: (state, payload) => {
+    state.timeTravel = payload
+  },
+  setSelectedDate: (state, payload) => {
+    state.selectedDate = payload
+  },
+  setGpsDateStart: (state, payload) => {
+    state.gpsDateStart = payload
+  },
+  setGpsDateEnd: (state, payload) => {
+    state.gpsDateEnd = payload
   },
 };
 
@@ -101,8 +124,17 @@ const actions = {
   actionUnselectField: (context, payload) => {
     context.commit('unselectField', payload);
   },
-  actionSetTeleport: (context, payload) => {
-    context.commit('setTeleport', payload);
+  actionSetTimeTravel: (context, payload) => {
+    context.commit('setTimeTravel', payload);
+  },
+  actionSetSelectedDate: (context, payload) => {
+    context.commit('setSelectedDate', payload);
+  },
+  actionSetGpsDateStart: (context, payload) => {
+    context.commit('setGpsDateStart', payload);
+  },
+  actionSetGpsDateEnd: (context, payload) => {
+    context.commit('setGpsDateEnd', payload);
   },
   actionAddAssignmentWithoutTrack: (context, payload) => {
     context.commit('addAssignmentWithoutTrack', payload);

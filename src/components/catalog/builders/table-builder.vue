@@ -24,15 +24,15 @@ div(v-if="viewable")
       :total="page.total",
       :page-size="page.size",
       :page-sizes="page.sizes",
-      :current-page="page.current",
+      :current-page.sync="page.current",
       @current-change="handlePageChange",
       @size-change="handleSizeChange",
     )
 </template>
 <script>
 import moment from 'moment';
-
-import modifiedByName from 'lib/modifiedByName';
+import {escapeStringRegexp} from 'lib/utils'
+import modByLib from "lib/modByLib";
 
 export default {
   name: 'TableBuilder',
@@ -66,17 +66,17 @@ export default {
       let searched = this.tbody.filter(tb => {
         if (!this.search) return true
         return this.search.split(" ")
-          .slice(0, 5)
-          .some(keyword => {
+          .slice(0, 10)
+          .every(keyword => {
             if (!keyword) return false
-            let regex = new RegExp(keyword, "i")
+            let regex = new RegExp(escapeStringRegexp(keyword), "i")
             return this.thead.some(h => {
               return regex.test(tb[h.prop])
             })
           })
       })
       this.page.total = searched.length
-      this.page.current = 1
+      if (this.search) this.page.current = 1
       return searched
     },
     tbodyPaginated() {
@@ -107,7 +107,7 @@ export default {
     if (this.data) this._build(this.data)
   },
   mounted() {
-    modifiedByName.addTooltips( this.tbodyPaginated );
+    modByLib.addTooltips( this.tbodyPaginated );
   },
   methods: {
     _build(data) {
@@ -159,11 +159,7 @@ export default {
         if (a.fkey) {
           let felement = a.prop.split(".")[0]
           let fprop = a.prop.split(".")[1]
-          if (felement == "TrueFalse") {
-            header.prop = a.fkey
-          } else {
-            header.prop = felement + fprop[0].toUpperCase() + fprop.slice(1)
-          }
+          header.prop = felement + fprop[0].toUpperCase() + fprop.slice(1) + a.fkey
         }
         return header
       })
@@ -192,10 +188,7 @@ export default {
         .forEach(a => {
           let felement = a.prop.split(".")[0]
           let fprop = a.prop.split(".")[1]
-          let joinedProp = felement + fprop[0].toUpperCase() + fprop.slice(1)
-          if (felement == "TrueFalse") {
-            joinedProp = a.fkey
-          }
+          let joinedProp = felement + fprop[0].toUpperCase() + fprop.slice(1) + a.fkey
           data.forEach(d => {
             if (a.multiple) {
               d[joinedProp] = ""
@@ -216,7 +209,12 @@ export default {
       this.tbody = data.body
       this.thead = data.headers
       this.page.total = this.tbody.length
-      this.page.current = 1
+      if (this.$route.query.itemId) {
+        let index = this.tbody.findIndex(t => t.id == this.$route.query.itemId) || 0
+        this.page.current = Math.ceil(index / this.page.size) || 1
+      } else {
+        this.page.current = 1
+      }
       this._prepareXls()
       this.viewable = true
     },
@@ -239,12 +237,12 @@ export default {
     },
     handlePageChange(num) {
       this.page.current = num
-      modifiedByName.addTooltips( this.tbodyPaginated )
+      modByLib.addTooltips( this.tbodyPaginated )
     },
     handleSizeChange(num) {
       this.page.size = num
       localStorage.setItem('catalog/pageSize', +num)
-      modifiedByName.addTooltips( this.tbodyPaginated )
+      modByLib.addTooltips( this.tbodyPaginated )
     },
     edit(id) {
       this.$emit('edit', id)
