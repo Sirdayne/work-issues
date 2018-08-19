@@ -1,0 +1,79 @@
+{
+  "name": "PrimaryWorkTypeParameterPlanWorkTypes",
+  "api": "WorkTypeParameterPlanWorkTypes",
+  "dependencies": [
+    "WorkTypeParameters",
+    "VolumeTypes",
+    "Works",
+    "TechnologyRecieptTypes",
+    "AssignmentTypes",
+    "TrueFalse"
+  ],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Сокращенное наименование",
+      "prop": "shortName"
+    },
+    {
+      "label": "Основная работа",
+      "prop": "Works.name",
+      "fkey": "planWorkTypeId",
+      "filter": true,
+      "iterable": true,
+      "initiallyFilteredBy": {"isFieldOperation": true}
+    },
+    {
+      "label": "isFieldOperation",
+      "prop": "Works.isFieldOperation",
+      "fkey": "planWorkTypeId",
+      "table": false,
+      "filter": true,
+      "iterable": true,
+      "default": true,
+      "viewable": false,
+      "form": false
+    },
+    {
+      "label": "Параметр",
+      "prop": "WorkTypeParameters.name",
+      "fkey": "workTypeParameterId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Расчет объема для ЗП",
+      "prop": "VolumeTypes.name",
+      "fkey": "volumeType",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Тип рецепта",
+      "prop": "TechnologyRecieptTypes.name",
+      "fkey": "technologyRecieptTypeId",
+      "table": false,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Тип задания",
+      "prop": "AssignmentTypes.name",
+      "fkey": "assignmentType",
+      "table": false,
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Удобрения",
+      "prop": "TrueFalse.name",
+      "fkey": "isMacrofertilizer",
+      "table": false,
+      "filter": true,
+      "iterable": true
+    }
+  ]
+}

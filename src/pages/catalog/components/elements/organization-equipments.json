@@ -1,0 +1,21 @@
+{
+  "name": "OrganizationEquipments",
+  "api": "OrganizationEquipments",
+  "organization": true,
+  "dependencies": [
+    "Equipments"
+  ],
+  "attributes": [
+    {
+      "label": "Вид оборудования",
+      "prop": "Equipments.name",
+      "fkey": "equipmentId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Количество",
+      "prop": "count"
+    }
+  ]
+}

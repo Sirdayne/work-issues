@@ -1,7 +1,7 @@
 <template lang="pug">
 .fx-table(:class="{ 'fx-wide': wide }")
   .fx-cont-xls
-    json2xls(v-if='xls', :model="xls", :props="xlsProps", :name="xlsName")
+    json2xls(v-if="xls", :model="xls", :props="xlsProps", :name="xlsName")
   .fx-row.fx-light-grey(v-if="fieldClickedName")
     .fx-cell {{fieldClickedName}}
   .fx-row.fx-light-grey
@@ -31,27 +31,35 @@
 </template>
 
 <script>
+import {fetchEntities, fromVuex} from "services/RecordsLoader"
+import ListController from "mixins/ListController"
+import $ from "jquery"
 
-import http from 'lib/httpQueryV2'
-import { EventBus } from 'services/EventBus'
-import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
-import ListController from 'mixins/ListController'
-import moment from 'moment'
-import $ from 'jquery'
-
-import json2xls from 'components/json2xls'
+import json2xls from "components/json2xls"
 
 export default {
   mixins: [
-    RecordsLoaderV2,
+    
     ListController
   ],
-  props: [
-    'fieldClickedId',
-    'fieldClickedName',
-    'year',
-    'wide'
-  ],
+  props: {
+    "fieldClickedId": {
+      type: Number,
+      default: null,
+    },
+    "fieldClickedName": {
+      type: String,
+      default: "",
+    },
+    "year": {
+      type: Boolean,
+      default: false,
+    },
+    "wide": {
+      type: Boolean,
+      default: false,
+    },
+  },
   components: {
     json2xls,
   },
@@ -59,41 +67,41 @@ export default {
     return {
       colors: {
         0: {
-          color: '#8391a5',
-          name: 'grey'
+          color: "#8391a5",
+          name: "grey"
         },
         1: {
-          color: '#FF8000',
-          name: 'orange'
+          color: "#FF8000",
+          name: "orange"
         },
         2: {
-          color: '#74DF00',
-          name: 'green'
+          color: "#74DF00",
+          name: "green"
         },
         3: {
-          color: '#2E2EFE',
-          name: 'blue'
+          color: "#2E2EFE",
+          name: "blue"
         },
         4: {
-          color: '#FFD100',
-          name: 'yellow'
+          color: "#FFD100",
+          name: "yellow"
         }
       },
       rotationColors: [
         {
           id: 0,
-          color: '#00d921',
-          type: 'allowed'
+          color: "#00d921",
+          type: "allowed"
         },
         {
           id: 1,
-          color: '#ba0000',
-          type: 'forbidden'
+          color: "#ba0000",
+          type: "forbidden"
         },
         {
           id: 2,
-          color: '#d9ce00',
-          type: 'not recommended'
+          color: "#d9ce00",
+          type: "not recommended"
         }
       ],
       croprotations: [],
@@ -103,13 +111,13 @@ export default {
     }
   },
   created() {
-    this.fetchEntities([
-      'croprotations'
+    fetchEntities([
+      "croprotations"
     ], this.afterFetch );
   },
   mounted() {
     if (this.wide){
-      $('.fx-spoiler-1').show();
+      $(".fx-spoiler-1").show();
     }
   },
   computed: {
@@ -139,20 +147,20 @@ export default {
       let showNumOfYears = 5
       for ( var i = 0; i < showNumOfYears; i++ ){
         let crops = this.getSevoborotData(this.fieldClickedId, firstYear)
-        let culture = ''
-        let reproduction = ''
-        let sort = ''
-        let sowingArea = ''
-        let yearYield = ''
+        let culture = ""
+        let reproduction = ""
+        let sort = ""
+        let sowingArea = ""
+        let yearYield = ""
         let j = -1
         crops.map(c => {
-          if (j < 4) { j++ } else { j = 0 }
+          if (j < 4) {j++} else {j = 0}
           c.color = this.colors[j].color
-          culture+=c.culture + ' '
-          reproduction+=c.reproduction + ' '
-          sort+=c.sort + ' '
-          sowingArea+=c.sowingArea + ' '
-          yearYield+=c.yield + ' '
+          culture+=c.culture + " "
+          reproduction+=c.reproduction + " "
+          sort+=c.sort + " "
+          sowingArea+=c.sowingArea + " "
+          yearYield+=c.yield + " "
           return c
         })
         years.push({
@@ -172,29 +180,27 @@ export default {
   },
   methods: {
     afterFetch(){
-      this.croprotations = this.fromVuex('croprotations')
+      this.croprotations = fromVuex("croprotations")
     },
     getSevoborotData(fieldId, year){
       let croprotation = this.changedCroprotations.find( x => x.fieldId == fieldId )
-      let empty = [{ culture: 'нет данных', yield: 0, sowingArea: 0, reproduction: 'нет данных', sort: 'нет данных', colorRotation: this.rotationColors[1].color }]
+      let empty = [{culture: "нет данных", yield: 0, sowingArea: 0, reproduction: "нет данных", sort: "нет данных", colorRotation: this.rotationColors[1].color}]
       if (croprotation){
         let cropYear = croprotation.columns[year]
         let cropArray = []
-        let i = 0
         if (cropYear){
           cropYear.forEach(x => {
             cropArray.push(
               {
-                culture: x.culture ? x.culture : 'пусто',
+                culture: x.culture ? x.culture : "пусто",
                 yield: x.yield ? x.yield : 0,
                 sowingArea: x.sowingArea ? x.sowingArea : 0,
-                reproduction: x.reproduction ? x.reproduction : 'пусто',
-                sort: x.sort ? x.sort : 'пусто',
+                reproduction: x.reproduction ? x.reproduction : "пусто",
+                sort: x.sort ? x.sort : "пусто",
                 colorRotation: x.rotationColor && x.culture ? x.rotationColor: this.rotationColors[1].color
               });
-            i++;
           })
-        } else { cropArray = empty }
+        } else {cropArray = empty}
         return cropArray;
       } else {
         return empty;
@@ -205,11 +211,11 @@ export default {
     },
     prepareXls(years){
       //тот же порядок что и в year.push
-      let firstCol = ['Севоборот', 'Урожайность', 'Площадь посева', 'Репродукция', 'Сорт']
+      let firstCol = ["Севоборот", "Урожайность", "Площадь посева", "Репродукция", "Сорт"]
       let xlsArray = []
       for (let key in years[0]){
-        if ((key != 'id') && (key != 'crops') && (key != 'year')){
-          xlsArray.push({ yearTitle: 'пусто', name: key })
+        if ((key != "id") && (key != "crops") && (key != "year")){
+          xlsArray.push({yearTitle: "пусто", name: key})
         }
       }
       let i = 0
@@ -219,21 +225,21 @@ export default {
       })
       years.forEach(y => {
         for (let key in y) {
-          if ((key != 'id') && (key != 'crops') && (key != 'year')){
+          if ((key != "id") && (key != "crops") && (key != "year")){
             xlsArray.forEach(x => {
               if (key == x.name){
-                x['year' + y.year] = y[key]
+                x["year" + y.year] = y[key]
               }
             })
           }
         }
       })
       this.xlsProps = {
-        yearTitle: 'год',
+        yearTitle: "год",
       }
       for (let key in xlsArray[0]){
-        if ((key != 'yearTitle') && (key != 'name')){
-          this.xlsProps[key] = key.replace('year', '') + ' '
+        if ((key != "yearTitle") && (key != "name")){
+          this.xlsProps[key] = key.replace("year", "") + " "
         }
       }
       this.xls = xlsArray

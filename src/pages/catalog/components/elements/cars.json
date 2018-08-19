@@ -1,0 +1,51 @@
+{
+  "name": "Cars",
+  "api": "Cars",
+  "organization": true,
+  "editable": true,
+  "dependencies": [
+    "CarModels",
+    "CarTypes",
+    "Brigades"
+  ],
+  "attributes": [
+    {
+      "label": "Гос. номер",
+      "prop": "number"
+    },
+    {
+      "label": "Модель",
+      "prop": "CarModels.name",
+      "fkey": "carModelId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Тип техники",
+      "prop": "CarTypes.name",
+      "fkey": "carTypeId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Бригада",
+      "prop": "Brigades.name",
+      "fkey": "brigadeId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Хоз. номер",
+      "prop": "organizationNumber"
+    },
+    {
+      "label": "isSecurityGuard",
+      "prop": "isSecurityGuard",
+      "table": false,
+      "filter": true,
+      "default": false,
+      "viewable": false,
+      "form": false
+    }
+  ]
+}

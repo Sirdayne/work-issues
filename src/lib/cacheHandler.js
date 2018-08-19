@@ -1,8 +1,8 @@
-import localforage from 'localforage'
+import localforage from "localforage"
 
 export default {
   findAndRemove(keyToSearch) {
-    keyToSearch = keyToSearch.toLowerCase()
+    keyToSearch = keyToSearch.split("?")[0].toLowerCase()
     localforage.iterate((value, key, iterationNumber) => {
       if (key.indexOf("data/") === 0) {
         let suffix = key.split("data/")[1]

@@ -1,0 +1,45 @@
+{
+  "name": "YearParameters",
+  "api": "YearConstants",
+  "organizationsGroupId": true,
+  "notFilterable": true,
+  "dependencies": [],
+  "attributes": [
+    {
+      "label": "Год",
+      "prop": "year"
+    },
+    {
+      "label": "ср.год. кол-во раб.дней в месяце",
+      "prop": "workingDaysCount"
+    },
+    {
+      "label": "МЗП",
+      "prop": "baseSalary"
+    },
+    {
+      "label": "Цена диз. топлива летнего",
+      "prop": "dieselPrice"
+    },
+    {
+      "label": "Цена диз. топлива зимнего",
+      "prop": "winterDieselPrice"
+    },
+    {
+      "label": "Цена АИ-92",
+      "prop": "petrolPrice92"
+    },
+    {
+      "label": "Цена АИ-80",
+      "prop": "petrolPrice80"
+    },
+    {
+      "label": "Цена Авиа топлива",
+      "prop": "airPrice"
+    },
+    {
+      "label": "Цена газа",
+      "prop": "gasPrice"
+    }
+  ]
+}

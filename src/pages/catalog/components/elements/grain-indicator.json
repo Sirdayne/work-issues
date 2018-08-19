@@ -1,0 +1,41 @@
+{
+  "name": "GrainIndicator",
+  "api": "GrainIndicator",
+  "organizationsGroupId": true,
+  "yearContext": true,
+  "dependencies": [
+    "CultureTypes",
+    "Cultures"
+  ],
+  "attributes": [
+    {
+      "label": "Тип культуры",
+      "prop": "CultureTypes.name",
+      "fkey": "cultureTypeId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Культура",
+      "prop": "Cultures.name",
+      "fkey": "cultureId",
+      "filter": true,
+      "iterable": true,
+      "getFrom": "Cultures",
+      "getProp": "id",
+      "getBy": "cultureTypeId"
+    },
+    {
+      "label": "Влажность",
+      "prop": "humidity"
+    },
+    {
+      "label": "Сорная примесь",
+      "prop": "foreignMaterial"
+    },
+    {
+      "label": "Зерновая примесь",
+      "prop": "grainAdmixture"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+    stages {
+        stage('Check') {
+            steps {
+                nodejs('stable') {
+                    sh 'npm -v'
+                    sh 'npm cache clean -f'
+                }
+            }
+            post {
+                always {
+                    slackSend "Build Started - ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
+                }
+            }
+        }
+        stage('Build for prod') {
+            steps {
+                nodejs('stable') {
+                    sh 'npm ci'
+                    sh 'npm run build'
+                }
+            }
+            post {
+                failure {
+                    slackSend color: "danger", message: "${env.BUILD_TAG} Build failed"
+                }
+                success {
+                    slackSend color: "good", message: "${env.BUILD_TAG} Build succeed"
+                }
+            }
+        }
+    }
+}

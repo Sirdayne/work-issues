@@ -10,21 +10,21 @@ export default {
     }
   },
   watch: {
-    '$root.context.culture': function(id) {
+    "$root.context.culture": function(id) {
       this.context.culture = id
-      this.$nextTick(() => this.onContextChange && this.onContextChange('culture'))
+      this.$nextTick(() => this.onContextChange && this.onContextChange("culture"))
     },
-    '$root.context.organization': function(id) {
+    "$root.context.organization": function(id) {
       this.context.organization = id
-      this.$nextTick(() => this.onContextChange && this.onContextChange('organization'))
+      this.$nextTick(() => this.onContextChange && this.onContextChange("organization"))
     },
-    '$root.context.budget': function(id) {
+    "$root.context.budget": function(id) {
       this.context.budget = id
-      this.$nextTick(() => this.onContextChange && this.onContextChange('budget'))
+      this.$nextTick(() => this.onContextChange && this.onContextChange("budget"))
     },
-    '$root.context.year': function(id) {
+    "$root.context.year": function(id) {
       this.context.year = id
-      this.$nextTick(() => this.onContextChange && this.onContextChange('year'))
+      this.$nextTick(() => this.onContextChange && this.onContextChange("year"))
     }
   }
 }

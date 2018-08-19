@@ -1,85 +1,79 @@
-<template>
-  <div class="cols">
-    <div id="modules-tree">
-      <ul class='circle-container'>
-        <li v-for="item in links" :key="item.key">
-          <button @click="navigateToLink(item)" :class="defineClass(item)" :id="item.id">
-            {{ item.title }}
-          </button>
-        </li>
-      </ul>
-    </div>
-  </div>
+<template lang="pug">
+.cols
+  #modules-tree
+    ul.circle-container
+      li(v-for="item in links", :key="item.key")
+        button(@click="navigateToLink(item)", :class="defineClass(item)", :id="item.id") {{ item.title }}
 </template>
 
 <script>
-import Auth from 'services/Auth'
+import Auth from "services/Auth"
 
 export default {
   data() {
     return {
       links: [
         {
-          title: 'BI Агро',
-          link: '/biagro',
-          id: '',
+          title: "BI Агро",
+          link: "/biagro",
+          id: "",
           active: false,
           key: 1,
         },
         {
-          title: 'Agroinfo',
-          link: '/agroinfo',
-          id: '',
+          title: "Agroinfo",
+          link: "/agroinfo",
+          id: "",
           active: false,
           key: 2,
         },
         {
-          title: 'Баланс зерна',
-          link: '/balanszerna',
-          id: '',
+          title: "Баланс зерна",
+          link: "/balanszerna",
+          id: "",
           active: true,
           key: 3,
         },
         {
-          title: 'Agrostock',
-          link: '/agrostock',
-          id: '',
+          title: "Agrostock",
+          link: "/agrostock",
+          id: "",
           active: false,
           key: 4,
         },
         {
-          title: 'Admin',
-          link: '/admin',
-          id: '',
+          title: "Admin",
+          link: "/admin",
+          id: "",
           active: false,
           admin: true,
           key: 5,
         },
         {
-          title: 'Agroplan',
-          link: '/agroplan',
-          id: '',
+          title: "Agroplan",
+          link: "/agroplan",
+          id: "",
           active: true,
           key: 6,
         },
         {
-          title: 'Agromap',
-          link: '/agromap',
-          id: '',
+          title: "Agromap",
+          link: "/agromap",
+          id: "",
           active: true,
           key: 7,
         },
         {
-          title: 'Agrofact',
-          link: '/agrofact',
-          id: '',
+          title: "Agrofact",
+          link: "/agrofact",
+          id: "",
           active: true,
           key: 8,
         },
         {
-          title: '',
-          link: '/',
-          id: 'logo',
+          title: "",
+          link: "/",
+          id: "logo",
           active: false,
           key: 9,
         },
@@ -92,20 +86,20 @@ export default {
   methods: {
     navigateToLink(obj) {
       if (obj.active) {
-        let link = obj.link.replace('/', '');
+        obj.link.replace("/", "");
         this.$router.push(obj.link);
       }
     },
     defineClass(obj) {
       if (!obj.active) {
-        return 'circles not-active-circle';
+        return "circles not-active-circle";
       } else {
-        return 'circles active-circle';
+        return "circles active-circle";
       }
     },
     defineLink(obj) {
       if (!obj.active) {
-        return '/';
+        return "/";
       } else {
         return obj.link;
       }

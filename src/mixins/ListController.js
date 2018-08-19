@@ -1,8 +1,8 @@
-import sort from 'mixins/sort'
-import filter from 'mixins/filter'
-import paginate from 'mixins/paginate'
+import sort from "mixins/sort"
+import filter from "mixins/filter"
+import paginate from "mixins/paginate"
 
-import { createIndex } from 'lib/utils'
+import {createIndex} from "lib/utils"
 
 export default {
   data() {

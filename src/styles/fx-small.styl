@@ -1,0 +1,89 @@
+/* pages/agrofact/map -> eleme to small fx ui */
+
+.fx-styles
+
+  .tabs
+    position relative
+    border 1px groove #cfcfcf
+    padding-bottom 26px
+
+  .el-tabs
+    height 100%
+    width 100%
+    overflow auto
+
+  .el-tabs__content
+    width 100%
+    height 100%
+    overflow auto
+    z-index 0
+
+  .el-tab-pane
+    overflow visible
+
+  .el-tabs__header
+    position absolute
+    bottom 0px
+    left 0px
+    z-index 1
+
+  .el-tabs__item
+    height auto
+    line-height 24px
+    font-size 14px
+    padding 0 8px
+
+    color #000
+    cursor pointer
+    outline none
+    background #fff
+    transition .2s linear
+    border 1px solid rgb(131, 145, 165)
+    box-sizing border-box
+    &.is-active
+      background rgb(131, 145, 165)
+      color #fff
+
+  .el-tabs__active-bar
+    display none
+
+  .el-table
+    overflow visible
+    max-height none!important
+    th
+      background #d3dce6
+      .cell
+        background #d3dce6
+    th, td
+      padding 0
+      height auto
+      font-weight 100
+      box-sizing border-box
+      border 1px solid #dfe6ec
+      .cell
+        padding 0
+        font-size 12px
+        line-height 14px
+        text-align center
+        color #000
+        overflow visible
+
+  .el-table__body-wrapper
+    overflow visible
+    max-height none!important
+
+  .el-table__fixed-body-wrapper
+    overflow visible
+    max-height none!important
+
+  .el-table__empty-block
+    min-height 30px
+
+  .el-button
+    padding 3px 9px
+    font-size 12px
+
+  .fx-filter
+    padding 5px 0px
+    width 24px
+    margin-left 5px

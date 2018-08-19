@@ -1,0 +1,68 @@
+{
+  "name": "CarGpsIdentifier",
+  "api": "CarGpsIdentifier",
+  "organization": true,
+  "editable": true,
+  "dependencies": [
+    "Cars",
+    "CarModels",
+    "GpsProviders"
+  ],
+  "attributes": [
+    {
+      "label": "Модель",
+      "prop": "CarModels.name",
+      "fkey": "carModelId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Машина",
+      "prop": "Cars.displayString",
+      "fkey": "carId",
+      "filter": true,
+      "iterable": true,
+      "table": false,
+      "viewable": false
+    },
+    {
+      "label": "Гос. номер",
+      "prop": "Cars.number",
+      "fkey": "carId",
+      "filter": true,
+      "iterable": true,
+      "disabled": true
+    },
+    {
+      "label": "Хоз. номер",
+      "prop": "Cars.organizationNumber",
+      "fkey": "carId",
+      "filter": true,
+      "iterable": true,
+      "disabled": true
+    },
+    {
+      "label": "GPS Система",
+      "prop": "GpsProviders.name",
+      "fkey": "gpsProviderId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "GPS ID",
+      "prop": "externalId"
+    },
+    {
+      "label": "Дата начала",
+      "prop": "dateFrom",
+      "type": "date",
+      "formatTo": "YYYY-MM-DDTHH:mm:ss"
+    },
+    {
+      "label": "Дата завершения",
+      "prop": "dateTo",
+      "type": "date",
+      "formatTo": "YYYY-MM-DDTHH:mm:ss"
+    }
+  ]
+}

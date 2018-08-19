@@ -1,10 +1,10 @@
-import OrganizationRoutes from "components/admin/organization/routes"
-import UserRoutes from "components/admin/user/routes"
-import JobsRoutes from "components/admin/jobs/routes"
-const Organization = () => import ("components/admin/organization")
-const User = () => import ("components/admin/user")
-const Jobs = () => import ("components/admin/jobs")
-const Map = () => import ("components/admin/map")
+const Organization = () => import("./organization")
+import OrganizationRoutes from "./organization/routes"
+const User = () => import("./user")
+import UserRoutes from "./user/routes"
+const Jobs = () => import("./jobs")
+import JobsRoutes from "./jobs/routes"
+const Map = () => import("./map")
 
 module.exports = [
   {
@@ -13,7 +13,6 @@ module.exports = [
     component: Organization,
     meta: {
       title: "Организация",
-      role: "Admin",
     },
     children: [...OrganizationRoutes],
   },
@@ -23,7 +22,6 @@ module.exports = [
     component: User,
     meta: {
       title: "Пользователь",
-      role: "Admin",
     },
     children: [...UserRoutes],
   },
@@ -33,7 +31,6 @@ module.exports = [
     component: Jobs,
     meta: {
       title: "Работа GPS",
-      role: "Admin",
     },
     children: [...JobsRoutes],
   },
@@ -42,7 +39,10 @@ module.exports = [
     component: Map,
     meta: {
       title: "Карта",
-      role: "Admin",
     },
+  },
+  {
+    path: ":page",
+    redirect: "organization",
   },
 ]

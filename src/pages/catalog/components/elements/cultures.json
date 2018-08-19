@@ -1,0 +1,32 @@
+{
+  "name": "Cultures",
+  "api": "Cultures",
+  "dependencies": [
+    "CultureTypes"
+  ],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Сокращенное наименование",
+      "prop": "shortName"
+    },
+    {
+      "label": "Тип культуры",
+      "prop": "CultureTypes.name",
+      "fkey": "cultureTypeId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Нормы высева",
+      "prop": "sowingNormative"
+    },
+    {
+      "label": "Сезон",
+      "prop": "seasonsCount"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
-import { shallowClone } from 'helpers'
-import contexts from 'mixins/contexts'
-import http from 'lib/httpQueryV2'
-import localforage from 'localforage'
+import {shallowClone} from "helpers"
+import contexts from "mixins/contexts"
+import http from "services/http"
+import localforage from "localforage"
 
 export default {
   mixins: [
@@ -24,7 +24,7 @@ export default {
         }
       }
       return contexts.reduce((dataset, name) => {
-        if (!this.context[name]) throw new Error('Undefined context ' + name)
+        if (!this.context[name]) throw new Error("Undefined context " + name)
         if (!dataset[this.context[name]]) {
           this.$set(dataset, this.context[name], {})
         }
@@ -38,8 +38,8 @@ export default {
       }, this.$root.datasets[model.path])
     },
     preload(model) {
-      let suffix = model.contexts.map(name => this.context[name]).join('/')
-      if (suffix) suffix = '/' + suffix
+      let suffix = model.contexts.map(name => this.context[name]).join("/")
+      if (suffix) suffix = "/" + suffix
       let dataset = this.datasetForModel(model)
       dataset.isLoading = true
       localforage.getItem(model.path+suffix).then(records => {
@@ -62,8 +62,8 @@ export default {
       }
       if (!dataset.isLoading) {
         dataset.isLoading = true
-        let suffix = model.contexts.map(name => this.context[name]).join('/')
-        if (suffix) suffix = '/' + suffix
+        let suffix = model.contexts.map(name => this.context[name]).join("/")
+        if (suffix) suffix = "/" + suffix
         http.get(model.path + suffix)
           .then(records => {
             dataset.records = records
@@ -82,8 +82,8 @@ export default {
       dataset.records = dataset.records.filter(record => {
         return record[model.idKey] != id
       })
-      let suffix = model.contexts.map(name => this.context[name]).join('/')
-      if (suffix) suffix = '/' + suffix
+      let suffix = model.contexts.map(name => this.context[name]).join("/")
+      if (suffix) suffix = "/" + suffix
       localforage.setItem(model.path+suffix, dataset.records)
     },
     saveItem(model, id, data) {
@@ -91,7 +91,7 @@ export default {
       if (id) {
         dataset.records = dataset.records.map(record => {
           if (record[this.model.idKey] === id) {
-            if (model.path==='suboperations') {
+            if (model.path==="suboperations") {
               data.isFieldOperation = record.isFieldOperation
             }
             data[this.model.idKey] = id
@@ -100,8 +100,8 @@ export default {
           return record
         })
       }
-      let suffix = model.contexts.map(name => this.context[name]).join('/')
-      if (suffix) suffix = '/' + suffix
+      let suffix = model.contexts.map(name => this.context[name]).join("/")
+      if (suffix) suffix = "/" + suffix
       localforage.setItem(model.path+suffix, dataset.records)
     },
     getPrefetchedModels(model, stored = []) {
@@ -130,22 +130,22 @@ export default {
         let _data = Object.assign({}, data)
         Object.keys(model.relations).forEach(key => {
           Object.defineProperty(_data, key, {
-             enumerable: true,
-             get() {
-                return (model.relations[key].many || model.relations[key].fromMany)?
-                  relatedRecords[key].filter(relData => {
-                    return model.relations[key].fromMany?
+            enumerable: true,
+            get() {
+              return (model.relations[key].many || model.relations[key].fromMany)?
+                relatedRecords[key].filter(relData => {
+                  return model.relations[key].fromMany?
                     (data[model.relations[key].key].indexOf(
                       model.relations[key].fKey ? relData.data[model.relations[key].fKey] : relData.id
                     ) !== -1) :
                     (data[model.relations[key].key] ===
                     (model.relations[key].fKey ? relData.data[model.relations[key].fKey] : relData.id))
-                  }).map(record => record.data) :
-                  ((relatedRecords[key].find(relData => {
-                    return data[model.relations[key].key] ===
+                }).map(record => record.data) :
+                ((relatedRecords[key].find(relData => {
+                  return data[model.relations[key].key] ===
                     (model.relations[key].fKey ? relData.data[model.relations[key].fKey] : relData.id)
-                  })||{}).data||{})
-             }
+                })||{}).data||{})
+            }
           })
         })
         item.data = shallowClone(_data)

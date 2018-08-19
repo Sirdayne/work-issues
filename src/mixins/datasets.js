@@ -1,6 +1,6 @@
-import localforage from 'localforage'
-import contexts from 'mixins/contexts'
-import http from 'lib/httpQueryV2'
+import localforage from "localforage"
+import contexts from "mixins/contexts"
+import http from "services/http"
 
 export default {
   mixins: [
@@ -8,9 +8,9 @@ export default {
   ],
   methods: {
     getFullEndpoint(model, forCache = false) {
-      let suffix = model.contexts.map(name => this.context[name]).join('/')
-      if (suffix) suffix = '/' + suffix
-      if (forCache && model.suffix) suffix = '_' + model.suffix
+      let suffix = model.contexts.map(name => this.context[name]).join("/")
+      if (suffix) suffix = "/" + suffix
+      if (forCache && model.suffix) suffix = "_" + model.suffix
       return model.path + suffix
     },
     // return {isFresh, data}
@@ -54,7 +54,7 @@ export default {
       }
       return http.get(endpoint).then(records => {
         let err
-        if (Object.keys(records).length === 1 && Object.keys(records)[0] === 'message') {
+        if (Object.keys(records).length === 1 && Object.keys(records)[0] === "message") {
           err = records.message
         } else {
           if (model.prefilter) {
@@ -64,7 +64,7 @@ export default {
         }
         return new Promise((resolve, reject) => {
           if (err) {
-            alert(endpoint.toUpperCase() + ' - ' + err)
+            alert(endpoint.toUpperCase() + " - " + err)
             reject(err)
             return
           }
@@ -134,9 +134,9 @@ export default {
         let fKey     = relation.fKey?
           relation.fKey :
           relations[relationName].model.idKey
-        let foreignMethod = 'find'
+        let foreignMethod = "find"
         if (relation.many || relation.fromMany) {
-            foreignMethod = 'filter'
+          foreignMethod = "filter"
         }
         records = records.map(record => {
           record[relationName] = relRecordsSet[i][foreignMethod](relRecord => {

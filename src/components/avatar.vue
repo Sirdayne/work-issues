@@ -4,28 +4,25 @@
     img(:src="user.imageByte")
   .img-container(v-if="form.base")
     img(:src="form.base")
-  .file-upload
-    input(type="file", id="upload", accept=".png, .jpg, .jpeg", @change="readFile()")
-
-  el-button(v-if="form.base", type="primary", @click="postAva()") Загрузить
-  el-alert(v-else, :title="alertTitle", :type="alertType", :closable="false", show-icon, style="width: 100%")
+  .upload-avatar
+    input(type="file", id="upload-ava", accept=".png, .jpg, .jpeg", @change="readFile()")
+  el-button(:loading="loading", type="primary", @click="postAva()") Загрузить
 
 </template>
 
 <script>
-import http from 'lib/httpQueryV2'
-import { EventBus } from 'services/EventBus'
-import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
-import ListController from 'mixins/ListController'
-import moment from 'moment'
-import nprogress from 'lib/NProgress';
+import http from "services/http"
+import ListController from "mixins/ListController"
+import nprogress from "lib/NProgress";
 
 export default {
-  props: [
-    "user",
-  ],
+  props: {
+    "user": {
+      type: Object,
+      default: {},
+    },
+  },
   mixins: [
-    RecordsLoaderV2,
     ListController
   ],
   data() {
@@ -33,33 +30,39 @@ export default {
       form: {
         base: null,
       },
-      endpoint: 'SaveUserImage/',
-      alertType: 'warning',
-      alertTitle: 'Выберите аватар',
+      endpoint: "SaveUserImage/",
       validation: {
         maxSize: 1000000,
-        types: ['image/png', 'image/jpeg', 'image/jpg'],
+        types: ["image/png", "image/jpeg", "image/jpg"],
       },
+      loading: false
     }
   },
   methods: {
     postAva() {
-      let endpoint = this.endpoint + this.$root.context.organization;
-      let data = {
-        id: this.user.id,
-        imageByte: this.form.base
-      };
-      http.post(endpoint, data).then(() => {
-        this.refresh();
-      });
+      if (this.form.base) {
+        let endpoint = this.endpoint + this.$root.context.organization;
+        let data = {
+          id: this.user.id,
+          imageByte: this.form.base
+        }
+        this.loading = true
+        http.post(endpoint, data).then(() => {
+          this.refresh();
+        }).catch(() => {
+          this.loading = false
+        });
+      } else {
+        this.$message({
+          message: `Выберите аватар!`,
+          type: "warning",
+          duration: 1500,
+          showClose: false,
+        });
+      }
     },
     readFile() {
-      //readFile($event) - html
-      //readFile(event) - function
-      //let file = event.target.files[0]
-      let file = document.getElementById('upload')
-      this.alertType = 'warning'
-      this.alertTitle = 'Выберите аватар'
+      let file = document.getElementById("upload-ava")
       this.form.base = null
       if (this.validation.types.includes(file.files[0].type)){
         if (file.files[0].size <= this.validation.maxSize){
@@ -72,17 +75,22 @@ export default {
             nprogress.done()
           };
           reader.readAsDataURL(file.files[0]);
-//          let filename = file.value;
-//          filename = filename.replace(/\\/g, "/").split('/').pop();
-//          this.fileName = filename
         } else {
-          this.alertType = 'error'
-          this.alertTitle = 'Размер не должен превышать 1 мб'
+          this.$message({
+            message: `Размер не должен превышать 1 мб`,
+            type: "error",
+            duration: 1500,
+            showClose: false,
+          });
           this.refresh()
         }
       } else {
-        this.alertType = 'error'
-        this.alertTitle = 'Недопустимый формат файла, выберите *.png/*.jpg'
+        this.$message({
+          message: `Недопустимый формат файла, выберите *.png/*.jpg`,
+          type: "error",
+          duration: 1500,
+          showClose: false,
+        });
         this.refresh()
       }
 
@@ -90,7 +98,7 @@ export default {
     refresh(){
       this.form.base = null
       this.$root.loadUserProfile()
-//      this.fileName = null
+      this.loading = false
     },
   }
 }
@@ -99,7 +107,9 @@ export default {
 
 <style lang="stylus" scoped>
 .container-upload
-  padding 5px 0
+  max-width 400px
+  width calc(100%)
+  padding 0
 
 .img-container
   width 100%
@@ -108,9 +118,8 @@ export default {
     max-width 150px
     max-height 150px
 
-.file-upload
+.upload-avatar
   width 100%
   margin-bottom 10px
-
 </style>
 

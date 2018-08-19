@@ -53,22 +53,22 @@
 </template>
 
 <script>
-
-import http from 'lib/httpQueryV2'
-import { EventBus } from 'services/EventBus'
-import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
-import ListController from 'mixins/ListController'
-import moment from 'moment'
-import $ from 'jquery';
+import {fetchEntities, fromVuex} from "services/RecordsLoader"
+import ListController from "mixins/ListController"
+import moment from "moment"
+import $ from "jquery";
 
 export default {
   mixins: [
-    RecordsLoaderV2,
+    
     ListController
   ],
-  props: [
-    'fieldClickedId',
-  ],
+  props: {
+    "fieldClickedId": {
+      type: Number,
+      default: null,
+    },
+  },
   data() {
     return {
       tableChemistryLast: null,
@@ -111,15 +111,15 @@ export default {
     },
   },
   created() {
-    this.fetchEntities([
-      'fields',
-      'fieldlastassignments',
+    fetchEntities([
+      "fields",
+      "fieldlastassignments",
     ], this.afterFetch );
   },
   methods: {
     afterFetch(){
-      this.fields = this.fromVuex('fields')
-      this.fieldlastassignments = this.fromVuex('fieldlastassignments')
+      this.fields = fromVuex("fields")
+      this.fieldlastassignments = fromVuex("fieldlastassignments")
     },
     dateFormat(array){
       array.map(y => {

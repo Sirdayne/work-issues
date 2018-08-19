@@ -1,7 +1,7 @@
-import FieldRoutes from "components/agromap/field/routes"
-import NotepadRoutes from "components/agromap/notepad/routes"
-const Field = () => import ("components/agromap/field")
-const Notepad = () => import ("components/agromap/notepad")
+const Field = () => import("./field")
+import FieldRoutes from "./field/routes"
+const Notepad = () => import("./notepad")
+import NotepadRoutes from "./notepad/routes"
 
 module.exports = [
   {
@@ -21,5 +21,9 @@ module.exports = [
       title: "Блокнот",
     },
     children: [...NotepadRoutes],
+  },
+  {
+    path: ":page",
+    redirect: "field",
   },
 ]

@@ -1,5 +1,5 @@
-import intro from 'intro.js';
-import 'intro.js/introjs.css';
+import intro from "intro.js";
+import "intro.js/introjs.css";
 
 let introHelp = intro.introJs();
 

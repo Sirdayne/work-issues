@@ -24,48 +24,47 @@
 </template>
 
 <script>
-  import { EventBus } from 'services/EventBus';
-  import RecordsLoaderV2 from 'mixins/RecordsLoaderV2';
+import {fetchEntities, fromVuex} from "services/RecordsLoader";
 
-  export default {
-    mixins: [
-      RecordsLoaderV2
-    ],
-    data() {
-      return {
-        users: [],
-        dialogVisible: true
-      }
+export default {
+  mixins: [
+    
+  ],
+  data() {
+    return {
+      users: [],
+      dialogVisible: true
+    }
+  },
+  created() {
+    fetchEntities([
+      "cropbalanceusers",
+      "userorganizations",
+      "warehousesAll",
+    ], this.onLoad);
+  },
+  computed: {
+    cropbalanceusers() {
+      return fromVuex("cropbalanceusers")
     },
-    created() {
-      this.fetchEntities([
-        'cropbalanceusers',
-        'userorganizations',
-        'warehousesAll',
-      ], this.onLoad);
+    organizations() {
+      return fromVuex("userorganizations")
     },
-    computed: {
-      cropbalanceusers() {
-        return this.fromVuex('cropbalanceusers')
-      },
-      organizations() {
-        return this.fromVuex('userorganizations')
-      },
-      warehousesAll() {
-        return this.fromVuex('warehousesAll')
-      },
+    warehousesAll() {
+      return fromVuex("warehousesAll")
     },
-    methods: {
-      onLoad() {
-        this.users = this.cropbalanceusers.map(c => {
-          c.organization = this.organizations.find(o => o.id === c.organizationId);
-          c.warehouse = this.warehousesAll.find(w => w.id === c.warehouseId);
-          c.warehouse = c.warehouse ? c.warehouse : {name: c.warehouseId};
-          return c;
-        });
-      }
+  },
+  methods: {
+    onLoad() {
+      this.users = this.cropbalanceusers.map(c => {
+        c.organization = this.organizations.find(o => o.id === c.organizationId);
+        c.warehouse = this.warehousesAll.find(w => w.id === c.warehouseId);
+        c.warehouse = c.warehouse ? c.warehouse : {name: c.warehouseId};
+        return c;
+      });
     }
   }
+}
 </script>
 
 <style lang="stylus" scoped>

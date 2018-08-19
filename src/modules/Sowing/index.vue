@@ -7,16 +7,20 @@
     table.infoTable
       tr(v-for="row in info")
         td {{row[0]}}
-        td: el-tag.tag(type="gray", v-for="tag in row[1]", :key="tag") {{tag}}
+        td
+          el-tag.tag(type="gray", v-for="tag in row[1]", :key="tag") {{tag}}
         td {{row[3]}}
       tr
-        td(colspan="3"): b Итого: {{totalArea | numberFormat}} га.
+        td(colspan="3")
+          b Итого: {{totalArea | numberFormat}} га.
   .sidebar.sidebar-new
     el-form( class="el-form-edit", id="step2")
       el-form-item(label="Бюджет:   ")
-        .radio-control(v-for="b in budgets"): el-radio(v-model="$root.context.budget", :label="b.id") {{b.name}}
+        .radio-control(v-for="b in budgets")
+          el-radio(v-model="$root.context.budget", :label="b.id") {{b.name}}
 
-    router-link.link(to="/agroplan/sowings"): el-button(id="step13") Список посевов
+    router-link.link(to="/agroplan/sowings")
+      el-button(id="step13") Список посевов
     el-form(label-position="top")
       el-tabs.tabs(active-name="first", type="border-card", id="step8")
         el-tab-pane(label="Культура", name="first")
@@ -186,7 +190,7 @@
         fields-controller(id="step9", v-model="checkedFields", :quickFilter="quickFilter", :brigadeId="brigadeId", @fieldClick="showFieldParams")
       .notify(v-else) Загрузка
 
-    .panel-bottom(v-if="ready && showPanelBottom")
+    .panel-bottom(v-if="!isProcessing && showPanelBottom")
       el-button(@click="startHelpSowingsBottom", class="button-help") ?
       sevoborot(:fieldClickedId="fieldClickedId", :fieldClickedName="fieldClickedName", id="bot1")
       lastassignments(:fieldClickedId="fieldClickedId", id="bot2")
@@ -194,25 +198,20 @@
 </template>
 
 <script>
-import fieldsModel          from '_models/Fields'
-import sowingsModel         from '_models/Sowings'
-import culturesModel        from '_models/Cultures'
+import fieldsModel          from "_models/Fields"
+import culturesModel        from "_models/Cultures"
 
-import http from 'lib/httpQueryV2'
-import datasets  from 'mixins/datasets'
-import { createIndexes } from 'helpers'
+import http from "services/http"
+import datasets  from "mixins/datasets"
+import {createIndexes} from "helpers"
 
-import FieldsController from 'components/FieldsController'
-import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
+import FieldsController from "components/FieldsController"
+import {fetchEntities, fromVuex} from "services/RecordsLoader"
 
-import {EventBus} from 'services/EventBus'
-import moment from 'moment'
-import ListController from 'mixins/ListController'
+import {EventBus} from "services/EventBus"
 
-import $ from 'jquery'
-
-import introLib from 'lib/introLib'
-import Steps from 'components/help/steps'
+import introLib from "lib/introLib"
+import Steps from "components/help/steps"
 
 import sevoborot from "components/panelbottom/sevoborot"
 import lastassignments from "components/panelbottom/lastassignments"
@@ -220,7 +219,7 @@ import lastassignments from "components/panelbottom/lastassignments"
 export default {
   mixins: [
     datasets,
-    RecordsLoaderV2
+
   ],
   components: {
     FieldsController,
@@ -255,7 +254,7 @@ export default {
       checkedCulture: null,
       seedlimits: [],
 
-      quickFilter: '',
+      quickFilter: "",
       brigadeId: null,
 
       firstCultureId: null,
@@ -301,24 +300,24 @@ export default {
     },
   },
   created() {
-    EventBus.$on('fieldClicked', (field) => {
+    EventBus.$on("fieldClicked", (field) => {
       this.fieldClickedId = field;
       this.showPanelBottom = true;
     });
     this.loadData()
 
     if (!/token=/.test(document.cookie) || /token=;/.test(document.cookie) || /token=$/.test(document.cookie)) {
-      this.$router.replace('/login')
+      this.$router.replace("/login")
     } else {
       this.$root.isLogined = true
     }
     this.setSecondtoDefault()
     this.getEntity(culturesModel, (isFinished, records) => {
-      this.cultures = createIndexes(records, 'id')
-      this.culturesSet = createIndexes(records, 'type.id', true)
+      this.cultures = createIndexes(records, "id")
+      this.culturesSet = createIndexes(records, "type.id", true)
     }, true)
     this.getEntity(fieldsModel, (isFinished, records) => {
-      this.fieldsIndexed = createIndexes(records, 'id')
+      this.fieldsIndexed = createIndexes(records, "id")
       this.fields = records
     }, true)
   },
@@ -339,18 +338,18 @@ export default {
       let cultures = this.cultures
       let total = []
       let result =  this.sowings? Object.values(
-        createIndexes(this.sowings.filter(s => s.year === this.context.year), 'cultureId', true)
+        createIndexes(this.sowings.filter(s => s.year === this.context.year), "cultureId", true)
       ).map(group => {
         let groupTotal = group.reduce((a, b) => a + b.area, 0)
         total.push(groupTotal)
         return [
-        cultures[group[0].cultureId].name +
+          cultures[group[0].cultureId].name +
         ` (${groupTotal} га.)`,
-        group.map(s => {return `${s.fieldShortName ? s.fieldShortName : s.fieldNewName ? s.fieldNewName : null} (${s.area})`}),
-        group.reduce((a, b) => a + b.area, 0)
-      ]}) : []
+          group.map(s => {return `${s.fieldShortName ? s.fieldShortName : s.fieldNewName ? s.fieldNewName : null} (${s.area})`}),
+          group.reduce((a, b) => a + b.area, 0)
+        ]}) : []
       this.totalArea = total.reduce((a, b) => a + b, 0)
-      result.forEach((el,i) => {
+      result.forEach((el, i) => {
         result[i].push(((el[2]*100)/this.totalArea).toFixed(2)+"%")
       })
       return result
@@ -358,14 +357,14 @@ export default {
   },
   methods: {
     loadData(){
-      this.fetchEntities([
-        'budgets',
-        'cultureparameters',
-        'reproductions',
-        'brigades',
-        'culturerotation',
-        'seedlimits',
-        'sowings',
+      fetchEntities([
+        "budgets",
+        "cultureparameters",
+        "reproductions",
+        "brigades",
+        "culturerotation",
+        "seedlimits",
+        "sowings",
       ], this.afterFetch );
     },
     checkCultureRotation(cultureId){
@@ -376,12 +375,12 @@ export default {
         this.previousYearCultures.forEach(lyc => {
           cultureRotation.notRecommendedList.forEach(crn => {
             if (lyc == crn){
-              error = 'Предупреждение: нарушение ротации'
+              error = "Предупреждение: нарушение ротации"
             }
           })
           cultureRotation.forbiddenList.forEach(crn => {
             if (lyc == crn){
-              error = 'Предупреждение: нарушение ротации'
+              error = "Предупреждение: нарушение ротации"
             }
           })
         })
@@ -391,16 +390,16 @@ export default {
       }
     },
     afterFetch(){
-      this.budgets = this.fromVuex('budgets');
-      this.cultureparameters = this.fromVuex('cultureparameters');
-      this.reproductions = this.fromVuex('reproductions');
-      this.brigades = this.fromVuex('brigades');
-      this.culturerotation = this.fromVuex('culturerotation')
-      this.seedlimits = this.fromVuex('seedlimits')
-      this.sowings = this.fromVuex('sowings')
+      this.budgets = fromVuex("budgets");
+      this.cultureparameters = fromVuex("cultureparameters");
+      this.reproductions = fromVuex("reproductions");
+      this.brigades = fromVuex("brigades");
+      this.culturerotation = fromVuex("culturerotation")
+      this.seedlimits = fromVuex("seedlimits")
+      this.sowings = fromVuex("sowings")
       this.fields.forEach(field => {
-        let sowingsSet = createIndexes(this.sowings.filter(sowing => sowing.year === this.context.year), 'fieldId', true)
-        let area = field.area - (sowingsSet[field.id]? sowingsSet[field.id].reduce((a,b)=>a + b.area,0) : 0)
+        let sowingsSet = createIndexes(this.sowings.filter(sowing => sowing.year === this.context.year), "fieldId", true)
+        let area = field.area - (sowingsSet[field.id]? sowingsSet[field.id].reduce((a, b)=>a + b.area, 0) : 0)
         this.fieldsAreaInitial[field.id] = area
         this.$set(this.fieldsArea, field.id, area)
       })
@@ -410,27 +409,27 @@ export default {
       this.isProcessing = true
       let query = this.checkedFields.map(fieldId => {
         return {
-          fieldId:                      fieldId,
-          year:                         this.context.year,
-          area:                         this.fieldsArea[fieldId],
-          cultureId:                    this.firstCultureId,
-          secondCultureId:              this.secondCultureId,
-          yield:                        this.firstProductivity,
-          secondYield:                  this.secondProductivity,
-          cultureParameterId:           this.firstProductId,
-          secondCultureParameterId:     this.secondProductId,
-          sowingNormative:              this.firstNormative,
+          fieldId: fieldId,
+          year: this.context.year,
+          area: this.fieldsArea[fieldId],
+          cultureId: this.firstCultureId,
+          secondCultureId: this.secondCultureId,
+          yield: this.firstProductivity,
+          secondYield: this.secondProductivity,
+          cultureParameterId: this.firstProductId,
+          secondCultureParameterId: this.secondProductId,
+          sowingNormative: this.firstNormative,
           secondCultureSowingNormative: this.secondNormative,
-          cultureSortId:                this.firstSortId,
-          secondCultureSortId:          this.secondSortId,
-          reproductionId:               this.firstReproductionId,
-          secondCultureReproductionId:  this.secondReproductionId
+          cultureSortId: this.firstSortId,
+          secondCultureSortId: this.secondSortId,
+          reproductionId: this.firstReproductionId,
+          secondCultureReproductionId: this.secondReproductionId
         }
       })
-      http.post('sowings/many/'+this.context.organization+'/'+this.context.budget, query).then(() => {
+      http.post("sowings/many/"+this.context.organization+"/"+this.context.budget, query).then(() => {
         this.setSecondtoDefault()
         this.setFirsttoDefault()
-        EventBus.$emit('SowingAdded');
+        EventBus.$emit("SowingAdded");
         this.loadData();
         //location.reload()
       })
@@ -465,7 +464,7 @@ export default {
   },
   filters: {
     numberFormat: function(val) {
-      return val.toLocaleString('ru-RU')
+      return val.toLocaleString("ru-RU")
     }
   }
 }

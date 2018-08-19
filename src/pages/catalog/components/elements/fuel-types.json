@@ -1,0 +1,11 @@
+{
+  "name": "FuelTypes",
+  "api": "FuelTypes",
+  "dependencies": [],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    }
+  ]
+}

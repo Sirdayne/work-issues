@@ -1,0 +1,11 @@
+{
+  "name": "CustomOrganizations",
+  "api": "CustomOrganizations",
+  "dependencies": [],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    }
+  ]
+}

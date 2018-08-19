@@ -1,4 +1,4 @@
-import { fromDot } from 'lib/utils'
+import {fromDot} from "lib/utils"
 
 export default {
   data() {
@@ -26,7 +26,7 @@ export default {
           a = modificator(a)
           b = modificator(b)
         }
-        return this.sortDir === 'ascending'? a > b : a < b
+        return this.sortDir === "ascending"? a > b : a < b
       })
     }
   }

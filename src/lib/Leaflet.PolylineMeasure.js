@@ -1,21 +1,21 @@
-import geodesy from 'leaflet-geodesy'
+import geodesy from "leaflet-geodesy"
 (function (factory) {
-  if (typeof define === 'function' && define.amd) {
+  if (typeof define === "function" && define.amd) {
     // AMD
-    define(['leaflet'], factory);
-  } else if (typeof module !== 'undefined') {
+    define(["leaflet"], factory);
+  } else if (typeof module !== "undefined") {
     // Node/CommonJS
-    module.exports = factory(require('leaflet'));
+    module.exports = factory(require("leaflet"));
   } else {
     // Browser globals
-    if (typeof window.L === 'undefined') {
-      throw new Error('Leaflet must be loaded first');
+    if (typeof window.L === "undefined") {
+      throw new Error("Leaflet must be loaded first");
     }
     factory(window.L);
   }
 }(function (L) {
-  var _measureControlId = 'polyline-measure-control';
-  var _unicodeClass = 'polyline-measure-unicode-icon';
+  var _measureControlId = "polyline-measure-control";
+  var _unicodeClass = "polyline-measure-unicode-icon";
   var self;
   var arrow;
   var arcpoints;
@@ -35,13 +35,13 @@ import geodesy from 'leaflet-geodesy'
        * @type {String}
        * @default
        */
-      position: 'topleft',
+      position: "topleft",
       /**
        * Which units the distances are displayed in. Possible values are: 'metres', 'landmiles', 'nauticalmiles'
        * @type {String}
        * @default
        */
-      unit: 'metres',
+      unit: "metres",
       /**
        * Title for the control going to be switched on
        * @type {String}
@@ -59,7 +59,7 @@ import geodesy from 'leaflet-geodesy'
        * @type {String}
        * @default
        */
-      measureControlLabel: '&#128208;',
+      measureControlLabel: "&#128208;",
       /**
        * Classes to apply to the control
        * @type {Array}
@@ -71,13 +71,13 @@ import geodesy from 'leaflet-geodesy'
        * @type {String}
        * @default
        */
-      backgroundColor: '#8f8',
+      backgroundColor: "#8f8",
       /**
        * Cursor type to show when creating measurements
        * @type {String}
        * @default
        */
-      cursor: 'crosshair',
+      cursor: "crosshair",
       /**
        * Clear the measurements on stop
        * @type {Boolean}
@@ -95,13 +95,13 @@ import geodesy from 'leaflet-geodesy'
        * @type {String}
        * @default
         */
-      clearControlTitle: 'Очистить измерения',
+      clearControlTitle: "Очистить измерения",
       /**
        * Clear control inner html
        * @type {String}
        * @default
         */
-      clearControlLabel: '&times;',
+      clearControlLabel: "&times;",
       /**
        * Collection of classes to add to clear control button
        * @type {Array}
@@ -124,7 +124,7 @@ import geodesy from 'leaflet-geodesy'
          * @type {String}
          * @default
          */
-        color: '#00f',
+        color: "#00f",
         /**
          * Dashed line weight
          * @type {Number}
@@ -142,7 +142,7 @@ import geodesy from 'leaflet-geodesy'
          * @type {String}
          * @default
          */
-        color: '#006',
+        color: "#006",
         /**
          * Solid line weight
          * @type {Number}
@@ -160,7 +160,7 @@ import geodesy from 'leaflet-geodesy'
          * @type {String}
          * @default
          */
-        color: '#000',
+        color: "#000",
         /**
          * Weight of the circle
          * @type {Number}
@@ -172,7 +172,7 @@ import geodesy from 'leaflet-geodesy'
          * @type {String}
          * @default
          */
-        fillColor: '#0f0',
+        fillColor: "#0f0",
         /**
          * Fill opacity of the circle
          * @type {Number}
@@ -196,7 +196,7 @@ import geodesy from 'leaflet-geodesy'
          * @type {String}
          * @default
          */
-        color: '#000',
+        color: "#000",
         /**
          * Weight of the circle
          * @type {Number}
@@ -208,7 +208,7 @@ import geodesy from 'leaflet-geodesy'
          * @type {String}
          * @default
          */
-        fillColor: '#ff0',
+        fillColor: "#ff0",
         /**
          * Fill opacity of the circle
          * @type {Number}
@@ -232,7 +232,7 @@ import geodesy from 'leaflet-geodesy'
          * @type {String}
          * @default
          */
-        color: '#000',
+        color: "#000",
         /**
          * Weight of the circle
          * @type {Number}
@@ -244,7 +244,7 @@ import geodesy from 'leaflet-geodesy'
          * @type {String}
          * @default
          */
-        fillColor: '#f0f',
+        fillColor: "#f0f",
         /**
          * Fill opacity of the circle
          * @type {Number}
@@ -268,7 +268,7 @@ import geodesy from 'leaflet-geodesy'
          * @type {String}
          * @default
          */
-        color: '#000',
+        color: "#000",
         /**
          * Weight of the circle
          * @type {Number}
@@ -280,7 +280,7 @@ import geodesy from 'leaflet-geodesy'
          * @type {String}
          * @default
          */
-        fillColor: '#f00',
+        fillColor: "#f00",
         /**
          * Fill opacity of the circle
          * @type {Number}
@@ -308,13 +308,13 @@ import geodesy from 'leaflet-geodesy'
      * @private
      */
     _createControl: function (label, title, classesToAdd, container, fn, context) {
-      var anchor = document.createElement('a');
+      var anchor = document.createElement("a");
       anchor.innerHTML = label;
-      anchor.setAttribute('title', title);
+      anchor.setAttribute("title", title);
       classesToAdd.forEach(function (c) {
         anchor.classList.add(c);
       });
-      L.DomEvent.on(anchor, 'click', fn, context);
+      L.DomEvent.on(anchor, "click", fn, context);
       container.appendChild(anchor);
       return anchor;
     },
@@ -326,14 +326,14 @@ import geodesy from 'leaflet-geodesy'
      */
     onAdd: function (map) {
       self = this;
-      self._container = document.createElement('div');
-      self._container.classList.add('leaflet-bar');
+      self._container = document.createElement("div");
+      self._container.classList.add("leaflet-bar");
       L.DomEvent.disableClickPropagation(self._container); // otherwise drawing process would instantly start at controls' container or double click would zoom-in map
 
       var title = self.options.measureControlTitleOn;
       var label = self.options.measureControlLabel;
       var classes = self.options.measureControlClasses;
-      if (label.indexOf('&') != -1) {
+      if (label.indexOf("&") != -1) {
         classes.push(_unicodeClass);
       }
 
@@ -341,31 +341,31 @@ import geodesy from 'leaflet-geodesy'
       self._lines = [];
       self._arrArrows = [];
       self._measureControl = self._createControl(label, title, classes, self._container, self._toggleMeasure, self);
-      self._measureControl.setAttribute('id', _measureControlId);
+      self._measureControl.setAttribute("id", _measureControlId);
 
       if (self.options.showMeasurementsClearControl) {
-        var title = self.options.clearControlTitle;
-        var label = self.options.clearControlLabel;
-        var classes = self.options.clearControlClasses;
-        if (label.indexOf('&') != -1) {
+        title = self.options.clearControlTitle;
+        label = self.options.clearControlLabel;
+        classes = self.options.clearControlClasses;
+        if (label.indexOf("&") != -1) {
           classes.push(_unicodeClass);
         }
         self._clearMeasureControl = self._createControl(label, title, classes, self._container, self._clearAllMeasurements, self);
-        self._clearMeasureControl.classList.add('polyline-measure-clearControl')
+        self._clearMeasureControl.classList.add("polyline-measure-clearControl")
       }
       if (self.options.showUnitControl) {
         var measureUnits = self.options.unit === "metres" ? "метры" : self.options.unit
-        var title = "Ед. измерения " + measureUnits;
+        title = "Ед. измерения " + measureUnits;
         if (self.options.unit == "metres") {
-          var label = "м";
+          label = "м";
         } else if (self.options.unit == "landmiles") {
-          var label = "mi";
+          label = "mi";
         } else {
-          var label = "nm";
+          label = "nm";
         }
-        var classes = [];
+        classes = [];
         self._unitControl = self._createControl(label, title, classes, self._container, self._changeUnit, self);
-        self._unitControl.setAttribute('id', 'unitControlId');
+        self._unitControl.setAttribute("id", "unitControlId");
       }
       return self._container;
     },
@@ -387,17 +387,17 @@ import geodesy from 'leaflet-geodesy'
         if (!self._layerPaint) {
           self._layerPaint = L.layerGroup().addTo(self._map);
         }
-        self._map.on('mousemove', self._mouseMove, self);   //  enable listing to 'mousemove', 'click', 'keydown' events
-        self._map.on('click', self._mouseClick, self);
-        L.DomEvent.on(document, 'keydown', self._onKeyDown, self);
+        self._map.on("mousemove", self._mouseMove, self);   //  enable listing to 'mousemove', 'click', 'keydown' events
+        self._map.on("click", self._mouseClick, self);
+        L.DomEvent.on(document, "keydown", self._onKeyDown, self);
         self._resetPathVariables();
       } else {   // if measuring is going to be switched off
-        self._measureControl.removeAttribute('style');
+        self._measureControl.removeAttribute("style");
         self._measureControl.title = self.options.measureControlTitleOn;
         self._map._container.style.cursor = self._oldCursor;
-        self._map.off('mousemove', self._mouseMove, self);
-        self._map.off('click', self._mouseClick, self);
-        L.DomEvent.off(document, 'keydown', self._onKeyDown, self);
+        self._map.off("mousemove", self._mouseMove, self);
+        self._map.off("click", self._mouseClick, self);
+        L.DomEvent.off(document, "keydown", self._onKeyDown, self);
         if (self._doubleClickZoom) {
           self._map.doubleClickZoom.enable();
         }
@@ -474,9 +474,9 @@ import geodesy from 'leaflet-geodesy'
      */
     _getDistance: function (distance) {
       var dist = distance;
-      var symbol;
-      if (self.options.unit === 'nauticalmiles') {
-        var unit = "nm";
+      var unit;
+      if (self.options.unit === "nauticalmiles") {
+        unit = "nm";
         if (dist >= 1852000) {
           dist = (dist / 1852).toFixed(0);
         } else if (dist >= 185200) {
@@ -488,8 +488,8 @@ import geodesy from 'leaflet-geodesy'
           dist = (dist / 0.3048).toFixed(0);
           unit = "ft";
         }
-      } else if (self.options.unit === 'landmiles') {
-        var unit = "mi";
+      } else if (self.options.unit === "landmiles") {
+        unit = "mi";
         if (dist >= 1609344) {
           dist = (dist / 1609.344).toFixed(0);
         } else if (dist >= 160934.4) {
@@ -503,7 +503,7 @@ import geodesy from 'leaflet-geodesy'
         }
       }
       else {
-        var unit = "км";
+        unit = "км";
         if (dist >= 1000000) {
           dist = (dist / 1000).toFixed(0);
         } else if (dist >= 100000) {
@@ -516,7 +516,7 @@ import geodesy from 'leaflet-geodesy'
           unit = "м";
         }
       }
-      return { value: dist, unit: unit };
+      return {value: dist, unit: unit};
     },
 
     /**
@@ -539,7 +539,7 @@ import geodesy from 'leaflet-geodesy'
         // don't split polyline if it crosses dateline ( -180° or +180°).  Without the polyline would look like: +179° ==> +180° ==> -180° ==> -179°...
         // algo: if difference lngInterpol-from.lng is > 180° there's been an unwanted split from +180 to -180 cause an arc can never span >180°
         var diff = lngInterpol - fromLng * 180 / Math.PI;
-        function trunc(n) { return Math[n > 0 ? "floor" : "ceil"](n); }   // alternatively we could use the new Math.trunc method, but Internet Explorer doesn't know it
+        function trunc(n) {return Math[n > 0 ? "floor" : "ceil"](n);}   // alternatively we could use the new Math.trunc method, but Internet Explorer doesn't know it
         if (diff < 0) {
           lngInterpol = lngInterpol - trunc((diff - 180) / 360) * 360;
         } else {
@@ -590,9 +590,9 @@ import geodesy from 'leaflet-geodesy'
       var differenceRound = self._getDistance(difference);
       var text = ""
       if (differenceRound.value > 0) {
-        text = '<div class="polyline-measure-tooltip-difference">+' + differenceRound.value + '&nbsp;' + differenceRound.unit + '</div>';
+        text = "<div class=\"polyline-measure-tooltip-difference\">+" + differenceRound.value + "&nbsp;" + differenceRound.unit + "</div>";
       }
-      text += '<div class="polyline-measure-tooltip-total">' + totalRound.value + '&nbsp;' + totalRound.unit + '</div>';
+      text += "<div class=\"polyline-measure-tooltip-total\">" + totalRound.value + "&nbsp;" + totalRound.unit + "</div>";
       tooltip._icon.innerHTML = text;
     },
 
@@ -612,7 +612,7 @@ import geodesy from 'leaflet-geodesy'
         // html : "<img src='iconArrow.png' style='background:green; height:100%; vertical-align:top; transform:rotate("+ cssAngle +"deg)'>" // alternative method by the use of an image instead of a Unicode symbol.
         html: "<div style = 'font-size: 16px; line-height: 16px; vertical-align:top; transform: rotate(" + cssAngle + "deg)'>&#x27a4;</div>"   // best results if iconSize = font-size = line-height and iconAnchor font-size/2 .both values needed to position symbol in center of L.divIcon for all font-sizes.
       });
-      arrow = L.marker(center, { icon: iconArrow }).addTo(self._layerPaint);
+      arrow = L.marker(center, {icon: iconArrow}).addTo(self._layerPaint);
     },
 
 
@@ -622,7 +622,7 @@ import geodesy from 'leaflet-geodesy'
      * @private
      */
     _mouseMove: function (e) {
-      self._map.on('click', self._mouseClick, self);  // necassary for _dragCircle. If switched on already within _dragCircle an unwanted click is fired at the end of the drag.
+      self._map.on("click", self._mouseClick, self);  // necassary for _dragCircle. If switched on already within _dragCircle an unwanted click is fired at the end of the drag.
       if (!e.latlng || !self._currentLine) {
         return;
       }
@@ -637,7 +637,7 @@ import geodesy from 'leaflet-geodesy'
 
     _startLine: function () {
       var icon = L.divIcon({
-        className: 'polyline-measure-tooltip',
+        className: "polyline-measure-tooltip",
         iconAnchor: [-4, -4]
       });
 
@@ -656,7 +656,7 @@ import geodesy from 'leaflet-geodesy'
           color: self.options.tempLine.color,
           weight: self.options.tempLine.weight,
           interactive: false,
-          dashArray: '8,8'
+          dashArray: "8,8"
         }).addTo(self._layerPaint).bringToBack(),
         path: L.polyline([], {
           // Style of fixed, solid line after mouse is clicked
@@ -668,7 +668,7 @@ import geodesy from 'leaflet-geodesy'
           // update style on previous marker
           var oldMarker = this.markers.last();
           if (oldMarker) {
-            oldMarker.off('click');
+            oldMarker.off("click");
             if (this.markers.length === 1) {
               oldMarker.setStyle(self.options.startCircle);
             } else {
@@ -682,11 +682,12 @@ import geodesy from 'leaflet-geodesy'
           marker.cntLine = self._lines.length;
           marker.cntCircle = self._cntCircle;
           self._cntCircle++;
-          marker.on('mousedown', self._dragCircle, self);
-          marker.on('click', self._finishPath);
+          marker.on("mousedown", self._dragCircle, self);
+          marker.on("click", self._finishPath);
           this.markers.push(marker);
         },
         addPoint: function (latlng) {
+          var tooltip;
           var lastPoint = this.points.last();
           // ignore points we already have
           if (lastPoint && lastPoint.equals(latlng)) {
@@ -702,7 +703,7 @@ import geodesy from 'leaflet-geodesy'
             this.path.setLatLngs(this.path.getLatLngs().concat(arc));
             // following lines needed especially for Mobile Browsers where we just use mouseclicks. No mousemoves, no tempLine.
             var distanceSegment = lastPoint.distanceTo(latlng);
-            var tooltip = self._currentLine.tooltips.last();
+            tooltip = self._currentLine.tooltips.last();
             self._updateTooltipDistance(tooltip, this.distance + distanceSegment, distanceSegment);
             self._currentLine.setAreaTooltip()
             this.distance += distanceSegment;
@@ -717,7 +718,7 @@ import geodesy from 'leaflet-geodesy'
           }
 
           // add new tooltip to update on mousemove
-          var tooltip = L.marker(latlng, {
+          tooltip = L.marker(latlng, {
             icon: icon,
             interactive: false
           }).addTo(self._layerPaint);
@@ -732,11 +733,11 @@ import geodesy from 'leaflet-geodesy'
           // clean up temporary line
           self._layerPaint.removeLayer(self._currentLine.tempLine);
           if (this.points.length > 1) {
-            this.tooltips.last()._icon.classList.add('polyline-measure-tooltip-end'); // add Class e.g. another background-color to the Previous Tooltip (which is the last fixed tooltip, cause the moving tooltip is being deleted later)
+            this.tooltips.last()._icon.classList.add("polyline-measure-tooltip-end"); // add Class e.g. another background-color to the Previous Tooltip (which is the last fixed tooltip, cause the moving tooltip is being deleted later)
             // Style of the circle marking the end of the whole Polyline
             var oldMarker = this.markers.last()
             oldMarker.setStyle(self.options.endCircle);
-            oldMarker.off('click');
+            oldMarker.off("click");
             self._lines.push(this);
             self._arrArrows.push(self._arrArrowsCurrentline);
           } else {
@@ -756,7 +757,7 @@ import geodesy from 'leaflet-geodesy'
             this.getArea()
             let tooltip = this.tooltips.last()
             let text = tooltip._icon.innerHTML
-            text += '<div class="polyline-measure-tooltip-total">' + this.area + '&nbsp;га</div>';
+            text += "<div class=\"polyline-measure-tooltip-total\">" + this.area + "&nbsp;га</div>";
             tooltip._icon.innerHTML = text;
           }
         },
@@ -804,10 +805,10 @@ import geodesy from 'leaflet-geodesy'
 
     _dragCircleMouseup: function () {
       self._resetPathVariables();
-      self._map.off('mousemove', self._dragCircleMousemove, self);
+      self._map.off("mousemove", self._dragCircleMousemove, self);
       self._map.dragging.enable();
-      self._map.on('mousemove', self._mouseMove, self);
-      self._map.off('mouseup', self._dragCircleMouseup, self);
+      self._map.on("mousemove", self._mouseMove, self);
+      self._map.off("mouseup", self._dragCircleMouseup, self);
     },
 
     _dragCircleMousemove: function (e2) {
@@ -848,20 +849,20 @@ import geodesy from 'leaflet-geodesy'
         self._updateTooltipDistance(item, totalDistance, distance);
       });
       self._lines[lineNr].setAreaTooltip()
-      self._map.on('mouseup', self._dragCircleMouseup, self);
+      self._map.on("mouseup", self._dragCircleMouseup, self);
     },
 
     _dragCircle: function (e1) {
       self._e1 = e1;
       if ((self._measuring) && (self._cntCircle === 0)) {    // just execute drag-function if Measuring tool is active but no line is being drawn at the moment.
         self._map.dragging.disable();  // turn of moving of the map during drag of a circle
-        self._map.off('mousemove', self._mouseMove, self);
-        self._map.off('click', self._mouseClick, self);
+        self._map.off("mousemove", self._mouseMove, self);
+        self._map.off("click", self._mouseClick, self);
         self._mouseStartingLat = e1.latlng.lat;
         self._mouseStartingLng = e1.latlng.lng;
         self._circleStartingLat = e1.target._latlng.lat;
         self._circleStartingLng = e1.target._latlng.lng;
-        self._map.on('mousemove', self._dragCircleMousemove, self);
+        self._map.on("mousemove", self._dragCircleMousemove, self);
       }
     }
   });

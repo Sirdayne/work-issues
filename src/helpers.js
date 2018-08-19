@@ -1,5 +1,5 @@
 export function fromDot(obj, p) {
-  return p.split('.').reduce((o,i) => o !== undefined && o.constructor === Object? o[i] : o, obj)
+  return p.split(".").reduce((o, i) => o !== undefined && o.constructor === Object? o[i] : o, obj)
 }
 
 export function shallowClone(obj) {

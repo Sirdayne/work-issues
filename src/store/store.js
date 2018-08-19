@@ -1,14 +1,8 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import Vue from "vue";
+import Vuex from "vuex";
 
-import {deepClone} from 'lib/utils';
-import UpdateComponent from './modules/UpdateComponent';
-import CreateComponent from './modules/CreateComponent';
-import FuelNorms from './modules/FuelNorms';
-import Map from './modules/Map';
-import TrackTimes from './modules/TrackTimes';
-
-import MapNew from './modules/MapNew';
+import {deepClone} from "lib/utils";
+import Map from "./modules/Map";
 
 Vue.use(Vuex);
 
@@ -21,7 +15,6 @@ export const store = new Vuex.Store({
     areaassignments: [],
     brigades: [],
     budgets: [],
-    carmodels: [],
     cars: [],
     carsall: [],
     carstatus: [],
@@ -37,9 +30,9 @@ export const store = new Vuex.Store({
     culturedepths: [],
     culturefieldzones: [],
     cultures: [],
+    customorganizations: [],
     diseases: [],
     direction: [],
-    dlinagona: [],
     downtime: [],
     employees: [],
     employeesall: [],
@@ -60,10 +53,9 @@ export const store = new Vuex.Store({
     internaltransfers: [],
     insects: [],
     instruments: [],
-    instrumentsall: [],
-    instrumentsbyorganization: [],
     leafletfields: [],
     leaflettracks: [],
+    legend: [],
     notes: [],
     nozzleColor: [],
     operations: [],
@@ -75,6 +67,8 @@ export const store = new Vuex.Store({
     processedstatuses: [],
     reproductions: [],
     reports: [],
+    roles: [],
+    roletemplates: [],
     seedlimitfact: [],
     seedlimits: [],
     seedlimitcoordinates: [],
@@ -98,10 +92,16 @@ export const store = new Vuex.Store({
     weedtypes: [],
     weedsGrowingPhases: [],
     workdates: [],
-    workplan: [],
     works: [],
     worktypecars: [],
     worktypes: [],
+    analysiscardtypes: [],
+    cropbalanceusers: [],
+    finalproducttypes: [],
+    organizationsgroup: [],
+    grainprocessings: [],
+    grainprocessingtypes: [],
+    orderforshipment: [],
     // catalog
     assignmenttypes: [],
     suboperations: [],
@@ -126,7 +126,6 @@ export const store = new Vuex.Store({
     stopjournals: [],
     stoptypes: [],
     fielddistances: [],
-    fueltypes: [],
     carmarks: [],
     carmodelgroups: [],
     carmodels: [],
@@ -139,11 +138,22 @@ export const store = new Vuex.Store({
     weed: [],
     windDirection: [],
     inventory: [],
-
+    culturequalitytypes: [],
+    qualitytypevaluecodes: [],
+    culturequalityconditions: [],
+    cargpsidentifier: [],
+    carmodelfuelnorms: [],
+    equipments: [],
+    organizationequipments: [],
+    fueltypes: [],
+    grainindicator: [],
+    smells: [],
+    conditiontypes: [],
+    volumetypes: [],
+    grainwastes: [],
+    organizationtype: [],
     // Other
-    currentPage: null,
     organizationId: null,
-    currentMode: null,
     sidebarToggleState: true,
     queue: [],
     queueId: 0,
@@ -154,6 +164,8 @@ export const store = new Vuex.Store({
     harrowingCheckList: [],
     harvestCheckList: [],
     sowingCheckList: [],
+
+    grainoutsideofwarehouse: [],
   },
   getters: {
     getEntities: (state) => (entity) => {
@@ -162,7 +174,7 @@ export const store = new Vuex.Store({
       return result
     },
     getEntityById: (state) => (id, entity, attr) => {
-      let _attr = attr || 'id'
+      let _attr = attr || "id"
       entity = entity.toLowerCase();
       let result = deepClone(state[entity].find(e => e[_attr] == id))
       return result
@@ -179,14 +191,8 @@ export const store = new Vuex.Store({
         }
       });
     },
-    getCurrentPage: (state) => {
-      return state.currentPage;
-    },
     getOrganizationId: (state) => {
       return state.organizationId;
-    },
-    getCurrentMode: (state) => {
-      return state.currentMode;
     },
     getSidebarToggleState: (state) => {
       return state.sidebarToggleState;
@@ -203,17 +209,11 @@ export const store = new Vuex.Store({
       payload.state = payload.state.toLowerCase();
       state[payload.state] = payload.data;
     },
-    setCurrentPage: (state, payload) => {
-      state.currentPage = payload;
-    },
     setOrganizationId: (state, payload) => {
       state.organizationId = payload;
     },
     setOrganizationsGroupId: (state, payload) => {
       state.organizationsGroupId = payload;
-    },
-    setCurrentMode: (state, payload) => {
-      state.currentMode = payload;
     },
     setSidebarToggleState: (state, payload) => {
       state.sidebarToggleState = payload;
@@ -229,53 +229,38 @@ export const store = new Vuex.Store({
     actionAddEntities: ({
       commit
     }, payload) => {
-      commit('addEntities', {
+      commit("addEntities", {
         state: payload.name,
         data: payload.data
       });
     },
-    actionSetCurrentPage: ({
-      commit
-    }, payload) => {
-      commit('setCurrentPage', payload);
-    },
     actionSetOrganizationId: ({
       commit
     }, payload) => {
-      commit('setOrganizationId', payload);
+      commit("setOrganizationId", payload);
     },
     actionSetOrganizationsGroupId: ({
       commit
     }, payload) => {
-      commit('setOrganizationsGroupId', payload);
-    },
-    actionSetCurrentMode: ({
-      commit
-    }, payload) => {
-      commit('setCurrentMode', payload);
+      commit("setOrganizationsGroupId", payload);
     },
     actionSetSidebarToggleState: ({
       commit
     }, payload) => {
-      commit('setSidebarToggleState', payload);
+      commit("setSidebarToggleState", payload);
     },
     actionSetQueue: ({
       commit
     }, payload) => {
-      commit('setQueue', payload);
+      commit("setQueue", payload);
     },
     actionSetQueueId: ({
       commit
     }, payload) => {
-      commit('setQueueId', payload);
+      commit("setQueueId", payload);
     },
   },
   modules: {
-    UpdateComponent,
-    CreateComponent,
-    FuelNorms,
-    Map,
-    TrackTimes,
-    MapNew
+    Map
   }
 });

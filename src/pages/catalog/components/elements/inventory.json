@@ -1,0 +1,119 @@
+{
+  "name": "Inventory",
+  "api": "Inventory",
+  "organization": true,
+  "editable": true,
+  "dependencies": [
+    "Warehouses",
+    "Storages",
+    "Cultures",
+    "FinalProductTypes",
+    "FinalProducts",
+    "GrainWastes",
+    "Reproductions",
+    "Sorts",
+    "Organizations",
+    "CustomOrganizations",
+    "Smells"
+  ],
+  "attributes": [
+    {
+      "label": "Дата",
+      "prop": "date",
+      "type": "date",
+      "formatTo": "YYYY-MM-DDTHH:mm:ss"
+    },
+    {
+      "label": "Место хранения",
+      "prop": "Warehouses.name",
+      "fkey": "warehouseId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Склад",
+      "prop": "Storages.name",
+      "fkey": "storageId",
+      "filter": true,
+      "iterable": true,
+      "getFrom": "Storages",
+      "getProp": "id",
+      "getBy": "warehouseId"
+    },
+    {
+      "label": "Культура",
+      "prop": "Cultures.name",
+      "fkey": "cultureId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Тип продукции",
+      "prop": "FinalProductTypes.name",
+      "fkey": "finalProductType",
+      "filter": true,
+      "iterable": true,
+      "form": false
+    },
+    {
+      "label": "Класс готовой продукции",
+      "prop": "FinalProducts.name",
+      "fkey": "finalProductId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Категория зерноотходов",
+      "prop": "GrainWastes.name",
+      "fkey": "grainWaste",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Репродукция",
+      "prop": "Reproductions.name",
+      "fkey": "reproductionId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Сорт",
+      "prop": "Sorts.name",
+      "fkey": "cultureSortId",
+      "filter": true,
+      "iterable": true,
+      "getFrom": "Sorts",
+      "getProp": "id",
+      "getBy": "cultureId"
+    },
+    {
+      "label": "Владелец(организация)",
+      "prop": "Organizations.name",
+      "fkey": "ownerOrganizationId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Владелец(контрагент)",
+      "prop": "CustomOrganizations.name",
+      "fkey": "ownerCustomOrganizationId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Вес",
+      "prop": "volume"
+    },
+    {
+      "label": "Влажность",
+      "prop": "humidity"
+    },
+    {
+      "label": "Запах",
+      "prop": "Smells.name",
+      "fkey": "smell",
+      "filter": true,
+      "iterable": true
+    }
+  ]
+}

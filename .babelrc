@@ -6,5 +6,5 @@
   "plugins": [
     "transform-runtime",
     "syntax-dynamic-import"
-  ],
+  ]
 }

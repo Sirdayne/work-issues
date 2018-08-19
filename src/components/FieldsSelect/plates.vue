@@ -23,29 +23,35 @@ div
 </template>
 
 <script>
-import {EventBus} from 'services/EventBus';
+import {EventBus} from "services/EventBus";
 
 export default {
   props: {
-    items: {
-      default: []
+    "items": {
+      type: Array,
+      default: [],
     },
-    value: {
-      default: []
+    "value": {
+      type: Array,
+      default: [],
     },
-    highlightActive: {
-      default: true
+    "highlightActive": {
+      type: Boolean,
+      default: true,
     },
-    activeCondition: {
-      default: () => false
+    "activeCondition": {
+      type: [Function, Boolean],
+      default: false,
     }
   },
-  data: () => ({
-    activeId: null,
-    selected: []
-  }),
+  data() {
+    return {
+      activeId: null,
+      selected: [],
+    }
+  },
   created() {
-    this.$on('blur', () => {
+    this.$on("blur", () => {
       this.activeId = null
     })
     this.selected = this.value
@@ -55,14 +61,14 @@ export default {
       this.selected = val
     },
     selected(val) {
-      this.$emit('input', val)
+      this.$emit("input", val)
     }
   },
   methods: {
     select(item) {
       this.activeId = item.id
-      EventBus.$emit('fieldClicked', item.fieldId );
-      this.$emit('select', item)
+      EventBus.$emit("fieldClicked", item.fieldId );
+      this.$emit("select", item)
     }
   }
 }

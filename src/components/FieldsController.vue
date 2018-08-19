@@ -1,32 +1,31 @@
 <template lang="pug">
 div(v-loading="fieldsLoading")
-  ul.list: li.field(
-    v-for="field in filteredFields",
-  )
-    input.control(@change="sync", type="checkbox", v-model="checkedFields[field.id]", :id="`field_${field.id}`")
-    label.label(
-      :for="`field_${field.id}`",
-      @click="fieldClick(field)",
-      :class="{active: field.id === activeFieldId}"
-    ) {{ field.newName }}
-
+  ul.list
+    li.field(v-for="field in filteredFields")
+      input.control(@change="sync", type="checkbox", v-model="checkedFields[field.id]", :id="`field_${field.id}`")
+      label.label(:for="`field_${field.id}`", @click="fieldClick(field)", :class="{active: field.id === activeFieldId}") {{ field.newName }}
 </template>
 
 <script>
-import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
-import {EventBus} from 'services/EventBus'
-import moment from 'moment'
-import ListController from 'mixins/ListController'
+import {fetchEntities, fromVuex} from "services/RecordsLoader"
+import {EventBus} from "services/EventBus"
+import ListController from "mixins/ListController"
 
 export default {
   mixins: [
-    RecordsLoaderV2,
+    
     ListController,
   ],
-  props: [
-    'quickFilter',
-    'brigadeId',
-  ],
+  props: {
+    "quickFilter": {
+      type: String,
+      default: "",
+    },
+    "brigadeId": {
+      type: Number,
+      default: null,
+    },
+  },
   data() {
     return {
       activeFieldId: null,
@@ -37,7 +36,7 @@ export default {
     }
   },
   created() {
-    EventBus.$on('SowingAdded', () => {
+    EventBus.$on("SowingAdded", () => {
       this.load()
     });
     this.load()
@@ -45,9 +44,9 @@ export default {
   methods: {
     load(){
       this.fieldsLoading = true
-      this.fetchEntities([
-        'fields',
-        'sowings',
+      fetchEntities([
+        "fields",
+        "sowings",
       ], this.afterFetch );
     },
     makeBlank() {
@@ -57,15 +56,15 @@ export default {
     },
     fieldClick(field) {
       this.activeFieldId = field.id
-      this.$emit('fieldClick', field)
-      EventBus.$emit('fieldClicked', field.id );
+      this.$emit("fieldClick", field)
+      EventBus.$emit("fieldClicked", field.id );
     },
     sync() {
-      this.$emit('input', Object.keys(this.checkedFields).filter(id => this.checkedFields[id]))
+      this.$emit("input", Object.keys(this.checkedFields).filter(id => this.checkedFields[id]))
     },
     afterFetch(){
-      this.fields = this.fromVuex('fields');
-      this.sowings = this.fromVuex('sowings').filter(sowing => sowing.year == this.$root.context.year);
+      this.fields = fromVuex("fields");
+      this.sowings = fromVuex("sowings").filter(sowing => sowing.year == this.$root.context.year);
       this.fieldsLoading = false
       this.makeBlank()
     },

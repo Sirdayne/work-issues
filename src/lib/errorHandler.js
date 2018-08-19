@@ -1,5 +1,5 @@
-import { Message } from 'element-ui';
-import { Notification } from 'element-ui';
+import {Message} from "element-ui";
+import {Notification} from "element-ui";
 const isProd = IS_PROD;
 const cyrillicPattern = /[\u0400-\u04FF]/;
 
@@ -27,7 +27,7 @@ export default {
   showMessage(msg) {
     Message({
       message: msg,
-      type: 'error',
+      type: "error",
       duration: 5000,
       showClose: false,
     });
@@ -39,7 +39,7 @@ export default {
     Notification({
       title: title,
       message: msg,
-      type: 'error',
+      type: "error",
       duration: 5000,
       showClose: false,
     });

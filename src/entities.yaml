@@ -3,6 +3,8 @@
 
 ########## Aa ##########
 
+analysiscardtypes:
+
 AreaAssignments:
   contexts:
   - organization
@@ -32,11 +34,17 @@ budgets:
 
 ########## Cc ##########
 
+cargpsidentifier:
+  contexts:
+  - organization
+
 carmarks:
 
 carmodelgroups:
 
 carmodels:
+
+carmodelfuelnorms:
 
 cars:
   contexts:
@@ -57,7 +65,7 @@ cartypes:
 
 carinformation:
   contexts:
-    - organization
+  - organization
 
 compositions:
 
@@ -83,6 +91,9 @@ chemistrylimitfact:
 chemistryLimits:
   contexts:
   - organization
+  - year
+
+conditiontypes:
 
 cropbalanceusers:
 
@@ -100,9 +111,15 @@ cultures:
 
 cultureparameters:
 
+culturequalitytypes:
+
+culturequalityconditions:
+
 culturerotation:
 
 culturetypes:
+
+customorganizations:
 
 ########## Dd ##########
 
@@ -114,8 +131,6 @@ downtime:
 
 direction:
 
-dlinagona:
-
 ########## Ee ##########
 
 employees:
@@ -125,6 +140,7 @@ employees:
 employeesAll:
   path: employees/organizationsGroup
 
+equipments:
 
 eventlogs:
   contexts:
@@ -136,6 +152,7 @@ fertilizerLimits:
   path: chemistryLimits
   contexts:
   - organization
+  - year
 
 FieldAssignments:
   contexts:
@@ -167,29 +184,51 @@ FieldLastAssignments:
 
 fieldweediness:
   contexts:
-    - organization
+  - organization
 
 fieldworks:
   contexts:
-    - organization
-    - budget
-    - year
+  - organization
+  - budget
+  - year
 
 fieldzones:
 
 finalproducts:
 
+finalproducttypes:
+
 fuelnorms:
 #  contexts:
 #  - organizationsGroupId
 
+fueltypes:
+
 ########## Gg ##########
+
+grainoutsideofwarehouse:
+  contexts:
+  - organization
+
+grainprocessings:
+  contexts:
+  - organization
+  - year
+
+grainprocessingtypes:
+
+grainwastes:
 
 gpsproviders:
 
 grainregistry:
   contexts:
-    - organization
+  - organization
+
+grainindicator:
+  contexts:
+  - organizationsGroupId
+  - year
 
 growthphases:
 
@@ -207,14 +246,6 @@ internaltransfers:
   contexts:
   - organization
 
-instrumentsByOrganization:
-  path: organizationInstruments
-  contexts:
-  - organization
-
-instrumentsAll:
-  path: instruments
-
 instruments:
 
 instrumenttypes:
@@ -222,6 +253,12 @@ instrumenttypes:
 inventory:
   contexts:
   - organization
+  - year
+
+inventoryanalysiscards:
+  contexts:
+  - organization
+  - year
 
 ########## Nn ##########
 
@@ -252,19 +289,36 @@ leafletfields:
 
 leaflettracks:
 
+legend:
+
 ########## Oo ##########
 
 operations:
 
 operativeinformationtype:
 
+orderforshipment:
+  contexts:
+  - organization
+  - year
+
+organizationequipments:
+  contexts:
+  - organization
+
 organizations:
 
+organizationsgroup:
+
 organizationsshortname:
+  contexts:
+  - organization
 
 organizationinstruments:
   contexts:
   - organization
+
+organizationtype:
 
 overdrive:
   contexts:
@@ -282,6 +336,10 @@ paymentsadditionals:
 #  contexts:
 #  - organizationsGroupId
 
+########## Qq ##########
+
+qualitytypevaluecodes:
+
 ########## Rr ##########
 
 reports:
@@ -289,6 +347,10 @@ reports:
 ripenessgroups:
 
 reproductions:
+
+roles:
+
+roletemplates:
 
 ########## Ss ##########
 
@@ -313,6 +375,8 @@ seedmordant:
 seedprices:
   contexts:
   - organization
+
+smells:
 
 sorts:
 
@@ -388,6 +452,10 @@ unittypes:
 
 usedPackagingAbsence:
 
+########## Vv ##########
+
+volumetypes:
+
 ########## Ww ##########
 
 warehousecoordinates:
@@ -404,10 +472,6 @@ warehousesAll:
   path: warehouses
 
 workdates:
-
-workplan:
-  contexts:
-  - organization
 
 works:
   path: workTypeParameterPlanWorkTypes

@@ -1,0 +1,34 @@
+{
+  "name": "Storages",
+  "api": "Storages",
+  "organization": true,
+  "editable": true,
+  "dependencies": [
+    "Warehouses",
+    "TrueFalse"
+  ],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Объем",
+      "prop": "volume"
+    },
+    {
+      "label": "Местонахождение",
+      "prop": "Warehouses.name",
+      "fkey": "warehouseId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Одно место",
+      "prop": "TrueFalse.name",
+      "fkey": "isSingleInventory",
+      "filter": true,
+      "iterable": true
+    }
+  ]
+}

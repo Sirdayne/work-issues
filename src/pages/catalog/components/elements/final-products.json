@@ -1,0 +1,16 @@
+{
+  "name": "FinalProducts",
+  "api": "FinalProducts",
+  "notFilterable": true,
+  "dependencies": [],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Сокращенное наименование",
+      "prop": "shortName"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "name": "AdditionalWorks",
+  "api": "suboperations",
+  "notFilterable": true,
+  "dependencies": [
+    "ConditionTypes",
+    "TrueFalse"
+  ],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Агро-условия",
+      "prop": "ConditionTypes.name",
+      "fkey": "conditionType",
+      "filter": false,
+      "iterable": true
+    },
+    {
+      "label": "Препарат",
+      "prop": "TrueFalse.name",
+      "fkey": "isChemicalTreatment",
+      "table": false,
+      "filter": false,
+      "iterable": true
+    },
+    {
+      "label": "Протравитель",
+      "prop": "TrueFalse.name",
+      "fkey": "isSeedProtectant",
+      "table": false,
+      "filter": false,
+      "iterable": true
+    },
+    {
+      "label": "Семена",
+      "prop": "TrueFalse.name",
+      "fkey": "isSowing",
+      "table": false,
+      "filter": false,
+      "iterable": true
+    },
+    {
+      "label": "Корма",
+      "prop": "TrueFalse.name",
+      "fkey": "isSideWork",
+      "table": false,
+      "filter": false,
+      "iterable": true
+    },
+    {
+      "label": "isFieldOperation",
+      "prop": "isFieldOperation",
+      "table": false,
+      "filter": true,
+      "default": false,
+      "viewable": false,
+      "form": false
+    }
+  ]
+}

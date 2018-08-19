@@ -1,0 +1,22 @@
+{
+  "name": "Warehouses",
+  "api": "Warehouses",
+  "organization": true,
+  "editable": true,
+  "dependencies": [
+    "WarehouseTypes"
+  ],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    },
+    {
+      "label": "Тип",
+      "prop": "WarehouseTypes.name",
+      "fkey": "warehouseType",
+      "filter": true,
+      "iterable": true
+    }
+  ]
+}

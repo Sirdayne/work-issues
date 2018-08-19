@@ -1,5 +1,5 @@
-import localforage from 'localforage'
-import {EventBus} from 'services/EventBus';
+import localforage from "localforage"
+import {EventBus} from "services/EventBus";
 
 export default {
   getLocalForage(DB, input, id){
@@ -14,8 +14,8 @@ export default {
 
       }
 
-      let model = { value: value, db: DBfromStart }
-      EventBus.$emit('gotFromLocalForage', model);
+      let model = {value: value, db: DBfromStart}
+      EventBus.$emit("gotFromLocalForage", model);
     }).catch(function(err) {
 
     });

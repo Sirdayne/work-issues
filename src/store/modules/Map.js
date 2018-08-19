@@ -1,174 +1,117 @@
-import {
-  EventBus
-} from "services/EventBus";
-import http from 'lib/httpQueryV2';
-import moment from 'moment';
-import {deepClone} from 'lib/utils';
+import {EventBus} from "services/EventBus";
+import moment from "moment";
 
 const state = {
-  selectedAssignments: [],
-  selectedFields: [],
-  assignmentsTracks: {
-    ids: [],
-    tracks: [],
-  },
-  assignmentsWithoutTracks: [],
-  timeTravel: false,
-  selectedDate: moment().hour(8).minute(0).second(0).subtract(1, 'days').format(),
-  gpsDateStart: null,
-  gpsDateEnd: null,
+  modeEditPoints: false,
+  mapDate: moment(),
+  gpsStart: null,
+  gpsEnd: null,
+  filterBy: "def",
+  filterField: null,
+  filterEmployee: null,
+  filterCars: [],
+  legendAssignments: []
 };
 
 const getters = {
-  getSelectedAssignments: (state) => {
-    return deepClone(state.selectedAssignments)
+  getMapDate: (state) => {
+    return state.mapDate
   },
-  getSelectedFields: (state) => {
-    return deepClone(state.selectedFields);
+  getModeEditPoints: (state) => {
+    return state.modeEditPoints
   },
-  getTimeTravel: (state) => {
-    return state.timeTravel;
+  getGpsStart: (state) => {
+    return state.gpsStart
   },
-  getSelectedDate: (state) => {
-    return state.selectedDate
+  getGpsEnd: (state) => {
+    return state.gpsEnd
   },
-  getGpsDateStart: (state) => {
-    return state.gpsDateStart
+  getFilterBy: (state) => {
+    return state.filterBy
   },
-  getGpsDateEnd: (state) => {
-    return state.gpsDateEnd
+  getFilterField: (state) => {
+    return state.filterField
   },
+  getFilterEmployee: (state) => {
+    return state.filterEmployee
+  },
+  getFilterCars: (state) => {
+    return state.filterCars
+  },
+  getLegendAssignments: (state) => {
+    return state.legendAssignments
+  }
 };
 
 const mutations = {
-  destroy: (state) => {
-    state.selectedAssignments = []
-    state.selectedFields = []
-    state.assignmentsTracks = {
-      ids: [],
-      tracks: [],
-    }
-    state.assignmentsWithoutTracks = []
+  setMapDate: (state, payload) => {
+    state.mapDate = payload
   },
-  selectAssignment: (state, payload) => {
-    if (!state.selectedAssignments.includes(payload)) {
-      state.selectedAssignments.push(payload);
-    }
+  setModeEditPoints: (state, payload) => {
+    state.modeEditPoints = payload
   },
-  selectField: (state, payload) => {
-    if (!state.selectedFields.includes(payload)) {
-      state.selectedFields.push(payload);
-    }
+  setGpsStart: (state, payload) => {
+    state.gpsStart = payload
   },
-  unselectAssignment: (state, payload) => {
-    let indexOf = state.selectedAssignments.indexOf(payload);
-    state.selectedAssignments.splice(indexOf, 1);
+  setGpsEnd: (state, payload) => {
+    state.gpsEnd = payload
   },
-  unselectField: (state, payload) => {
-    let indexOf = state.selectedFields.indexOf(payload);
-    state.selectedFields.splice(indexOf, 1);
+  setFilterBy: (state, payload) => {
+    state.filterBy = payload
   },
-  addAssignmentsTracks: (state, payload) => {
-    if (!state.assignmentsTracks.ids.includes(payload.assignmentId)) {
-      state.assignmentsTracks.ids.push(payload.assignmentId);
-      state.assignmentsTracks.tracks.push({
-        assignmentId: payload.assignmentId,
-        track: payload.track
-      });
-    }
+  setFilterField: (state, payload) => {
+    state.filterField = payload
   },
-  removeAssignmentsTracks: (state, payload) => {
-    let indexOfId = state.assignmentsTracks.ids.indexOf(payload);
-    let indexOfTrack = -1;
-    state.assignmentsTracks.tracks.forEach((t, i) => {
-      if (t.assignmentId === payload) {
-        indexOfTrack = i;
-      }
-    })
-    state.assignmentsTracks.ids.splice(indexOfId, 1);
-    state.assignmentsTracks.tracks.splice(indexOfTrack, 1);
+  setFilterEmployee: (state, payload) => {
+    state.filterEmployee = payload
   },
-  addAssignmentWithoutTrack: (state, payload) => {
-    state.assignmentsWithoutTracks.push(payload);
+  setFilterCars: (state, payload) => {
+    state.filterCars = payload
   },
-  removeAssignmentWithoutTrack: (state, payload) => {
-    let indexOf = state.assignmentsWithoutTracks.indexOf(payload);
-    state.assignmentsWithoutTracks.splice(indexOf, 1);
-  },
-  setTimeTravel: (state, payload) => {
-    state.timeTravel = payload
-  },
-  setSelectedDate: (state, payload) => {
-    state.selectedDate = payload
-  },
-  setGpsDateStart: (state, payload) => {
-    state.gpsDateStart = payload
-  },
-  setGpsDateEnd: (state, payload) => {
-    state.gpsDateEnd = payload
-  },
+  setLegendAssignments: (state, payload) => {
+    state.legendAssignments = payload
+  }
 };
 
 const actions = {
-  actionSelectAssignment: (context, payload) => {
-    context.commit('selectAssignment', payload);
+  actionSetMapDate: (context, payload) => {
+    context.commit("setMapDate", payload);
   },
-  actionSelectField: (context, payload) => {
-    context.commit('selectField', payload);
+  actionSetModeEditPoints: (context, payload) => {
+    context.commit("setModeEditPoints", payload);
   },
-  actionUnselectAssignment: (context, payload) => {
-    context.commit('unselectAssignment', payload);
-    context.commit('removeAssignmentsTracks', payload);
-    EventBus.$emit('MapController.SelectedAssignmentLoadingFinished', context.state.assignmentsTracks.tracks);
+  actionSetGpsStart: (context, payload) => {
+    context.commit("setGpsStart", payload);
   },
-  actionUnselectField: (context, payload) => {
-    context.commit('unselectField', payload);
+  actionSetGpsEnd: (context, payload) => {
+    context.commit("setGpsEnd", payload);
   },
-  actionSetTimeTravel: (context, payload) => {
-    context.commit('setTimeTravel', payload);
+  actionSetFilterBy: (context, payload) => {
+    context.commit("setFilterBy", payload);
+    EventBus.$emit("MapChangeTabs")
   },
-  actionSetSelectedDate: (context, payload) => {
-    context.commit('setSelectedDate', payload);
+  actionSetFilterField: (context, payload) => {
+    context.dispatch("actionSetFilterCars", [])
+    context.dispatch("actionSetFilterBy", "field")
+    context.commit("setFilterField", payload);
   },
-  actionSetGpsDateStart: (context, payload) => {
-    context.commit('setGpsDateStart', payload);
+  actionSetFilterEmployee: (context, payload) => {
+    context.dispatch("actionSetFilterCars", [])
+    context.dispatch("actionSetFilterBy", "employee")
+    context.commit("setFilterEmployee", payload);
   },
-  actionSetGpsDateEnd: (context, payload) => {
-    context.commit('setGpsDateEnd', payload);
-  },
-  actionAddAssignmentWithoutTrack: (context, payload) => {
-    context.commit('addAssignmentWithoutTrack', payload);
-  },
-  actionGetTrackForAssignment: (context, payload) => {
-    return new Promise((resolve, reject) => {
-      http.get('leafletTracks/' + payload.orgId, payload.id)
-        .then((data) => {
-          resolve(data);
-        })
-        .catch((error) => {
-          reject(error);
-        })
-    })
-  },
-  actionHandleSuccessfulFetch: (context, payload) => {
-    let data = payload.data;
-    let assignmentId = payload.assignment.id;
-    let fieldId = payload.assignment.fieldId;
-    if (Object.keys(data).length) {
-      context.commit('addAssignmentsTracks', {
-        assignmentId: data.assignmentId,
-        track: data.track
-      });
-      EventBus.$emit('MapController.SelectedAssignmentLoadingFinished', context.state.assignmentsTracks.tracks);
-      context.dispatch('actionSelectAssignment', assignmentId);
-      context.dispatch('actionSelectField', fieldId);
+  actionSetFilterCars: (context, payload) => {
+    if (payload.length > 1) {
+      context.dispatch("actionSetFilterBy", "cars")
+    } else if ((payload.length === 1)) {
+      context.dispatch("actionSetFilterBy", "car")
     } else {
-      context.dispatch('actionAddAssignmentWithoutTrack', assignmentId);
-      EventBus.$emit('MapController.SelectedAssignmentLoadingEmptyResultReturned', assignmentId);
+      context.dispatch("actionSetFilterBy", "def")
     }
+    context.commit("setFilterCars", payload);
   },
-  actionDestroy: (context) => {
-    context.commit('destroy')
+  actionSetLegendAssignments: (context, payload) => {
+    context.commit("setLegendAssignments", payload)
   }
 };
 

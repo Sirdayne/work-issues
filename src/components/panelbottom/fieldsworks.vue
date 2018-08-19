@@ -34,23 +34,23 @@
 </template>
 
 <script>
-
-import http from 'lib/httpQueryV2'
-import { EventBus } from 'services/EventBus'
-import RecordsLoaderV2 from 'mixins/RecordsLoaderV2'
-import ListController from 'mixins/ListController'
-import moment from 'moment'
-import $ from 'jquery';
+import ListController from "mixins/ListController"
+import $ from "jquery";
 
 export default {
   mixins: [
-    RecordsLoaderV2,
     ListController
   ],
-  props: [
-    'fieldClickedId',
-    'fieldworks',
-  ],
+  props: {
+    "fieldClickedId": {
+      type: Number,
+      default: null,
+    },
+    "fieldworks": {
+      type: Array,
+      default: [],
+    },
+  },
   data() {
     return {
       firstwork: null

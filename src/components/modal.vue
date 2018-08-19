@@ -1,32 +1,16 @@
-<template>
-<transition name="modal">
-    <div class="modal-mask">
-      <div class="modal-wrapper">
-        <div class="modal-container">
-
-          <div class="modal-header">
-            <slot name="header"></slot>
-          </div>
-
-          <div class="modal-body">
-            <slot></slot>
-          </div>
-
-          <div class="modal-footer">
-            <slot name="footer">
-              <button class="modal-default-button" @click="$emit('close')">
-                OK
-              </button>
-            </slot>
-          </div>
-        </div>
-      </div>
-    </div>
-  </transition>
+<template lang="pug">
+transition(name="modal")
+  .modal-mask
+    .modal-wrapper
+      .modal-container
+        .modal-header
+          slot(name="header")
+        .modal-body
+          slot
+        .modal-footer
+          slot(name="footer")
+            button(class="modal-default-button", @click="$emit('close')") OK
 </template>
-
-
-
 <style scoped>
 .modal-mask {
   position: fixed;

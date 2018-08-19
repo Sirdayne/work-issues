@@ -1,0 +1,11 @@
+{
+  "name": "Equipments",
+  "api": "Equipments",
+  "dependencies": [],
+  "attributes": [
+    {
+      "label": "Наименование",
+      "prop": "name"
+    }
+  ]
+}

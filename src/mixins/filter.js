@@ -1,4 +1,4 @@
-import { fromDot } from 'lib/utils'
+import {fromDot} from "lib/utils"
 
 export default {
   created() {
@@ -32,7 +32,7 @@ export default {
       Object.keys(this.appliedFilter).forEach(key => {
         const equalTo = this.appliedFilter[key]
         const equalFunc =
-          (equalTo === '' || equalTo.constructor === Array && equalTo.length === 0)?
+          (equalTo === "" || equalTo.constructor === Array && equalTo.length === 0)?
             () => true :
             null
           || this.filterFunc(key)

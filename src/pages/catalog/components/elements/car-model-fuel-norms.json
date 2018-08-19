@@ -1,0 +1,20 @@
+{
+  "name": "CarModelFuelNorms",
+  "api": "CarModelFuelNorms",
+  "dependencies": [
+    "CarModels"
+  ],
+  "attributes": [
+    {
+      "label": "Модели машины",
+      "prop": "CarModels.name",
+      "fkey": "carModelId",
+      "filter": true,
+      "iterable": true
+    },
+    {
+      "label": "Норма",
+      "prop": "fuelNorm"
+    }
+  ]
+}
