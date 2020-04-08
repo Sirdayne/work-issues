@@ -25,7 +25,7 @@
         "@fortawesome/fontawesome": "1.1.8",
         "@fortawesome/fontawesome-free-solid": "5.0.13",
         "amcharts3": "github:amcharts/amcharts3",
-        "axios": "0.18.0",
+        "axios": "0.18.1",
         "axios-cache-adapter": "2.1.1",
         "chart.js": "2.7.2",
         "chartist": "0.11.0",
